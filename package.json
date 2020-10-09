@@ -1,0 +1,32 @@
+{
+  "name": "jigsaw.ts",
+  "version": "0.0.1-dev",
+  "description": "jigsaw.ts is a RPC framework under Node.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build":"tsc",
+    "dev":"nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/app.ts\" "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZhyMC/jigsaw.ts.git"
+  },
+  "keywords": [
+    "rpc"
+  ],
+  "author": "zhymc",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/ZhyMC/jigsaw.ts/issues"
+  },
+  "homepage": "https://github.com/ZhyMC/jigsaw.ts#readme",
+  "devDependencies": {
+    "cz-conventional-changelog": "^3.3.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
