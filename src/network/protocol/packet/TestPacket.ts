@@ -1,7 +1,7 @@
-import Packet = require("./Packet");
+import BasePacket = require("./BasePacket");
 
-class TestPacket extends Packet{
-	public packet_type : string = "TestPacket";
+class TestPacket extends BasePacket{
+	public static packet_id : number = 1;
 	public testdata : string = "";
 
 	constructor(){
