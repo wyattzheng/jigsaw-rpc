@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build":"tsc",
-    "dev":"nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/app.ts\" "
+    "build": "tsc",
+    "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" "
   },
   "repository": {
     "type": "git",
@@ -22,11 +22,15 @@
   },
   "homepage": "https://github.com/ZhyMC/jigsaw.ts#readme",
   "devDependencies": {
+    "@types/node": "^14.11.8",
     "cz-conventional-changelog": "^3.3.0"
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "dependencies": {
+    "tiny-typed-emitter": "^2.0.3"
   }
 }
