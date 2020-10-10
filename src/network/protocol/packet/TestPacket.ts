@@ -1,4 +1,4 @@
-import BasePacket = require("./BasePacket");
+import BasePacket = require("../BasePacket");
 
 class TestPacket extends BasePacket{
 	public static packet_id : number = 1;
@@ -8,12 +8,11 @@ class TestPacket extends BasePacket{
 		super();
 
 	}
-	public encode() : Buffer{
+	public encode() : void{
 		super.encode.call(this);
 		
 		this.writeString(this.testdata);
 
-		return this.getSlicedData();
 	}
 	public decode(buf : Buffer) : void{
 		super.decode.call(this,buf);
