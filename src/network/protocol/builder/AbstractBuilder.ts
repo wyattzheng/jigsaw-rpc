@@ -11,7 +11,8 @@ abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 		this.partmax = partmax;
 		this.container = new LimitedMap<number,T>(1000);
 	}
-	public setPart(partid : number, part : T) : void{
+	public addPart(part : T) : void{
+		let partid = this.whichPart(part);
 		assert(partid < this.partmax && partid >= 0, "partid is incorrect");
 
 		this.container.set(partid , part);
@@ -26,6 +27,7 @@ abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 		return product;
 	}
 
+	abstract whichPart(part : T);
 	abstract build( parts : Array<T>) : P;
 }
 

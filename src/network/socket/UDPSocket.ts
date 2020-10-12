@@ -9,7 +9,7 @@ class UDPSocket extends AbstractSocket{
 		super(port);
 
 		this.sock = Dgram.createSocket("udp4");
-		this.sock.bind(80);
+		this.sock.bind(port);
 
 		this.sock.on("message",(data : Buffer)=>{ this.emit("message",data) });
 		this.sock.on("listening",()=>{ this.emit("ready"); });

@@ -7,8 +7,8 @@ class InvokePacketBuilder extends AbstractBuilder<SlicePacket,InvokePacket>{
 		super(partmax);
 
 	}
-	push( packet : SlicePacket){
-		this.setPart(packet.partid,packet);
+	whichPart(packet : SlicePacket){
+		return packet.partid;
 	}
 	build(parts : Array<SlicePacket>){
 		let bufs = new Array<Buffer>();

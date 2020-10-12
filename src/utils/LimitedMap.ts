@@ -35,7 +35,15 @@ class LimitedMap<T,Z> {
 		if(v == undefined)
 			throw new Error(`get value failed of '${key}'`)
 		return v;
-	}	
+	}
+	delete(key : T){
+		let index=this.keys.indexOf(key);
+		if(index == -1)
+			throw new Error("this key doesn't exist");
+
+		this.keys.splice(index,1);
+		this.map.delete(key);
+	}
 	length() : number{
 		return this.keys.length;
 	}

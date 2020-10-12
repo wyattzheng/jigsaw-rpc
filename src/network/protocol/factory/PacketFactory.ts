@@ -1,21 +1,20 @@
 import Packet = require("./Packet");
 import BasePacket = require("./BasePacket");
+import IFactory = require("./IFactory");
 
-type PacketCls ={new():Packet};
+type PacketCls = {new():Packet};
 
-class PacketFactory{
-	protected packets = new Map<number,PacketCls>();
+class PacketFactory implements IFactory<Buffer,Packet>{
 
 	constructor(){
-		this.registerPacket(require("./packet/TestPacket"));
-
+		this.register(require("./packet/TestPacket"));
 	}
-	private registerPacket(cls : PacketCls) : void{
+	private register(cls : PacketCls) : void{
 		let c=new cls();
 		let pkid=(c.constructor as any).packet_id;
 		this.packets.set(pkid,cls);
 	}
-	private getPacketCls(packetid : number) : PacketCls{
+	private getProductCls(packetid : number) : PacketCls{
 		let cls = this.packets.get(packetid);
 		if(cls == undefined)
 			throw new Error(`this packetid ${packetid} not point to a packet`);
@@ -29,7 +28,7 @@ class PacketFactory{
 		return pid;
 
 	}
-	public getPacket(buf : Buffer) : Packet{
+	public getProduct(buf : Buffer) : Packet{
 
 		let pid = this.getPacketId(buf);
 		let Cls : PacketCls = this.getPacketCls(pid);
