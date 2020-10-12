@@ -2,24 +2,21 @@ import AbstractSocket = require("./socket/AbstractSocket");
 import IBuilderManager = require("./protocol/builder/manager/IBuilderManager");
 import IFactory = require("./protocol/factory/IFactory");
 import StateManager = require("./state/StateManager");
-import Packet = require("./Packet");
+import Packet = require("./protocol/Packet");
 import Events = require("tiny-typed-emitter");
 import AbstractNetworkClient = require("./AbstractNetworkClient");
+import SlicePacket = require("./protocol/packet/SlicePacket");
 
-interface ClientEvent{
-	ready: () => void
-	packet: ()=> Packet;
-	close: () => void;	
-};
-
-abstract class SimpleNetworkClient extends AbstractNetworkClient extends Events.TypedEmitter<ClientEvent>{
+class SimpleNetworkClient extends AbstractNetworkClient{
 	protected socket : AbstractSocket;
 	protected state_manager : StateManager;
-	protected builder_manager : BuilderManager;
+	protected builder_manager : IBuilderManager<SlicePacket,Packet>;
+	protected factory : IFactory<Buffer,Packet>;
 
-	constructor(socket : AbstractSocket, builder_manager : IBuilderManager, factory : IFactory<Buffer,Packet>){
+	constructor(socket : AbstractSocket, builder_manager : IBuilderManager<SlicePacket,Packet>, factory : IFactory<Buffer,Packet>){
+		super();
 
-		this.state_manager = new StateManager("ready",["ready","close"]);
+		this.state_manager = new StateManager("close",["ready","close"]);
 		this.builder_manager = builder_manager;
 		this.factory = factory;
 		this.socket = socket;
@@ -31,7 +28,7 @@ abstract class SimpleNetworkClient extends AbstractNetworkClient extends Events.
 	}
 
 	private onStateChanged(event : string){
-		this.emit(event);
+		this.emit(event as 'ready' | 'close' );
 	}
 	private onSocketReady(){
 		this.state_manager.setState("ready");
@@ -41,8 +38,12 @@ abstract class SimpleNetworkClient extends AbstractNetworkClient extends Events.
 	}
 	private onSocketMessage(message : Buffer){
 		let product = this.factory.getProduct(message);
+		product.setBuffer(message);
 		product.decode();
-		this.emit("packet",product);
+		this.handlePacket(product);
+	}
+	protected handlePacket(pk : Packet){
+		this.emit("packet",pk);
 	}
 
 	public sendPacket(packet : Packet,dst_port:number , dst_address:string){

@@ -1,10 +1,10 @@
 import LimitedMap = require("../../../utils/LimitedMap");
 import IBuilder = require("./IBuilder");
 import assert = require("assert");
+import IFactory = require("../factory/IFactory");
 
 abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 	public partmax : number;
-
 	private container : LimitedMap<number,T>;
 
 	constructor(partmax : number){
@@ -27,7 +27,7 @@ abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 		return product;
 	}
 
-	abstract whichPart(part : T);
+	abstract whichPart(part : T) : number;
 	abstract build( parts : Array<T>) : P;
 }
 

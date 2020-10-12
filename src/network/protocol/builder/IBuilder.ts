@@ -1,11 +1,11 @@
 interface IBuilder<T,P>{
-	protected partmax : number;
+	 partmax : number;
 
-	public whichPart(part : T) : number;
-	public addPart( part : T ) : void;
-	public build( parts : Array<T>) : P;
-	public isDone() : boolean;
-	public getData() : P;
+	 whichPart(part : T) : number;
+	 addPart( part : T ) : void;
+	 build( parts : Array<T>) : P;
+	 isDone() : boolean;
+	 getData() : P;
 }
 
 export = IBuilder;

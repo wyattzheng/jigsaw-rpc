@@ -1,4 +1,4 @@
-class Packet{ // Design Mode : Builder Mode
+abstract class Packet{ // Design Mode : Builder Mode
 	public static packet_id : number = 0;
 	
 	private static buffer_size : number = 1400;
@@ -8,10 +8,13 @@ class Packet{ // Design Mode : Builder Mode
 	constructor(){
 
 	}
+	abstract getName() : string;
 	getPacketId() : number{
 		return (this.constructor as any).packet_id;
 	}
 	public getSlicedData() : Buffer{
+		if(this.offset > Packet.buffer_size)
+			throw new Error("this buffer is too large to get")
 		return this.buffer.slice(0,this.offset);
 	}
 	public setBuffer(buf : Buffer){

@@ -1,11 +1,10 @@
 
 
 interface IFactory<Z,T>{
-	protected classes = new Map<number,{ new():T }>();
-
-	protected register(cls : { new():T } ) : void;
-	protected getProductCls(clsid : number) : { new():T };
-	protected getProduct(data : z) : T;
+	
+	register(cls : { new():T } ) : void;
+	getProductCls(clsid : number) : { new():T };
+	getProduct(data : Z) : T;
 	
 }
 

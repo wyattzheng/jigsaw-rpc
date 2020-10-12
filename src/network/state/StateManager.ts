@@ -6,11 +6,12 @@ interface StateEvent{
 };
 
 
-export class StateManager extends events.TypedEmitter<StateEvent>{
+class StateManager extends events.TypedEmitter<StateEvent>{
 	private define_states : Array<string>;
 	private state : string;
 
 	constructor(default_state : string, define_states : Array<string>){
+		super();
 		this.state = default_state;
 		this.define_states = define_states;
 	}

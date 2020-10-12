@@ -4,11 +4,14 @@ import Direction = require("./Direction");
 class BasePacket extends Packet{ // Design Mode : Builder Mode
 	public direction : Direction = Direction.NONE;
 	private packetid : number = 0;
-
+	getName(){
+		return "BasePacket";
+	}
 	constructor(){
 		super();
 
 	}
+	
 	public getPacketId() : number{
 		if(this.packetid > 0)
 			return this.packetid;

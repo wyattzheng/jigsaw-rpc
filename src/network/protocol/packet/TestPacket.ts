@@ -8,14 +8,17 @@ class TestPacket extends BasePacket{
 		super();
 
 	}
+	getName() : string{
+		return "TestPacket";
+	}
 	public encode() : void{
 		super.encode.call(this);
 		
 		this.writeString(this.testdata);
 
 	}
-	public decode(buf : Buffer) : void{
-		super.decode.call(this,buf);
+	public decode() : void{
+		super.decode.call(this);
 
 		this.testdata = this.readString();
 	}
