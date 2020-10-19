@@ -1,18 +1,19 @@
 import AbstractSocket = require("./socket/AbstractSocket");
 import IBuilderManager = require("./protocol/builder/manager/IBuilderManager");
 import IFactory = require("./protocol/factory/IFactory");
-import StateManager = require("./state/StateManager");
+import StateManager = require("./StateManager");
 import Packet = require("./protocol/Packet");
 import Events = require("tiny-typed-emitter");
 import AbstractNetworkClient = require("./AbstractNetworkClient");
 import SlicePacket = require("./protocol/packet/SlicePacket");
+import AddressInfo = require("./domain/AddressInfo");
 
-class SimpleNetworkClient extends AbstractNetworkClient{
+class BaseNetworkClient extends AbstractNetworkClient{
 	protected socket : AbstractSocket;
 	protected state_manager : StateManager;
 	protected builder_manager : IBuilderManager<SlicePacket,Packet>;
 	protected factory : IFactory<Buffer,Packet>;
-
+	protected clientid : string = "";
 	constructor(socket : AbstractSocket, builder_manager : IBuilderManager<SlicePacket,Packet>, factory : IFactory<Buffer,Packet>){
 		super();
 
@@ -25,8 +26,15 @@ class SimpleNetworkClient extends AbstractNetworkClient{
 		this.socket.on("ready",this.onSocketReady.bind(this));
 		this.socket.on("message",this.onSocketMessage.bind(this));
 		this.socket.on("close",this.onSocketClose.bind(this));
-	}
 
+		this.initClientId();
+	}
+	private initClientId() : void{
+		this.clientid = "jg#" + Math.random() + "#";
+	}
+	public getClientId() : string{
+		return this.clientid;
+	}
 	private onStateChanged(event : string){
 		this.emit(event as 'ready' | 'close' );
 	}
@@ -36,8 +44,9 @@ class SimpleNetworkClient extends AbstractNetworkClient{
 	private onSocketClose(){
 		this.state_manager.setState("close");
 	}
-	private onSocketMessage(message : Buffer){
+	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
 		let product = this.factory.getProduct(message);
+		product.reply_info = rinfo;
 		product.setBuffer(message);
 		product.decode();
 		this.handlePacket(product);
@@ -53,4 +62,4 @@ class SimpleNetworkClient extends AbstractNetworkClient{
 	}
 }
 
-export = SimpleNetworkClient;
+export = BaseNetworkClient;

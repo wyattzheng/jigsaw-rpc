@@ -8,6 +8,7 @@ interface NetworkClientEvent{
 
 abstract class AbstractNetworkClient extends Events.TypedEmitter<NetworkClientEvent>{
 
+	public abstract getClientId() : string;
 	public abstract sendPacket(packet : Packet,dst_port:number,dst_address:string) : void;
 }
 

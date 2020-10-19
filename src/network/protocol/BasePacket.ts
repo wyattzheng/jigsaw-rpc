@@ -11,7 +11,7 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		super();
 
 	}
-	
+
 	public getPacketId() : number{
 		if(this.packetid > 0)
 			return this.packetid;

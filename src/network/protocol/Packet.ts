@@ -1,6 +1,10 @@
+import AddressInfo from "../domain/AddressInfo";
+
 abstract class Packet{ // Design Mode : Builder Mode
 	public static packet_id : number = 0;
-	
+	public request_id : string = "";
+	public reply_info : AddressInfo = new AddressInfo("Not a valid target",-1);
+
 	private static buffer_size : number = 1400;
 	protected buffer : Buffer = Buffer.alloc( Packet.buffer_size );
 	protected offset : number = 0;
@@ -9,6 +13,7 @@ abstract class Packet{ // Design Mode : Builder Mode
 
 	}
 	abstract getName() : string;
+
 	getPacketId() : number{
 		return (this.constructor as any).packet_id;
 	}
