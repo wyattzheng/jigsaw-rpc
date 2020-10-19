@@ -3,6 +3,9 @@ class DomainQueryPacket extends BasePacket{
 	public static packet_id : number = 5;
 
     public jgname : string = "";
+    getName(){
+        return "DomainQueryPacket";
+    }
     constructor(){
         super();
 

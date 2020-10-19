@@ -7,6 +7,7 @@ import AbstractRouter = require("./subrouter/AbstractRouter");
 import PacketTypeRouter = require("./subrouter/PacketTypeRouter");
 import RequestIdRouter = require("./subrouter/RequestIdRouter");
 import IRouter = require("./subrouter/IRouter");
+import Events = require("tiny-typed-emitter");
 
 type Handler = (pk:Packet)=>void;
 
@@ -21,7 +22,13 @@ class HandlerRef {
     }
 }
 
-abstract class AbstractRequestRouter implements IRouter{
+interface PacketRouterEvent{
+	ready: () => void;
+	close: () => void;	
+}
+
+
+abstract class AbstractRequestRouter extends Events.TypedEmitter<PacketRouterEvent> implements IRouter{
 
     private client : AbstractNetworkClient;
     private routers : Array<AbstractRouter>;
@@ -30,12 +37,22 @@ abstract class AbstractRequestRouter implements IRouter{
     private refs:number =0;
 
     constructor(client: AbstractNetworkClient){
+        super();
+
         this.client = client;
 
         this.client.on("packet",this.handlePacket.bind(this));
 
         this.routers = [];
         this.map=new Map();
+
+        this.client.on("ready",()=>{
+            this.emit("ready");
+        })
+        this.client.on("close",()=>{
+            this.emit("close");
+        })
+
 
         this.initRouters();
     }

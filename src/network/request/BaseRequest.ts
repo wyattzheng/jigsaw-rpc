@@ -1,21 +1,33 @@
 import AbstractRequest = require("./AbstractRequest")
 import RequestState = require("./RequestState");
 import AbstractNetworkClient = require("../AbstractNetworkClient");
-import RequestSwitch = require("./packetrouter/AbstractPacketRouter");
+import AbstractPacketRouter = require("./packetrouter/AbstractPacketRouter");
 import Packet = require("../protocol/Packet");
 import Defer = require("../../utils/Defer");
 import SwitchRule = require("./packetrouter/subrouter/RouterRule");
+import ErrorPacket = require("../protocol/packet/ErrorPacket");
 
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
     protected result? : T;
-    protected rswitch : RequestSwitch;
+    protected router : AbstractPacketRouter;
     protected resender? : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
 
-    constructor(rswitch: RequestSwitch){
+    constructor(router: AbstractPacketRouter,seq : number){
         super();
-        this.rswitch = rswitch;
+        this.router = router;
+        this.req_seq = seq;
+
+        this.router.plug("ErrorPacket",this.handleErrorPacket.bind(this));
+    }
+    private handleErrorPacket(p : Packet){
+        if(this.state!=RequestState.PENDING){
+            return;
+        }
+
+        let pk = p as ErrorPacket;
+        this.pending_defer?.reject(pk.error)
     }
     private checkRequestKey(){
         if(this.req_seq < 0)
@@ -25,7 +37,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.req_seq = seq;
     }
     getRequestId() : string{
-        return this.rswitch.getClient().getClientId() + ":" + this.req_seq;
+        return this.router.getClient().getClientId() + ":" + this.req_seq;
     }
     protected setResult(result : T){
         if(this.state!=RequestState.PENDING)
@@ -60,7 +72,8 @@ abstract class BaseRequest<T> extends AbstractRequest{
 		if(this.state != RequestState.BUILT)
             throw new Error("this request can not run because of it hasn't been built.");
 
-        let refid = this.rswitch.plug(this.getRequestId(),this.handlePacket.bind(this));
+        
+        let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
 
         this.pending_defer = new Defer();
 
@@ -83,7 +96,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         }finally{
             clearTimeout(timeout);
             this.endResend();
-            this.rswitch.unplug(this.getRequestId(),refid);            
+            this.router.unplug(this.getRequestId(),refid);            
         }
         
     }

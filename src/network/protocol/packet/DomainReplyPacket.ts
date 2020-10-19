@@ -9,6 +9,9 @@ class DomainReplyPacket extends BasePacket{
     constructor(){
         super();
     }
+    getName(){
+        return "DomainReplyPacket";
+    }
     encode(){
         super.encode.call(this);
         this.writeString(this.jgname);

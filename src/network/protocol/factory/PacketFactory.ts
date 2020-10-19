@@ -13,6 +13,8 @@ class PacketFactory implements IFactory<Buffer,Packet>{
 		this.register(require("../packet/InvokePacket"));
 		this.register(require("../packet/DomainQueryPacket"));
 		this.register(require("../packet/DomainReplyPacket"));
+		this.register(require("../packet/DomainUpdatePacket"));
+		this.register(require("../packet/ErrorPacket"));
 		
 	}
 	public register(cls : PacketCls) : void{

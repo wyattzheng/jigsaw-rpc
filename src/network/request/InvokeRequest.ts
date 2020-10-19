@@ -4,7 +4,7 @@ import AbstractRequest = require("./AbstractRequest");
 import Path = require("./Path");
 import RequestState = require("./RequestState");
 import BaseRequest = require("./BaseRequest")
-import SimpleRequestSwitch = require("./router/SimpleRequestSwitch");
+import SimplePacketRouter = require("./packetrouter/SimplePacketRouter");
 import InvokePacket = require("../protocol/packet/InvokePacket");
 class InvokeRequest extends BaseRequest<Buffer> {
     private path : Path;
@@ -12,8 +12,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
     private src_jgname : string;
 
 
-    constructor(src_jgname: string,path : Path,data : Buffer,rswitch : SimpleRequestSwitch){
-        super(rswitch);
+    constructor(src_jgname: string,path : Path,data : Buffer,router : SimplePacketRouter,seq:number){
+        super(router,seq);
 
         this.path = path;
         this.data = data;
@@ -30,7 +30,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
         pk.dst_path=this.path;
         pk.src_jgname = this.src_jgname;
 
-        let rswitch = this.rswitch as SimpleRequestSwitch;
+        let rswitch = this.router as SimplePacketRouter;
         rswitch.sendPacket(this.path.jgname,pk);
     }
     protected handlePacket(p : Packet){

@@ -1,8 +1,6 @@
 import Packet = require("./Packet");
-import Direction = require("./Direction");
 
 class BasePacket extends Packet{ // Design Mode : Builder Mode
-	public direction : Direction = Direction.NONE;
 	private packetid : number = 0;
 	getName(){
 		return "BasePacket";
@@ -22,16 +20,16 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		super.encode.call(this);
 		
 		this.writeUInt16(this.getPacketId());
-		this.writeUInt16(this.direction);
+		this.writeString(this.request_id);
 		
 	}
 	public decode() : void{
 		super.decode.call(this);
 
 		let packet_id : number = this.readUInt16();
-		this.direction = this.readUInt16();
-
+		
 		this.packetid = packet_id;
+		this.request_id=this.readString();
 	}
 
 	protected writeUInt16(digit : number) : void{

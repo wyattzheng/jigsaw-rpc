@@ -18,14 +18,14 @@ abstract class AbstractRouter implements IRouter{
     public abstract getRule():RouterRule;
 
     public abstract handlePacket(pk : Packet) : void;
-    public hasHandlers(reqid : string){
-        return this.handlers.has(reqid);
+    public hasHandlers(sign : string){
+        return this.handlers.has(sign);
     }
-    public getHandlers(reqid :string) : Map<number,HandlerRef>{
-        if(!this.hasHandlers(reqid))
+    public getHandlers(sign :string) : Map<number,HandlerRef>{
+        if(!this.hasHandlers(sign))
             throw new Error('can not get this handlers');
         
-        let handlers = this.handlers.get(reqid);
+        let handlers = this.handlers.get(sign);
         assert(handlers,"handlers must be an array");
         
         return handlers;

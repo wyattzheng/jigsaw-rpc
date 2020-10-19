@@ -13,7 +13,14 @@ class RequestIdRouter extends AbstractRouter{
     }
 
     handlePacket(pk:Packet){
-        let handlers = this.getHandlers(pk.request_id);
+        let handlers = new Map<number,HandlerRef>();
+        
+        try{
+            handlers = this.getHandlers(pk.request_id);
+        }catch(err){
+
+        }
+
         let keys = Array.from(handlers.keys());
 
         for(let key of keys){

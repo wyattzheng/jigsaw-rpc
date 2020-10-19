@@ -1,4 +1,4 @@
-import AbstractRequestSwitch = require("../switch/AbstractRequestSwitch");
+import AbstractRequestSwitch = require("../packetrouter/AbstractPacketRouter");
 
 abstract class AbstractRequestHandler{
     private rswitch : AbstractRequestSwitch;

@@ -36,6 +36,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		return this.clientid;
 	}
 	private onStateChanged(event : string){
+		
 		this.emit(event as 'ready' | 'close' );
 	}
 	private onSocketReady(){
@@ -45,6 +46,8 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		this.state_manager.setState("close");
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
+
+		
 		let product = this.factory.getProduct(message);
 		product.reply_info = rinfo;
 		product.setBuffer(message);
@@ -57,6 +60,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 
 	public sendPacket(packet : Packet,dst_port:number , dst_address:string){
 		packet.encode();
+
 		let buffer = packet.getSlicedData();
 		this.socket.send(buffer, dst_port, dst_address);
 	}
