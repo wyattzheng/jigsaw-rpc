@@ -1,10 +1,10 @@
 import AbstractRequest = require("./AbstractRequest")
 import RequestState = require("./RequestState");
 import AbstractNetworkClient = require("../AbstractNetworkClient");
-import RequestSwitch = require("./switch/AbstractRequestSwitch");
+import RequestSwitch = require("./packetrouter/AbstractPacketRouter");
 import Packet = require("../protocol/Packet");
 import Defer = require("../../utils/Defer");
-import SwitchRule = require("./switch/SwitchRule");
+import SwitchRule = require("./packetrouter/subrouter/RouterRule");
 
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
@@ -60,7 +60,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
 		if(this.state != RequestState.BUILT)
             throw new Error("this request can not run because of it hasn't been built.");
 
-        let refid = this.rswitch.plug(this.getRequestId(),SwitchRule.RequestId,this.handlePacket.bind(this));
+        let refid = this.rswitch.plug(this.getRequestId(),this.handlePacket.bind(this));
 
         this.pending_defer = new Defer();
 

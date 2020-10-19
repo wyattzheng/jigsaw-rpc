@@ -1,9 +1,9 @@
-import AbstractRequestSwitch = require("./AbstractRequestSwitch");
+import AbstractPacketRouter = require("./AbstractPacketRouter");
 import IDomainClient = require("../../domain/client/IDomainClient");
 import AbstractNetworkClient = require("../../AbstractNetworkClient");
 import Packet = require("../../protocol/Packet");
 
-class SimpleRequestSwitch extends AbstractRequestSwitch{
+class SimplePacketRouter extends AbstractPacketRouter{
     private domclient : IDomainClient;
     constructor(client : AbstractNetworkClient,domainclient : IDomainClient){
         super(client);
@@ -18,5 +18,4 @@ class SimpleRequestSwitch extends AbstractRequestSwitch{
 
 }
 
-
-export = SimpleRequestSwitch;
+export = SimplePacketRouter;

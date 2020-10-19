@@ -1,8 +1,8 @@
-import AbstractRequestSwitch =  require("./AbstractRequestSwitch");
+import AbstractPacketRouter =  require("./AbstractPacketRouter");
 import AbstractNetworkClient = require("../../AbstractNetworkClient");
 import Packet = require("../../protocol/Packet");
 
-class NetRequestSwitch extends AbstractRequestSwitch{
+class NetPacketRouter extends AbstractPacketRouter{
     private dst_address : string;
     private dst_port : number;
     constructor(client : AbstractNetworkClient,dst_address:string,dst_port:number){
@@ -17,4 +17,4 @@ class NetRequestSwitch extends AbstractRequestSwitch{
     }
 }
 
-export = NetRequestSwitch;
+export = NetPacketRouter;

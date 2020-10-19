@@ -1,6 +1,6 @@
 import DomainQueryPacket = require("../../protocol/packet/DomainQueryPacket");
 import http = require("http");
-import NetRequestSwitch = require("../../request/switch/NetRequestSwitch");
+import NetRequestSwitch = require("../../request/router/NetRequestSwitch");
 import QueryDomainRequest = require("../../request/QueryDomainRequest");
 import AddressInfo = require("../AddressInfo");
 

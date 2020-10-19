@@ -1,10 +1,8 @@
-import AbstractRequestSwitch = require("../../request/switch/AbstractRequestSwitch");
 import BuilderNetworkClient = require("../../BuilderNetworkClient");
 import UDPSocket = require("../../socket/UDPSocket");
 import PacketBuilderManager = require("../../protocol/builder/manager/PacketBuilderManager");
 import PacketFactory = require("../../protocol/factory/PacketFactory");
-import NetRequestSwitch = require("../../request/switch/NetRequestSwitch");
-import SwitchRule = require("../../request/switch/SwitchRule");
+import NetRequestSwitch = require("../../request/packetrouter/NetPacketRouter");
 import Packet = require("../../protocol/Packet");
 import DomainQueryPacket = require("../../protocol/packet/DomainQueryPacket");
 import DomainStorage = require("./DomainStorage");
@@ -32,7 +30,7 @@ class DomainServer{
         
         this.rswitch = new NetRequestSwitch(this.client,"No a valid destination",-1); //readonly
 
-        this.rswitch.plug("DomainQueryPacket",SwitchRule.PacketType,this.handleQueryPacket.bind(this));
+        this.rswitch.plug("DomainQueryPacket",this.handleQueryPacket.bind(this));
     }
     private handleQueryPacket(p : Packet):void{
         let pk = p as DomainQueryPacket;

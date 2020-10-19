@@ -4,7 +4,7 @@ import AbstractRequest = require("./AbstractRequest");
 import Path = require("./Path");
 import RequestState = require("./RequestState");
 import BaseRequest = require("./BaseRequest")
-import SimpleRequestSwitch = require("./switch/SimpleRequestSwitch");
+import SimpleRequestSwitch = require("./router/SimpleRequestSwitch");
 import InvokePacket = require("../protocol/packet/InvokePacket");
 class InvokeRequest extends BaseRequest<Buffer> {
     private path : Path;
