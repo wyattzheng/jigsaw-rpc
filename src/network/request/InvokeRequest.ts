@@ -6,6 +6,7 @@ import RequestState = require("./RequestState");
 import BaseRequest = require("./BaseRequest")
 import SimplePacketRouter = require("./packetrouter/SimplePacketRouter");
 import InvokePacket = require("../protocol/packet/InvokePacket");
+import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
 class InvokeRequest extends BaseRequest<Buffer> {
     private path : Path;
     private data : Buffer;
@@ -21,6 +22,9 @@ class InvokeRequest extends BaseRequest<Buffer> {
         
         this.setState(RequestState.BUILT);
     }
+    public getName(){
+        return "InvokeRequest";
+    }
     protected send(){
         let pk=new InvokePacket();
 
@@ -29,17 +33,20 @@ class InvokeRequest extends BaseRequest<Buffer> {
         pk.data=this.data;
         pk.dst_path=this.path;
         pk.src_jgname = this.src_jgname;
+        
 
-        let rswitch = this.router as SimplePacketRouter;
-        rswitch.sendPacket(this.path.jgname,pk);
+        let router = this.router as SimplePacketRouter;
+        
+        router.sendPacket(this.path.jgname,pk);
     }
     protected handlePacket(p : Packet){
-        if(p.getName() == "InvokeReplyRequest"){
+        if(this.state!=RequestState.PENDING)
+            return;
             
-            
-        }else
-            throw new Error("recved an unknown packet")
-
+        if(p.getName() == "InvokeReplyPacket"){
+            let pk = p as InvokeReplyPacket;
+            this.setResult(pk.data);
+        }
     }
     
 }

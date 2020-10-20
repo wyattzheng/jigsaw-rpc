@@ -1,3 +1,4 @@
+import { Address } from "cluster";
 import events = require("tiny-typed-emitter");
 import AddressInfo = require("../domain/AddressInfo");
 
@@ -12,8 +13,10 @@ abstract class AbstractSocket extends events.TypedEmitter<SocketEvent>{
 		super();
 
 	}
+	public abstract getState() : string;
+	public abstract close() : void;
 	public abstract send(data : Buffer, port : number, address : string) : void;
-
+	public abstract getAddress() : AddressInfo;
 };
 
 

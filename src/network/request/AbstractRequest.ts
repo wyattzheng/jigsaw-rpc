@@ -39,6 +39,7 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 	getState() : RequestState{
         return this.state;
 	}
+	abstract getName() : string;
 	abstract run() : void;
 	abstract getRequestId() : string;
 }

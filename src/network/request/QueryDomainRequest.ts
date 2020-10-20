@@ -25,6 +25,9 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
 
         (this.router as NetPacketRouter).sendPacket(pk,this.dst.port,this.dst.address);
     }
+    getName(){
+        return "QueryDomainRequest";
+    }
     handlePacket(p : Packet){
         if(p.getName() == "DomainReplyPacket"){
             let pk = p as DomainReplyPacket;

@@ -20,16 +20,34 @@ class UDPSocket extends AbstractSocket{
 		this.sock.on("listening",()=>{ 
 			this.state = "ready";
 			this.emit("ready"); 
+
 		});
 		this.sock.on("close",()=>{ 
 			this.state = "close";
 			this.emit("close"); 
 		})
 	}
-	send(data : Buffer, port : number, address : string = "") : void{
+	
+	public getState() : string{
+		return this.state;
+	}
+	public getAddress() : AddressInfo{
+
+		let addr=this.sock.address();
+		return new AddressInfo(addr.address,addr.port);
+
+	}
+	public send(data : Buffer, port : number, address : string = "") : void{
 		assert(this.state == "ready","socket must be ready state");
 
 		this.sock.send(data,port,address);
+	}
+	public close(){
+		try{
+			this.sock.close();
+		}catch(err){
+			
+		}
 	}
 }
 

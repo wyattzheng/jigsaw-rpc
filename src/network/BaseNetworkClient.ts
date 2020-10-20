@@ -29,11 +29,23 @@ class BaseNetworkClient extends AbstractNetworkClient{
 
 		this.initClientId();
 	}
+	public getState(){
+		return this.socket.getState();
+	}
+	public close(){
+		if(this.socket.getState() == "close")
+			return;
+			
+		this.socket.close();
+	}
 	private initClientId() : void{
 		this.clientid = "jg#" + Math.random() + "#";
 	}
 	public getClientId() : string{
 		return this.clientid;
+	}
+	public getSocket() : AbstractSocket{
+		return this.socket;
 	}
 	private onStateChanged(event : string){
 		

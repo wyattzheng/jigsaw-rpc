@@ -15,6 +15,7 @@ abstract class AbstractRouter implements IRouter{
     
     private handlers: Map<string,Map<number,HandlerRef>> = new Map();
 
+
     public abstract getRule():RouterRule;
 
     public abstract handlePacket(pk : Packet) : void;

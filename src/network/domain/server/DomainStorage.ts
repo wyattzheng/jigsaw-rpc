@@ -10,11 +10,11 @@ class DomainStorage implements IDomainStorage{
     setAddress(jgname:string,addr:AddressInfo){
         this.map.set(jgname,addr);
     }
-    getAddress(jgname:string){
+    getAddress(jgname:string) : AddressInfo{
         if(!this.map.has(jgname))
             throw new Error("doesn't have this address");
         
-        return new AddressInfo("127.0.0.1",1234);
+        return this.map.get(jgname) as AddressInfo;
     }
     setOption(jgname:string,option:DomainOption){
 

@@ -37,7 +37,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.req_seq = seq;
     }
     getRequestId() : string{
-        return this.router.getClient().getClientId() + ":" + this.req_seq;
+        return this.router.getClient().getClientId() + ":" +this.getName() + ":" + this.req_seq;
     }
     protected setResult(result : T){
         if(this.state!=RequestState.PENDING)

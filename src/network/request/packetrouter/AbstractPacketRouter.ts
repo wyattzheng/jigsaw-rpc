@@ -28,7 +28,7 @@ interface PacketRouterEvent{
 }
 
 
-abstract class AbstractRequestRouter extends Events.TypedEmitter<PacketRouterEvent> implements IRouter{
+abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEvent> implements IRouter{
 
     private client : AbstractNetworkClient;
     private routers : Array<AbstractRouter>;
@@ -55,6 +55,12 @@ abstract class AbstractRequestRouter extends Events.TypedEmitter<PacketRouterEve
 
 
         this.initRouters();
+    }
+    public getState(){
+        return this.client.getState();
+    }
+    public close(){
+        this.client.close();
     }
     private initRouters(){
         this.routers.push(new PacketTypeRouter());
@@ -112,4 +118,4 @@ abstract class AbstractRequestRouter extends Events.TypedEmitter<PacketRouterEve
 
 }
 
-export = AbstractRequestRouter;
+export = AbstractPacketRouter;
