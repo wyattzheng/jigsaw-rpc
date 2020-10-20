@@ -57,7 +57,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
             let addr = this.getAddress();
             let update_addr = new AddressInfo(this.entry_address,addr.port);
 
-            console.log("update",update_addr);
+            //console.log("update",update_addr);
             try{
                 this.updateAddress(this.client_name,update_addr);
 

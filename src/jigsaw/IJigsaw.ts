@@ -1,4 +1,4 @@
-import Path from "./network/request/Path";
+import Path from "../network/request/Path";
 
 type HandlerRet = Promise<object> | Promise<void>  | object | void;
 interface IJigsaw{

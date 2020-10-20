@@ -1,16 +1,16 @@
-import DomainClient = require("./network/domain/client/DomainClient");
+import DomainClient = require("../network/domain/client/DomainClient");
 import IJigsaw = require("./IJigsaw");
-import PacketFactory = require("./network/protocol/factory/PacketFactory");
-import PacketBuilderManager = require("./network/protocol/builder/manager/PacketBuilderManager");
-import UDPSocket = require("./network/socket/UDPSocket");
-import BuilderNetworkClient = require("./network/BuilderNetworkClient");
-import AbstractPacketRouter = require("./network/request/handler/AbstractRequestHandler");
-import NetPacketRouter = require("./network/request/packetrouter/NetPacketRouter");
-import AddressInfo = require("./network/domain/AddressInfo");
-import InvokeRequest = require("./network/request/InvokeRequest");
-import Path = require("./network/request/Path");
-import SimplePacketRouter = require("./network/request/packetrouter/SimplePacketRouter");
-import InvokeHandler = require("./network/handler/InvokeHandler");
+import PacketFactory = require("../network/protocol/factory/PacketFactory");
+import PacketBuilderManager = require("../network/protocol/builder/manager/PacketBuilderManager");
+import UDPSocket = require("../network/socket/UDPSocket");
+import BuilderNetworkClient = require("../network/BuilderNetworkClient");
+import AbstractPacketRouter = require("../network/request/handler/AbstractRequestHandler");
+import NetPacketRouter = require("../network/request/packetrouter/NetPacketRouter");
+import AddressInfo = require("../network/domain/AddressInfo");
+import InvokeRequest = require("../network/request/InvokeRequest");
+import Path = require("../network/request/Path");
+import SimplePacketRouter = require("../network/request/packetrouter/SimplePacketRouter");
+import InvokeHandler = require("../network/handler/InvokeHandler");
 import { TypedEmitter } from "tiny-typed-emitter";
 
 interface JigsawEvent{
