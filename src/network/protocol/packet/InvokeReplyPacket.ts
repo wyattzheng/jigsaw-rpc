@@ -13,6 +13,11 @@ class InvokeReplyPacket extends BasePacket{
         return "InvokeReplyPacket";
     }
     encode(){
+        if(!this.built)
+            this.buffer = Buffer.allocUnsafe(this.data.length+1400);
+        else
+            return;
+
         super.encode.call(this);
         this.writeString(this.jgname);
         this.writeString(this.path);

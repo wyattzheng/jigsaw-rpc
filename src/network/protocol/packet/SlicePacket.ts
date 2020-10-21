@@ -8,12 +8,18 @@ class SlicePacket extends BasePacket{
 	public partmax : number = 1;
 	constructor(){
 		super();
-
+		this.buffer = Buffer.allocUnsafe(0);
 	}
 	getName(){
 		return "SlicePacket";
 	}	
 	encode(){
+		
+		if(!this.built)
+			this.buffer = Buffer.allocUnsafe(this.payload.length+1400);
+		else
+			return;
+			
 		super.encode.call(this);
 
 		this.writeString(this.buildkey);

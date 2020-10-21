@@ -46,8 +46,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
     private async preloadDomain(){
         try{
             await this.router.preload(this.path.jgname);
-            
             this.setState(RequestState.BUILT);
+
         }catch(err){
             this.setState(RequestState.FAILED);
         }

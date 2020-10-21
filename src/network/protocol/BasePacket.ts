@@ -46,7 +46,20 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 
 		return ret;
 	}
+	protected writeUInt32(digit : number) : void{
 
+		this.buffer.writeUInt32BE(digit,this.offset);
+		this.offset+=2;
+
+	}
+	
+	protected readUInt32() : number{
+
+		let ret : number = this.buffer.readUInt32BE(this.offset);
+		this.offset+=2;
+
+		return ret;
+	}
 	protected writeString(str : string) : void{
 		this.writeBuffer(Buffer.from(str));
 	};
@@ -54,8 +67,7 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		return this.readBuffer().toString();
 	};
 
-	protected writeBuffer(buf : Buffer) : void{
-		
+	protected writeBuffer(buf : Buffer) : void{		
 		this.buffer.writeUInt16BE(buf.length,this.offset);
 		this.offset+=2;
 
@@ -89,7 +101,8 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		this.offset+=buf.length;
 
 		return buf;
-	};		
+	};	
+		
 }
 
 export = BasePacket;

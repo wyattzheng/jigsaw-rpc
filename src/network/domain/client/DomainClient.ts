@@ -111,6 +111,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
                 let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
                 return await req.run();    
             }catch(err){
+                //console.log(err);
 
             }
             let time=new Date().getTime();

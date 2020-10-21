@@ -9,7 +9,7 @@ import ErrorPacket = require("../protocol/packet/ErrorPacket");
 
 
 class DomainHandler extends AbstractHandler{
-    private storage : DomainStorage;
+    public storage : DomainStorage;
     public router : NetPacketRouter;
 
     constructor(router:NetPacketRouter){
@@ -31,12 +31,10 @@ class DomainHandler extends AbstractHandler{
             r_pk.port = addr.port;
             r_pk.request_id=pk.request_id;
             
-
             this.router.sendPacket(r_pk,pk.reply_info.port,pk.reply_info.address);    
 
         }else if(p.getName() == "DomainUpdatePacket"){
             let pk = p as DomainUpdatePacket;
-            
             this.storage.setAddress(pk.jgname,pk.addrinfo);
         
 

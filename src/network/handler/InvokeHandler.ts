@@ -17,7 +17,6 @@ import AddressInfo = require("../domain/AddressInfo");
 import PacketBuilder = require("../protocol/builder/PacketBuilder");
 import PacketSlicer = require("../request/PacketSlicer");
 import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
-import Defer = require("../../utils/Defer");
 import LimitedMap = require("../../utils/LimitedMap");
 const debug = require("debug")("InvokeHandler");
 
@@ -26,14 +25,23 @@ type Handler = (path:Path,buf:Buffer)=>Promise<Buffer>;
 
 class InvokingError extends Error{}
 
+class Invoker{
+    public slicer? : PacketSlicer;
+    public state : string = "ready"; // ready,invoking,invoked
+    public invoke_result? : Packet;
+    constructor(){
+    }
+    setResult(result : Packet){
+        this.invoke_result = result;
+    }
+
+}
+
 class InvokeHandler extends AbstractHandler{
     public router : NetPacketRouter;
     public handler : Handler;
 
-    private invoke_result? : Packet;
-    private invoked : boolean = false;
-    private invoking : boolean = false;
-    private slicers = new LimitedMap<string,PacketSlicer>(1000);
+    private invokers = new LimitedMap<string,Invoker>(1000);
 
     constructor(router:NetPacketRouter,handler:Handler){
         super(router);
@@ -43,32 +51,34 @@ class InvokeHandler extends AbstractHandler{
         this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
     }
+    getInvoker(name : string) : Invoker{
+        if(!this.invokers.has(name))
+            throw new Error("this invoker can not find");
+        let invoker = this.invokers.get(name) as Invoker;
+        return invoker;
+    }
+    hasInvoker(name : string){
+        return this.invokers.has(name);
+    }
     protected async getResponsePacket(p:Packet):Promise<Packet>{
-        if(p.getName() == "InvokePacket"){
-            if(this.invoking){
-                throw new InvokingError("request is invoking target...");
-            }
-            this.invoking = true;
+        let pk = p as InvokePacket;
 
-            let pk = p as InvokePacket;
+        let r_pk = new InvokeReplyPacket();
 
-            let r_pk = new InvokeReplyPacket();
+        let ret_data = await this.handler(pk.dst_path,pk.data);
 
-            let ret_data = await this.handler(pk.dst_path,pk.data);
-
-            r_pk.request_id = pk.request_id;
-            r_pk.data = ret_data;
+        r_pk.request_id = pk.request_id;
+        r_pk.data = ret_data;
 
 
-            return r_pk;
-        }else
-            throw new Error("not a correct packet");
+        return r_pk;
     }
 
-    private sendInvokeResult(slicer: PacketSlicer,target : AddressInfo){
-        if(!this.invoked)
+    private sendInvokeResult(invoker : Invoker,target : AddressInfo){
+        if(invoker.state!="invoked")
             throw new Error("doesn't have invoked result right now");
 
+        let slicer = invoker.slicer as PacketSlicer;
         let sliceids = slicer.getPartSlices();
 
         for(let id of sliceids){
@@ -76,34 +86,48 @@ class InvokeHandler extends AbstractHandler{
         }
 
     }
+    
     protected async handlePacket(p:Packet){
-        
-        if(this.invoked){
-            if(this.slicers.has(p.request_id))
-               this.sendInvokeResult(this.slicers.get(p.request_id) as PacketSlicer, p.reply_info);
+
+        if(this.hasInvoker(p.request_id)){
+            let invoker = this.getInvoker(p.request_id);
+            //console.log(invoker.state)
+            
+            if(invoker.state != "invoking")
+                this.sendInvokeResult(invoker, p.reply_info);
+
             return;
         }
-            
+        
+        let invoker = new Invoker();
+        invoker.state = "invoking";
+        this.invokers.set(p.request_id,invoker);
+
+        let invoke_result;
         try{
-            this.invoke_result = await this.getResponsePacket(p);
-
+            invoke_result = await this.getResponsePacket(p);
+    
         }catch(err){
-            if(err instanceof InvokingError)
-                return;
+            let err_pk = new ErrorPacket();
+            err_pk.request_id = p.request_id;
+            err_pk.error = err;
 
-            let pk=new ErrorPacket();
-            pk.error = err;
-            pk.request_id = p.request_id;
-
-            this.invoke_result = pk;
-            
+            invoke_result = err_pk;
         }
-        this.invoked = true;
+        
+        /*
+
+        this.router.sendPacket(invoke_result,p.reply_info.port,p.reply_info.address)
+        return;
+        
+        */
+
+        invoker.setResult(invoke_result);    
         
         let build_req = Math.random() + "-build";
-        let packet_slicer = new PacketSlicer(this.invoke_result as Packet,build_req);
+        let packet_slicer = new PacketSlicer(invoke_result as Packet,build_req);
 
-        this.slicers.set(p.request_id,packet_slicer);
+        invoker.slicer = packet_slicer;
 
         let refid=this.router.plug(build_req,(p:Packet)=>{
             let ack = p as SliceAckPacket;
@@ -117,8 +141,10 @@ class InvokeHandler extends AbstractHandler{
         
 
         debug("invoked, start to reply","requestid:",p.request_id,"build_req",build_req);
+        
+        invoker.state = "invoked";
 
-        this.sendInvokeResult(packet_slicer,p.reply_info);
+        this.sendInvokeResult(invoker,p.reply_info);
     }
 
 }

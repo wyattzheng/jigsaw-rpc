@@ -13,14 +13,27 @@ abstract class BaseRequest<T> extends AbstractRequest{
     protected result? : T;
     protected router : AbstractPacketRouter;
     protected resender? : NodeJS.Timeout;
+    protected timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
-
+    
     constructor(router: AbstractPacketRouter,seq : number){
         super();
         this.router = router;
         this.req_seq = seq;
+        this.timeout=setTimeout(()=>{
+            if(this.state == RequestState.BUILDING || this.state == RequestState.BUILT)
+                this.setState(RequestState.FAILED);
+            else
+               this.pending_defer?.reject(new Error("request timeout"));
+            
+           },10*1000);
 
-        this.router.plug("ErrorPacket",this.handleErrorPacket.bind(this));
+
+        this.once("done",(err)=>{
+            clearTimeout(this.timeout);
+
+        })
+
     }
     private handleErrorPacket(p : Packet){
         if(this.state!=RequestState.PENDING){
@@ -67,6 +80,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         clearInterval(this.resender as NodeJS.Timeout);
     }
     private dosend(){
+        
         try{
             this.send();
         }catch(err){
@@ -81,16 +95,16 @@ abstract class BaseRequest<T> extends AbstractRequest{
             throw new Error("this request can not run because of it hasn't been built.");
 
         
-        let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
-    
-        debug("plug",refid);
         this.pending_defer = new Defer();
 
         this.setState(RequestState.PENDING);
 
-        let timeout=setTimeout(()=>{
-            this.pending_defer?.reject(new Error("request timeout"));
-        },10*1000);
+        let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
+        let error_refid = this.router.plug("ErrorPacket",this.handleErrorPacket.bind(this));
+    
+        debug("plug",refid);
+
+
 
         this.dosend()
         this.startResend();
@@ -104,9 +118,9 @@ abstract class BaseRequest<T> extends AbstractRequest{
             console.error(err);
             throw err;
         }finally{
-            clearTimeout(timeout);
             this.endResend();
             this.router.unplug(this.getRequestId(),refid);
+            this.router.unplug("ErrorPacket",error_refid);
             debug("unplug",refid);
         }
         

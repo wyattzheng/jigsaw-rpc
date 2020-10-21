@@ -12,19 +12,14 @@ class PacketTypeRouter extends AbstractRouter{
         return RouterRule.PacketType;
     }
     handlePacket(pk:Packet){
-        let handlers:Map<number,HandlerRef> = new Map();
-        try{
-            handlers=this.getHandlers(pk.getName());
-        }catch(err){
 
-        }
+        if(!this.hasHandlers(pk.getName()))
+            return;
+
+        let handlers=this.getHandlers(pk.getName());
         
-        let keys = Array.from(handlers.keys());
-
-        for(let key of keys){
-            let handlerRef = handlers.get(key) as HandlerRef;
-            handlerRef.handler(pk);
-        }
+        for(let i in handlers)
+            handlers[i].data(pk)        
 
     }
 

@@ -1,11 +1,10 @@
 import IBuilderManager = require("./IBuilderManager");
 import IBuilder = require("../IBuilder");
 import LimitedMap = require("../../../../utils/LimitedMap")
-import PacketBuilder = require("../PacketBuilder");
-import IFactory = require("../../factory/IFactory");
+
 
 abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
-	public builders = new LimitedMap<string,IBuilder<T,P>>(1000);
+	public builders = new LimitedMap<string,IBuilder<T,P>>(100);
 	
 	abstract getNewBuilder(maxslices : number) : IBuilder<T,P>;
 
@@ -40,7 +39,9 @@ abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
 	}
 	public getBuilt(key : string) : P{
 		let builder = this.getBuilder(key);
-		return builder.getData();
+		let data = builder.getData();
+		this.deleteBuilder(key);
+		return data;
 	}
 
 }

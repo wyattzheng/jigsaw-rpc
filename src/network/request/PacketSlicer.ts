@@ -15,7 +15,6 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     private packets_send_limit : number = 5;
     private timeout : NodeJS.Timeout;
     private alldone = false;
-    private alldone_handler : ()=>void = ()=>{};
     private failed = false;
     private req_id : string;
     constructor(pk : Packet,req_id: string){

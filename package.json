@@ -23,7 +23,8 @@
   "homepage": "https://github.com/ZhyMC/jigsaw.ts#readme",
   "devDependencies": {
     "@types/node": "^14.11.8",
-    "cz-conventional-changelog": "^3.3.0"
+    "cz-conventional-changelog": "^3.3.0",
+    "easy-monitor": "^2.2.8"
   },
   "config": {
     "commitizen": {

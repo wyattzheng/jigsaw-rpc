@@ -1,5 +1,3 @@
-import LimitedMap = require("../../../../utils/LimitedMap");
-import IBuilder = require("../IBuilder");
 
 interface IBuilderManager<T,P>{
 

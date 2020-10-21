@@ -9,24 +9,10 @@ import RequestIdRouter = require("./subrouter/RequestIdRouter");
 import IRouter = require("./subrouter/IRouter");
 import Events = require("tiny-typed-emitter");
 import AbstractHandler = require("@/network/handler/AbstractHandler");
+import HandlerMap = require("../../../utils/HandlerMap");
 
 type Handler = (pk:Packet)=>void;
 
-class HandlerRef {
-    public refid: number;
-    public refs : Map<AbstractRouter,number> = new Map();
-    constructor(refid:number){
-        this.refid = refid;
-    }
-    setRef(router:AbstractRouter,refid:number){
-        this.refs.set(router,refid);
-    }
-    getRef(router:AbstractRouter) : number{
-        if(!this.refs.has(router))
-            throw new Error("can not get this ref")
-        return this.refs.get(router) as number;
-    }
-}
 
 interface PacketRouterEvent{
 	ready: () => void;
@@ -38,9 +24,7 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
 
     private client : AbstractNetworkClient;
     private routers : Array<AbstractRouter>;
-    private map : Map<string,Array<HandlerRef>> = new Map(); 
-    private refid:number = 0;
-    private refs:number =0;
+    private handler_map = new HandlerMap<Array<number>>();
 
     constructor(client: AbstractNetworkClient){
         super();
@@ -50,7 +34,6 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
         this.client.on("packet",this.handlePacket.bind(this));
 
         this.routers = [];
-        this.map=new Map();
 
         this.client.on("ready",()=>{
             this.emit("ready");
@@ -85,43 +68,21 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
     }
 
     plug( sign:string, handler:Handler) : number{
-
-        let refid = this.refid++;
-        let refs : Array<number>= [];
-
-        if(!this.map.has(sign))
-            this.map.set(sign,[]);
-
-        let handlers = this.map.get(sign) as Array<HandlerRef>;
-        let handler_ref = new HandlerRef(refid);
-        
-        
-        for(let router of this.routers)
-           handler_ref.setRef(router,router.plug(sign,handler));
-        
-        handlers.push(handler_ref);
-        
-        return refid;
-    }
-    unplug(sign:string,refid:number):void{
-        if(!this.map.has(sign))
-            throw new Error("this sign hasn't been unplugged");
-
-        let handlers = this.map.get(sign) as Array<HandlerRef>;
-
-        let handler_ref = handlers.find((x)=>(x.refid==refid));
-
-        if(!handler_ref)
-            throw new Error("can't find this handler ref");
-                
-        
+        let refids=[]
         for(let router of this.routers){
-            let rid=handler_ref.getRef(router);
-
-
-            router.unplug(sign,rid);
+            let sid=router.plug(sign,handler);         
+            refids.push(sid);  
         }
 
+        return this.handler_map.plug(sign,refids);
+    }
+    unplug(sign:string,refid:number):void{
+        let refids=this.handler_map.getMapData(sign,refid);
+        for(let index in refids){
+            this.routers[index].unplug(sign,refids[index]);
+        }
+        this.handler_map.unplug(sign,refid);
+        
     }
 
 }

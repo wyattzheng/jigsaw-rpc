@@ -37,4 +37,4 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
     }
 }
 
-export = QueryDomainRequest;
+export = QueryDomainRequest
