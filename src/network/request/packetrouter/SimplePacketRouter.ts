@@ -10,8 +10,12 @@ class SimplePacketRouter extends AbstractPacketRouter{
 
         this.domclient = domainclient;
     }
+    public preload(jgname:string){
+        return this.domclient.resolve(jgname);
+    }
+
     async sendPacket(jgname:string,p : Packet){
-        let address = await this.domclient.resolve(jgname);
+        let address = await this.domclient.resolve(jgname,true);
         let client=this.getClient();
         client.sendPacket(p,address.port,address.address);
 

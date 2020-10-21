@@ -8,6 +8,7 @@ import PacketTypeRouter = require("./subrouter/PacketTypeRouter");
 import RequestIdRouter = require("./subrouter/RequestIdRouter");
 import IRouter = require("./subrouter/IRouter");
 import Events = require("tiny-typed-emitter");
+import AbstractHandler = require("@/network/handler/AbstractHandler");
 
 type Handler = (pk:Packet)=>void;
 
@@ -17,8 +18,13 @@ class HandlerRef {
     constructor(refid:number){
         this.refid = refid;
     }
-    addRef(router:AbstractRouter,refid:number){
+    setRef(router:AbstractRouter,refid:number){
         this.refs.set(router,refid);
+    }
+    getRef(router:AbstractRouter) : number{
+        if(!this.refs.has(router))
+            throw new Error("can not get this ref")
+        return this.refs.get(router) as number;
     }
 }
 
@@ -91,7 +97,7 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
         
         
         for(let router of this.routers)
-           handler_ref.addRef(router,router.plug(sign,handler));
+           handler_ref.setRef(router,router.plug(sign,handler));
         
         handlers.push(handler_ref);
         
@@ -107,10 +113,12 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
 
         if(!handler_ref)
             throw new Error("can't find this handler ref");
-        
+                
         
         for(let router of this.routers){
-            let rid=handler_ref.refs.get(router) as number;
+            let rid=handler_ref.getRef(router);
+
+
             router.unplug(sign,rid);
         }
 

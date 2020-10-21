@@ -20,14 +20,14 @@ class InvokePacket extends BasePacket{
 		this.writeString(this.request_id);
 		this.writeString(this.dst_path.toString());
 		this.writeString(this.src_jgname);
-		this.writeBuffer(this.data);
+		this.writeLargeBuffer(this.data);
 	}
 	decode(){
 		super.decode.call(this);
 		this.request_id = this.readString();
 		this.dst_path = Path.fromString(this.readString());
 		this.src_jgname = this.readString();
-		this.data = this.readBuffer();
+		this.data = this.readLargeBuffer();
 	}
 }
 

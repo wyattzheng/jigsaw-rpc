@@ -5,8 +5,8 @@ abstract class Packet{ // Design Mode : Builder Mode
 	public request_id : string = "";
 	public reply_info : AddressInfo = new AddressInfo("Not a valid target",-1);
 
-	private static buffer_size : number = 1400;
-	protected buffer : Buffer = Buffer.alloc( Packet.buffer_size );
+	private static buffer_size : number = 1024*1024;
+	protected buffer : Buffer = Buffer.allocUnsafe( 1024*1024*10 );
 	protected offset : number = 0;
 
 	constructor(){
@@ -17,10 +17,11 @@ abstract class Packet{ // Design Mode : Builder Mode
 	getPacketId() : number{
 		return (this.constructor as any).packet_id;
 	}
-	public getSlicedData() : Buffer{
-		if(this.offset > Packet.buffer_size)
-			throw new Error("this buffer is too large to get")
-		return this.buffer.slice(0,this.offset);
+	public getSlicedData(check : boolean = true) : Buffer{
+//		if(this.offset > Packet.buffer_size && check)
+//			throw new Error("this buffer is too large to get")
+		this.buffer = this.buffer.slice(0,this.offset);
+		return this.buffer;
 	}
 	public setBuffer(buf : Buffer){
 		this.buffer = buf;

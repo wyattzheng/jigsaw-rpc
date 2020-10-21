@@ -41,10 +41,13 @@ abstract class AbstractRouter implements IRouter{
 
         handlers.set(refid,new HandlerRef(sign,handler));
 
-        return this.refid;
+        return refid;
     }
     public unplug(sign:string,refid:number){
         let handlers = this.getHandlers(sign);
+        if(!handlers.has(refid))
+            console.error("unplug failed, this handler doesn't exists",refid,handlers);
+
         handlers.delete(refid);
     }
 

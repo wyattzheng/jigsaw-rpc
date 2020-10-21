@@ -19,7 +19,7 @@ class SlicePacket extends BasePacket{
 		this.writeString(this.buildkey);
 		this.writeUInt16(this.partid);
 		this.writeUInt16(this.partmax);
-		this.writeBuffer(this.payload);
+		this.writeLargeBuffer(this.payload);
 	}
 	decode(){
 		super.decode.call(this);
@@ -27,7 +27,7 @@ class SlicePacket extends BasePacket{
 		this.buildkey = this.readString();
 		this.partid = this.readUInt16();
 		this.partmax = this.readUInt16();
-		this.payload = this.readBuffer();
+		this.payload = this.readLargeBuffer();
 	}
 }
 

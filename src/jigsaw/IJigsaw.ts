@@ -6,6 +6,7 @@ interface IJigsaw{
 
     send(path_str:string,data:object) : Promise<object>;
     port(port_name:string,handler:(data : object) => HandlerRet) : void;
+    unport(port_name:string) : void;
     handle(handler:(port_name:string,data:object)=> HandlerRet) : void;
     close() : void;
 }

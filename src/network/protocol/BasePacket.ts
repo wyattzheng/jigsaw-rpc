@@ -72,6 +72,24 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 
 		return buf;
 	};	
+	protected writeLargeBuffer(buf : Buffer) : void{
+		this.buffer.writeUInt32BE(buf.length,this.offset);
+		this.offset+=4;
+
+		buf.copy(this.buffer,this.offset);
+		this.offset+=buf.length;
+
+	}
+	protected readLargeBuffer() : Buffer{
+
+		let len=this.buffer.readUInt32BE(this.offset);
+		this.offset+=4;
+
+		let buf=this.buffer.slice(this.offset,this.offset+len);
+		this.offset+=buf.length;
+
+		return buf;
+	};		
 }
 
 export = BasePacket;

@@ -16,13 +16,13 @@ class InvokeReplyPacket extends BasePacket{
         super.encode.call(this);
         this.writeString(this.jgname);
         this.writeString(this.path);
-        this.writeBuffer(this.data);
+        this.writeLargeBuffer(this.data);
     }
     decode(){
         super.decode.call(this);
         this.jgname = this.readString();
         this.path = this.readString();
-        this.data = this.readBuffer();
+        this.data = this.readLargeBuffer();
     }
 }
 

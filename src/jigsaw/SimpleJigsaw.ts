@@ -19,8 +19,8 @@ interface JigsawEvent{
 }
 
 type HandlerRet = Promise<object> | Promise<void>  | object | void;
-
 type Handler = (data : object) => HandlerRet;
+type FinalHandler = (port_name:string,data:object)=> object | void;
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private state = "close";
@@ -35,6 +35,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private request_seq : number = 0;
     private port_handlers : Map<string,Handler> = new Map();
     private invoke_handler : InvokeHandler;
+    private final_handler : FinalHandler = ()=>{};
     private module_ref = new Set<string>();
 
     constructor(jgname:string,entry:AddressInfo,domserver:AddressInfo){
@@ -49,7 +50,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let builder_manager = new PacketBuilderManager(factory);
         let socket = new UDPSocket(this.entry.port,"0.0.0.0");
         
-        let client=new BuilderNetworkClient(socket,builder_manager,factory);
+        let client=new BuilderNetworkClient(socket,factory,builder_manager);
         this.netrouter = new NetPacketRouter(client);
 
         this.domclient = new DomainClient(this.jgname,this.entry.address,this.domserver,this.netrouter);
@@ -97,12 +98,18 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     }
     private async handleInvoke(path:Path,data : Buffer) : Promise<Buffer>{
-        if(!this.port_handlers.has(path.method))
-            throw new Error("this port hasn't been implemented");
-        let port_handler = this.port_handlers.get(path.method) as Handler;
         let req_data = JSON.parse(data.toString());
-        let ret_data = await port_handler(req_data);
         
+
+        let port_handler = this.port_handlers.get(path.method) as Handler;
+        
+        let ret_data;
+        if(!this.port_handlers.has(path.method)){
+            ret_data = await this.final_handler(path.method,req_data);
+        }else{
+            ret_data = await port_handler(req_data);
+        }
+
         if(!ret_data)
             ret_data = {};
         
@@ -125,14 +132,27 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         let buffer = Buffer.from(JSON.stringify(data));
         let request = new InvokeRequest(this.jgname,path,buffer,this.router,req_seq);
+
+        await request.whenBuild();
         
         let ret_buf = await request.run();
         return JSON.parse(ret_buf.toString());
+
     }
     port(port_name:string,handler:Handler) : void{
+        if(this.port_handlers.has(port_name))
+            throw new Error("this port has already binded");
+
         this.port_handlers.set(port_name,handler);
     }
-    handle(handler:(port_name:string,data:object)=> object | undefined) : void{
+    unport(port_name:string){
+        if(!this.port_handlers.has(port_name))
+            throw new Error("this port hasn't been binded");
+
+        this.port_handlers.delete(port_name);
+    }
+    handle(finalhandler:FinalHandler) : void{
+        this.final_handler = finalhandler;
 
     }
 

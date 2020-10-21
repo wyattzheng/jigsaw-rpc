@@ -6,6 +6,7 @@ import Packet = require("../protocol/Packet");
 import Defer = require("../../utils/Defer");
 import SwitchRule = require("./packetrouter/subrouter/RouterRule");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
+const debug = require("debug")("BaseRequest");
 
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
@@ -56,7 +57,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
             throw new Error("at this state,can not startResend")
         
         this.resender = setInterval(()=>{
-            this.send();
+            this.dosend()
         },50);
     }
     private endResend(){
@@ -64,6 +65,13 @@ abstract class BaseRequest<T> extends AbstractRequest{
             throw new Error("at this state,can not endResend");
 
         clearInterval(this.resender as NodeJS.Timeout);
+    }
+    private dosend(){
+        try{
+            this.send();
+        }catch(err){
+            this.pending_defer?.reject(err);
+        }
     }
 	async run(){
 
@@ -74,7 +82,8 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
         
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
-
+    
+        debug("plug",refid);
         this.pending_defer = new Defer();
 
         this.setState(RequestState.PENDING);
@@ -83,7 +92,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
             this.pending_defer?.reject(new Error("request timeout"));
         },10*1000);
 
-        this.send();
+        this.dosend()
         this.startResend();
 
         try{
@@ -92,11 +101,13 @@ abstract class BaseRequest<T> extends AbstractRequest{
             return this.getResult();
         }catch(err){
             this.setState(RequestState.FAILED);
+            console.error(err);
             throw err;
         }finally{
             clearTimeout(timeout);
             this.endResend();
-            this.router.unplug(this.getRequestId(),refid);            
+            this.router.unplug(this.getRequestId(),refid);
+            debug("unplug",refid);
         }
         
     }

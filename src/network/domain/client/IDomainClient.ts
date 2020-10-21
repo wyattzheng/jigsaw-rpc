@@ -1,7 +1,7 @@
 import AddressInfo = require("../AddressInfo");
 
 interface IDomainClient{
-    resolve(jgname:string) : Promise<AddressInfo>;    
+    resolve(jgname:string,onlycache?:boolean) : Promise<AddressInfo>;    
     updateAddress(jgname:string,addr:AddressInfo) : void;
     close() : void;
 }

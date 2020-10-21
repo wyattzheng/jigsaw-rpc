@@ -11,14 +11,12 @@ import AddressInfo = require("./domain/AddressInfo");
 class BaseNetworkClient extends AbstractNetworkClient{
 	protected socket : AbstractSocket;
 	protected state_manager : StateManager;
-	protected builder_manager : IBuilderManager<SlicePacket,Packet>;
 	protected factory : IFactory<Buffer,Packet>;
 	protected clientid : string = "";
-	constructor(socket : AbstractSocket, builder_manager : IBuilderManager<SlicePacket,Packet>, factory : IFactory<Buffer,Packet>){
+	constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>){
 		super();
 
 		this.state_manager = new StateManager("close",["ready","close"]);
-		this.builder_manager = builder_manager;
 		this.factory = factory;
 		this.socket = socket;
 
@@ -58,8 +56,6 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		this.state_manager.setState("close");
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
-
-		
 		let product = this.factory.getProduct(message);
 		product.reply_info = rinfo;
 		product.setBuffer(message);

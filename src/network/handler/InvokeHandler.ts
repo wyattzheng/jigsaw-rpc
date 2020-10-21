@@ -12,6 +12,15 @@ import InvokePacket = require("../protocol/packet/InvokePacket");
 import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
 import Path = require("../request/Path");
 import InvokeRequest = require("../request/InvokeRequest");
+import SlicePacket = require("../protocol/packet/SlicePacket");
+import AddressInfo = require("../domain/AddressInfo");
+import PacketBuilder = require("../protocol/builder/PacketBuilder");
+import PacketSlicer = require("../request/PacketSlicer");
+import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
+import Defer = require("../../utils/Defer");
+import LimitedMap = require("../../utils/LimitedMap");
+const debug = require("debug")("InvokeHandler");
+
 
 type Handler = (path:Path,buf:Buffer)=>Promise<Buffer>;
 
@@ -23,8 +32,8 @@ class InvokeHandler extends AbstractHandler{
 
     private invoke_result? : Packet;
     private invoked : boolean = false;
-
     private invoking : boolean = false;
+    private slicers = new LimitedMap<string,PacketSlicer>(1000);
 
     constructor(router:NetPacketRouter,handler:Handler){
         super(router);
@@ -55,12 +64,25 @@ class InvokeHandler extends AbstractHandler{
         }else
             throw new Error("not a correct packet");
     }
+
+    private sendInvokeResult(slicer: PacketSlicer,target : AddressInfo){
+        if(!this.invoked)
+            throw new Error("doesn't have invoked result right now");
+
+        let sliceids = slicer.getPartSlices();
+
+        for(let id of sliceids){
+            this.router.sendPacket(slicer.getSlicePacket(id),target.port,target.address);
+        }
+
+    }
     protected async handlePacket(p:Packet){
-        if(this.invoked){            
-            this.router.sendPacket(this.invoke_result as Packet,p.reply_info.port,p.reply_info.address);
+        
+        if(this.invoked){
+            if(this.slicers.has(p.request_id))
+               this.sendInvokeResult(this.slicers.get(p.request_id) as PacketSlicer, p.reply_info);
             return;
         }
-        
             
         try{
             this.invoke_result = await this.getResponsePacket(p);
@@ -77,9 +99,26 @@ class InvokeHandler extends AbstractHandler{
             
         }
         this.invoked = true;
-        this.router.sendPacket(this.invoke_result as Packet,p.reply_info.port,p.reply_info.address);
-            
+        
+        let build_req = Math.random() + "-build";
+        let packet_slicer = new PacketSlicer(this.invoke_result as Packet,build_req);
 
+        this.slicers.set(p.request_id,packet_slicer);
+
+        let refid=this.router.plug(build_req,(p:Packet)=>{
+            let ack = p as SliceAckPacket;
+            packet_slicer.ackSlicePacket(ack.partid);
+        });
+
+        packet_slicer.once("alldone",()=>{
+            this.router.unplug(build_req,refid);
+            debug("alldone","requestid:",p.request_id,"build_req",build_req);
+        });
+        
+
+        debug("invoked, start to reply","requestid:",p.request_id,"build_req",build_req);
+
+        this.sendInvokeResult(packet_slicer,p.reply_info);
     }
 
 }

@@ -11,13 +11,19 @@ class UDPSocket extends AbstractSocket{
 		super(port,address);
 
 		this.sock = Dgram.createSocket("udp4");
+		
 		this.sock.bind(port,address);
+	
+		
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			
 			this.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
 		});
 		this.sock.on("listening",()=>{ 
+			this.sock.setRecvBufferSize(1024*1024*10);
+			this.sock.setSendBufferSize(1024*1024*10);
+		
 			this.state = "ready";
 			this.emit("ready"); 
 
