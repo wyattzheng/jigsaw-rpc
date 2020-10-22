@@ -17,7 +17,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
 
         this.setState(RequestState.BUILT);
     }
-    send(){
+    async send(){
         let pk=new DomainQueryPacket();
 
         pk.request_id = this.getRequestId();

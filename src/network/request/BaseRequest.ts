@@ -6,15 +6,22 @@ import Packet = require("../protocol/Packet");
 import Defer = require("../../utils/Defer");
 import SwitchRule = require("./packetrouter/subrouter/RouterRule");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
+import util = require("util");
+const sleep = util.promisify(setTimeout);
+
+
 const debug = require("debug")("BaseRequest");
 
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
     protected result? : T;
     protected router : AbstractPacketRouter;
-    protected resender? : NodeJS.Timeout;
     protected timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
+
+    protected resender? : Defer<void>;
+    protected resender_loop : boolean  = false;
+
     
     constructor(router: AbstractPacketRouter,seq : number){
         super();
@@ -27,7 +34,6 @@ abstract class BaseRequest<T> extends AbstractRequest{
                this.pending_defer?.reject(new Error("request timeout"));
             
            },10*1000);
-
 
         this.once("done",(err)=>{
             clearTimeout(this.timeout);
@@ -65,24 +71,33 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
         return this.result as T;
     }
-    private startResend(){
+    private async startResend(){
         if(this.state!=RequestState.PENDING)
             throw new Error("at this state,can not startResend")
         
-        this.resender = setInterval(()=>{
-            this.dosend()
-        },50);
+        this.resender = new Defer();
+        this.resender_loop = true;
+
+        let tick : number = 0;
+        while(this.resender_loop){
+            if(tick++ % 50 == 0)
+                await this.dosend();
+            await sleep(1);
+        }
+        this.resender?.resolve();
     }
-    private endResend(){
-        if(this.state!=RequestState.DONE && this.state!=RequestState.FAILED)
+    private async endResend(){
+        if(this.state!=RequestState.PENDING)
             throw new Error("at this state,can not endResend");
 
-        clearInterval(this.resender as NodeJS.Timeout);
+        this.resender_loop = false;
+        await this.resender?.promise;
+        
     }
-    private dosend(){
+    private async dosend(){
         
         try{
-            this.send();
+            await this.send();
         }catch(err){
             this.pending_defer?.reject(err);
         }
@@ -106,19 +121,21 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
 
 
-        this.dosend()
+        await this.dosend();
         this.startResend();
 
         try{
             await this.pending_defer.promise; 
+            await this.endResend();
+            
             this.setState(RequestState.DONE);
             return this.getResult();
         }catch(err){
+            await this.endResend();
+
             this.setState(RequestState.FAILED);
-            console.error(err);
             throw err;
         }finally{
-            this.endResend();
             this.router.unplug(this.getRequestId(),refid);
             this.router.unplug("ErrorPacket",error_refid);
             debug("unplug",refid);
@@ -126,7 +143,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         
     }
     protected abstract handlePacket(p:Packet) : void;
-    protected abstract send() : void;
+    protected abstract async send() : Promise<void>;
 }
 
 export = BaseRequest

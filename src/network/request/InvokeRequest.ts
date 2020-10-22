@@ -55,17 +55,17 @@ class InvokeRequest extends BaseRequest<Buffer> {
     public getName(){
         return "InvokeRequest";
     }
-    protected send(){
+    protected async send(){
 
         if(this.packet_slicer.isAllDone()){
             if(this.packet_slicer.isFailed())
                 throw new Error("packet slicer failed");
 
-            this.router.sendPacket(this.path.jgname,this.packet_slicer.getEmptySlice());
+            await this.router.sendPacket(this.path.jgname,this.packet_slicer.getEmptySlice());
         }else{
             let sliceids = this.packet_slicer.getPartSlices();
             for(let sliceid of sliceids){
-                this.router.sendPacket(this.path.jgname,this.packet_slicer.getSlicePacket(sliceid));
+                await this.router.sendPacket(this.path.jgname,this.packet_slicer.getSlicePacket(sliceid));
             }
         }
                 
