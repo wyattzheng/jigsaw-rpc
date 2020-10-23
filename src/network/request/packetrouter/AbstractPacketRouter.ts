@@ -1,6 +1,5 @@
 import AbstractNetworkClient from "../../AbstractNetworkClient";
 import assert = require("assert");
-import RouterRule = require("./subrouter/RouterRule");
 import Packet = require("../../protocol/Packet");
 import AbstractRouter = require("./subrouter/AbstractRouter");
 
@@ -8,7 +7,6 @@ import PacketTypeRouter = require("./subrouter/PacketTypeRouter");
 import RequestIdRouter = require("./subrouter/RequestIdRouter");
 import IRouter = require("./subrouter/IRouter");
 import Events = require("tiny-typed-emitter");
-import AbstractHandler = require("@/network/handler/AbstractHandler");
 import HandlerMap = require("../../../utils/HandlerMap");
 
 type Handler = (pk:Packet)=>void;

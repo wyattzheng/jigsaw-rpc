@@ -1,11 +1,13 @@
 {
   "name": "jigsaw.ts",
-  "version": "0.0.1-dev",
+  "version": "0.0.1-dev1",
   "description": "jigsaw.ts is a RPC framework under Node.js",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
+    "prepare": "npm run build",
+    "cov-report": "nyc report",
     "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" "
   },
   "repository": {
@@ -22,10 +24,10 @@
   },
   "homepage": "https://github.com/ZhyMC/jigsaw.ts#readme",
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/node": "^14.11.8",
     "cz-conventional-changelog": "^3.3.0",
-    "easy-monitor": "^2.2.8",
-    "v8-profiler-node8": "^6.3.0"
+    "nyc": "^15.1.0"
   },
   "config": {
     "commitizen": {
