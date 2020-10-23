@@ -14,7 +14,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
 
         this.jgname = jgname;
         this.dst = dst;
-
+        
         this.setState(RequestState.BUILT);
     }
     async send(){

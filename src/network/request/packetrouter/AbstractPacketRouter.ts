@@ -49,7 +49,8 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
         return this.client.getState();
     }
     public close(){
-        this.client.close();
+        //this.client.close();
+
     }
     private initRouters(){
         this.routers.push(new PacketTypeRouter());

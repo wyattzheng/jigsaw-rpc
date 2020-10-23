@@ -10,7 +10,10 @@ interface RequestEvent{
 abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 	protected state : RequestState = RequestState.BUILDING;
 
-	public whenBuild(): Promise<void>{
+	public async whenBuild(): Promise<void>{
+		if(this.state == RequestState.BUILT)
+			return;
+
 		if(this.state != RequestState.BUILDING)
 			throw new Error("this method must be called on BUILDING state");
 
@@ -24,6 +27,22 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
         }
         
         );
+	}
+	public async whenDone() : Promise<void>{
+		if(this.state == RequestState.DONE || this.state == RequestState.FAILED)
+			return;
+			
+		if(this.state != RequestState.PENDING)
+			throw new Error("this method must be called on PENDING state");
+		return new Promise((resolve,reject)=>{
+			this.once("done",(err)=>{
+				if(err)
+					reject(err)
+				else
+					resolve();
+
+			})
+		})
 	}
 	protected setState(s : RequestState) : void{
 		

@@ -1,3 +1,5 @@
+import LimitedMap from "./LimitedMap";
+
 class HandlerRef<T>{
     public refid: number;
     public data : T;
@@ -39,11 +41,11 @@ class HandlerMap<Z>{
         if(!this.map.has(sign))
             this.map.set(sign,[]);
 
+
         let handlers = this.map.get(sign) as Array<HandlerRef<Z>>;
         let handler_ref = new HandlerRef(refid,data);
 
         handlers.push(handler_ref);
-
 
         return refid;
  

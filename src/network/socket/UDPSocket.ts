@@ -21,8 +21,8 @@ class UDPSocket extends AbstractSocket{
 	
 		});
 		this.sock.on("listening",()=>{ 
-			this.sock.setRecvBufferSize(1024*1024*10);
-			this.sock.setSendBufferSize(1024*1024*10);
+		//	this.sock.setRecvBufferSize(1024*1024*10);
+		//	this.sock.setSendBufferSize(1024*1024*10);
 		
 			this.state = "ready";
 			this.emit("ready"); 

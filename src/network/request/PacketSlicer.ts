@@ -33,7 +33,9 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
 
         this.initUnsent();
     }
-    
+    close(){
+        this.setAllDone(false);
+    }
     isAllDone(){
         return this.alldone;
     }
@@ -72,10 +74,11 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
         if(this.alldone)
             return;
 
-        this.emit("alldone");
         this.alldone = true;
         this.failed = failed;
         clearTimeout(this.timeout);
+        this.emit("alldone");
+        
     }
     public ackSlicePacket(partid:number){
         debug("ack",this.req_id,"left:",this.unsent_packets.size);

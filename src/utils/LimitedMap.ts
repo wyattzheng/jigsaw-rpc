@@ -7,7 +7,7 @@ class Value<T>{
 		this.val = val;
 	}
 	isExpired(){
-		if(new Date().getTime() - this.createTime > 1*1000){
+		if(new Date().getTime() - this.createTime > 10*1000){
 			return true;
 		}
 

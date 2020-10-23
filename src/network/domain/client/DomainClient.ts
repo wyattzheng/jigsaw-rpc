@@ -6,6 +6,7 @@ import DomainUpdatePacket = require("../../protocol/packet/DomainUpdatePacket");
 import Events = require("tiny-typed-emitter");
 import util = require("util");
 import LimitedMap = require("../../../utils/LimitedMap");
+import Defer = require("../../../utils/Defer");
 const debug = require("debug")("DomainClient");
 
 const sleep = util.promisify(setTimeout);
@@ -24,6 +25,10 @@ class DomainCache{
         this.addrinfo = addrinfo;
         this.expired = expired;
     }
+    isExpired(){
+        let expired = this.createTime + this.expired - new Date().getTime();
+        return expired;
+    }
 }
 
 class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDomainClient{
@@ -35,6 +40,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     private entry_address : string ;
     private loop : boolean = false;
     private cache = new LimitedMap<string,DomainCache>(1000);
+    private closing_defer = new Defer<void>();
 
     constructor(client_name:string,entry_address:string,server_address:AddressInfo,router:NetPacketRouter){
         super();
@@ -44,13 +50,13 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         this.entry_address = entry_address;
 
         this.router.on("ready",()=>{
+            this.start_updating_loop();
             this.state = "ready";
             this.emit("ready");
-            this.start_updating_loop();
+            
         });
         this.router.on("close",()=>{
-            this.state = "close";
-            this.emit("close");
+            this.close();
         });
 
     }
@@ -74,19 +80,26 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
             }catch(err){
                 console.error("updating address error",err);
             }
- 			await sleep(10*1000);
-		}
-        this.router.close();
+             await sleep(10*1000);
+             break;
+        }
         
+        this.closing_defer.resolve();
+        this.state = "close";
+        this.emit("close");
     }
-    close(){
+    async close(){
+        if(this.state!="ready")
+            throw new Error("at this state,client can not be closed");
+
+        this.state = "closing";
         this.loop = false;
+        await this.closing_defer.promise;
     }
     async resolve(jgname:string,onlycache = false,timeout:number = 5000) : Promise<AddressInfo>{
         if(this.cache.has(jgname)){
             let cache = this.cache.get(jgname) as DomainCache;
-            let expired = cache.createTime + cache.expired - new Date().getTime();
-            if(expired > 0) // meet cache
+            if(!cache.isExpired()) // meet cache
                 return cache.addrinfo;
             
         }else{
@@ -109,9 +122,13 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         for(let i=0;i<5;i++){
             try{
                 let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
-                return await req.run();    
+                await req.whenBuild();
+                req.run();
+                await req.whenDone();
+                return req.getResult();   
+
             }catch(err){
-                //console.log(err);
+               // console.log(err);
 
             }
             let time=new Date().getTime();

@@ -4,7 +4,6 @@ import PacketFactory = require("../network/protocol/factory/PacketFactory");
 import PacketBuilderManager = require("../network/protocol/builder/manager/PacketBuilderManager");
 import UDPSocket = require("../network/socket/UDPSocket");
 import BuilderNetworkClient = require("../network/BuilderNetworkClient");
-import AbstractPacketRouter = require("../network/request/handler/AbstractRequestHandler");
 import NetPacketRouter = require("../network/request/packetrouter/NetPacketRouter");
 import AddressInfo = require("../network/domain/AddressInfo");
 import InvokeRequest = require("../network/request/InvokeRequest");
@@ -12,6 +11,7 @@ import Path = require("../network/request/Path");
 import SimplePacketRouter = require("../network/request/packetrouter/SimplePacketRouter");
 import InvokeHandler = require("../network/handler/InvokeHandler");
 import { TypedEmitter } from "tiny-typed-emitter";
+import { Socket } from "dgram";
 
 interface JigsawEvent{
     ready:()=>void;
@@ -37,6 +37,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private invoke_handler : InvokeHandler;
     private final_handler : FinalHandler = ()=>{};
     private module_ref = new Set<string>();
+    private socket : UDPSocket;
 
     constructor(jgname:string,entry:AddressInfo,domserver:AddressInfo){
         super();
@@ -49,6 +50,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let factory = new PacketFactory();
         let builder_manager = new PacketBuilderManager(factory);
         let socket = new UDPSocket(this.entry.port,"0.0.0.0");
+        this.socket = socket;
         
         let client=new BuilderNetworkClient(socket,factory,builder_manager);
         this.netrouter = new NetPacketRouter(client);
@@ -115,12 +117,13 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         return Buffer.from(JSON.stringify(ret_data as object));
     }
-    close(){
+    async close(){
         this.state = "closing";
 
-        this.router.close();    
-        this.domclient.close();    
-        
+        //this.router.close();
+        await this.domclient.close();    
+        this.socket.close();
+
     }
     
     send(path_str:string,data:object) : Promise<object>{
@@ -134,8 +137,10 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let request = new InvokeRequest(this.jgname,path,buffer,this.router,req_seq);
 
         await request.whenBuild();
-        
-        let ret_buf = await request.run();
+        request.run();
+        await request.whenDone();
+        let ret_buf = request.getResult();
+
         return JSON.parse(ret_buf.toString());
 
     }

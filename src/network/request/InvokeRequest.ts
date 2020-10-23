@@ -28,6 +28,10 @@ class InvokeRequest extends BaseRequest<Buffer> {
 
         this.packet_slicer = new PacketSlicer(this.buildPacket(),this.getRequestId());
 
+        this.once("done",()=>{
+            this.packet_slicer.close();
+        });
+        
         this.preloadDomain();
     }
     private buildPacket(){
