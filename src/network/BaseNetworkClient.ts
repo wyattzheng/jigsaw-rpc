@@ -67,7 +67,8 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	}
 
 	public sendPacket(packet : Packet,dst_port:number , dst_address:string){
-		packet.encode();
+		if(!packet.isBuilt())
+			packet.encode();
 
 		let buffer = packet.getSlicedData();
 		this.socket.send(buffer, dst_port, dst_address);

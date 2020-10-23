@@ -12,6 +12,7 @@ import SimplePacketRouter = require("../network/request/packetrouter/SimplePacke
 import InvokeHandler = require("../network/handler/InvokeHandler");
 import { TypedEmitter } from "tiny-typed-emitter";
 import { Socket } from "dgram";
+import { debug } from "console";
 
 interface JigsawEvent{
     ready:()=>void;
@@ -101,7 +102,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     private async handleInvoke(path:Path,data : Buffer) : Promise<Buffer>{
         let req_data = JSON.parse(data.toString());
-        
 
         let port_handler = this.port_handlers.get(path.method) as Handler;
         
@@ -137,8 +137,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let request = new InvokeRequest(this.jgname,path,buffer,this.router,req_seq);
 
         await request.whenBuild();
-        request.run();
-        await request.whenDone();
+        await request.run();
         let ret_buf = request.getResult();
 
         return JSON.parse(ret_buf.toString());

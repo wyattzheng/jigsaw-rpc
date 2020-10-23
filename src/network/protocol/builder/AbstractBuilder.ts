@@ -6,7 +6,7 @@ import IFactory = require("../factory/IFactory");
 abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 	public partmax : number;
 	private container : LimitedMap<number,T>;
-	private max_map_length : number = 100;
+	private max_map_length : number = 1000;
 
 	constructor(partmax : number){
 		this.partmax = partmax;

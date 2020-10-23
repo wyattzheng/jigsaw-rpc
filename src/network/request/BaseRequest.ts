@@ -15,13 +15,15 @@ const debug = require("debug")("BaseRequest");
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
     protected result? : T;
+    private hasResult : boolean = false;
+
     protected router : AbstractPacketRouter;
     protected timeout : NodeJS.Timeout;
-    private pending_defer? : Defer<void>;
 
-    protected resender? : Defer<void>;
+    private pending_defer? : Defer<void>;
+    protected resender_defer? : Defer<void>;
     protected resender_loop : boolean  = false;
-    
+
     constructor(router: AbstractPacketRouter,seq : number){
         super();
 
@@ -37,7 +39,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
         this.once("done",(err)=>{
             clearTimeout(this.timeout);
-        })
+        });
 
     }
     private handleErrorPacket(p : Packet){
@@ -61,46 +63,63 @@ abstract class BaseRequest<T> extends AbstractRequest{
     protected setResult(result : T){
         if(this.state!=RequestState.PENDING)
             throw new Error("this result isn't pending,can not set result");
+        if(this.hasResult)
+            return;
+//            throw new Error("already has result");
+
         this.result = result;
+        this.hasResult = true;
         this.pending_defer?.resolve();
     }
     public getResult() : T{
-        if(this.state!=RequestState.DONE)
+        if(!this.hasResult)
             throw new Error("this result isn't done");
 
         return this.result as T;
     }
-    private async startResend(){
-        if(this.state!=RequestState.PENDING)
-            throw new Error("at this state,can not startResend")
+    private async before_wait(){
+        if(this.state!=RequestState.BUILT)
+            throw new Error("at this state,can not before_run")
         
-
+        this.pending_defer = new Defer();
+        this.setState(RequestState.PENDING);
+    
         let tick : number = 0;
         this.resender_loop = true;
-        this.resender = new Defer();
+        this.resender_defer = new Defer();
 
         while(this.resender_loop){
             if(tick++ % 50 == 0)
                 await this.dosend();
             await sleep(1);
         }
-        this.resender?.resolve();
+        this.resender_defer?.resolve();
     }
-    private async endResend(){
+    private async after_wait(refid:number,error_refid:number,err:Error | undefined){
         if(this.state!=RequestState.PENDING)
-            throw new Error("at this state,can not endResend");
+            throw new Error("at this state,can not after_end");
 
         this.resender_loop = false;
-        await this.resender?.promise;
+        await this.resender_defer?.promise;
+
+        this.router.unplug(this.getRequestId(),refid);
+        this.router.unplug("ErrorPacket",error_refid);
+        debug("unplug",refid);
+        if(err)
+            this.setState(RequestState.FAILED);
+        else
+            this.setState(RequestState.DONE);
         
+
     }
     private async dosend(){
+            try{
+                await this.send()
+            }catch(err){
+                this.pending_defer?.reject(err);
+            };
         
-        try{
-            await this.send();
-        }catch(err){
-            this.pending_defer?.reject(err);
-        }
+
     }
 	async run(){
 
@@ -112,35 +131,27 @@ abstract class BaseRequest<T> extends AbstractRequest{
             throw new Error("this request can not run because of it hasn't been built.");
 
         
-        this.pending_defer = new Defer();
-
-        this.setState(RequestState.PENDING);
-
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
         let error_refid = this.router.plug("ErrorPacket",this.handleErrorPacket.bind(this));
     
         debug("plug",refid);
 
-        await this.dosend();
-        this.startResend();
-
-        let error;
+        this.before_wait();
+	    this.dosend();
+    
+        let error : Error | undefined;
         try{
-            await this.pending_defer.promise;        
+            await (this.pending_defer as Defer<void>).promise;        
         }catch(err){
             error = err;
         }
 
-        await this.endResend();
-        this.router.unplug(this.getRequestId(),refid);
-        this.router.unplug("ErrorPacket",error_refid);
-        debug("unplug",refid);
+        this.after_wait(refid,error_refid,error);
 
         if(error)
-            this.setState(RequestState.FAILED);
-        else
-            this.setState(RequestState.DONE);
-        
+            throw error;
+            
+        return this.getResult();
     }
     protected abstract handlePacket(p:Packet) : void;
     protected abstract async send() : Promise<void>;

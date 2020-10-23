@@ -2,6 +2,7 @@ import AbstractRouter from "./AbstractRouter";
 import Packet = require("../../../protocol/Packet");
 import RouterRule = require("./RouterRule");
 import HandlerRef = require("./HandlerRef");
+const debug = require("debug")("PacketTypeRouter");
 
 class PacketTypeRouter extends AbstractRouter{
     constructor(){
@@ -17,9 +18,12 @@ class PacketTypeRouter extends AbstractRouter{
             return;
 
         let handlers=this.getHandlers(pk.getName());
-        
-        for(let i in handlers)
-            handlers[i].data(pk)        
+        try{
+            for (let i in handlers)
+                handlers[i].data(pk);
+        }catch(err){
+            debug(err);
+        }
 
     }
 

@@ -41,7 +41,7 @@ class InvokeHandler extends AbstractHandler{
     public router : NetPacketRouter;
     public handler : Handler;
 
-    private invokers = new LimitedMap<string,Invoker>(100);
+    private invokers = new LimitedMap<string,Invoker>(500);
 
     constructor(router:NetPacketRouter,handler:Handler){
         super(router);
@@ -135,7 +135,11 @@ class InvokeHandler extends AbstractHandler{
         });
 
         packet_slicer.once("alldone",()=>{
-            this.invokers.delete(p.request_id);
+            try{
+                this.invokers.delete(p.request_id);
+            }catch(err){
+
+            }
             this.router.unplug(build_req,refid);
             debug("alldone","requestid:",p.request_id,"build_req",build_req);
         });

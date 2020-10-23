@@ -59,8 +59,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
     public getName(){
         return "InvokeRequest";
     }
-    protected async send(){
-
+    protected async send() : Promise<void>{
         if(this.packet_slicer.isAllDone()){
             if(this.packet_slicer.isFailed())
                 throw new Error("packet slicer failed");
@@ -71,9 +70,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
             for(let sliceid of sliceids){
                 await this.router.sendPacket(this.path.jgname,this.packet_slicer.getSlicePacket(sliceid));
             }
-        }
-                
-
+        } 
+    
     }
 
     protected handlePacket(p : Packet){

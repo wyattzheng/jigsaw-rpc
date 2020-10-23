@@ -4,7 +4,7 @@ import LimitedMap = require("../../../../utils/LimitedMap")
 
 
 abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
-	public builders = new LimitedMap<string,IBuilder<T,P>>(100);
+	public builders = new LimitedMap<string,IBuilder<T,P>>(500);
 	
 	abstract getNewBuilder(maxslices : number) : IBuilder<T,P>;
 

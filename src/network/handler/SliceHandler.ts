@@ -36,7 +36,8 @@ class SliceHandler extends AbstractHandler{
         
         if(manager.isDone(spk.buildkey)){
             let built=manager.getBuilt(spk.buildkey);
-            built.decode();
+            if(!built.isBuilt())
+                built.decode();
             built.reply_info = spk.reply_info;
             
             

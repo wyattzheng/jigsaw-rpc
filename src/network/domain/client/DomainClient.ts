@@ -81,7 +81,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
                 console.error("updating address error",err);
             }
              await sleep(10*1000);
-             break;
         }
         
         this.closing_defer.resolve();
@@ -123,8 +122,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
             try{
                 let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
                 await req.whenBuild();
-                req.run();
-                await req.whenDone();
+                await req.run();
                 return req.getResult();   
 
             }catch(err){

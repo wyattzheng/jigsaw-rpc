@@ -4,21 +4,20 @@ class InvokeReplyPacket extends BasePacket{
 	public static packet_id : number = 8;
     public jgname:string="";
     public path:string="";
-    public data:Buffer=Buffer.alloc(0);
+    public data:Buffer;
     
     constructor(){
         super();
+        this.data = Buffer.allocUnsafe(1400);
     }
     getName(){
         return "InvokeReplyPacket";
     }
     encode(){
-        if(!this.built)
-            this.buffer = Buffer.allocUnsafe(this.data.length+1400);
-        else
-            return;
-
         super.encode.call(this);
+
+        this.enlarge(this.data.length+1400);
+
         this.writeString(this.jgname);
         this.writeString(this.path);
         this.writeLargeBuffer(this.data);

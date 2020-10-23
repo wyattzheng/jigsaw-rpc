@@ -13,16 +13,13 @@ class InvokePacket extends BasePacket{
 	}
 	constructor(){
 		super();
-		this.buffer = Buffer.allocUnsafe(0);
+		this.buffer = Buffer.allocUnsafe(1400);
 		
 	}
 	encode(){
-		if(!this.built)
-			this.buffer = Buffer.allocUnsafe(this.data.length+1400);
-		else
-			return;
-
 		super.encode.call(this);
+
+		this.enlarge(this.data.length+1400);
 
 		this.writeString(this.request_id);
 		this.writeString(this.dst_path.toString());
@@ -32,8 +29,6 @@ class InvokePacket extends BasePacket{
 
 	}
 	decode(){
-		if(this.built)
-			return;
 
 		super.decode.call(this);
 		this.request_id = this.readString();

@@ -2,6 +2,7 @@ import AbstractRouter from "./AbstractRouter";
 import Packet = require("../../../protocol/Packet");
 import RouterRule = require("./RouterRule");
 import HandlerRef = require("./HandlerRef");
+const debug = require("debug")("RequestIdRouter");
 
 class RequestIdRouter extends AbstractRouter{
     constructor(){
@@ -18,8 +19,13 @@ class RequestIdRouter extends AbstractRouter{
 
         let handlers=this.getHandlers(pk.request_id);
         
-        for(let i in handlers)
-            handlers[i].data(pk)  
+        try{
+            for (let i in handlers)
+                handlers[i].data(pk);
+        }catch(err){
+            debug(err);
+        }
+
     }
 
 }

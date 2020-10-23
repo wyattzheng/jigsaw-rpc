@@ -9,7 +9,15 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		super();
 
 	}
+	enlarge(size:number){
+		let newbuffer = Buffer.allocUnsafe(size);
+		//console.log(this.offset);
+		this.buffer.slice(0,this.offset)
+		.copy(newbuffer,0);
 
+		this.buffer = newbuffer;
+
+	}
 	public getPacketId() : number{
 		if(this.packetid > 0)
 			return this.packetid;

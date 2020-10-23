@@ -12,7 +12,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     private unsent_packets = new Set<number>();
     private slicelen = 1024*50;
     private packet_data : Buffer = Buffer.allocUnsafe(0)
-    private packets_send_limit : number = 5;
+    private packets_send_limit : number = 20;
     private timeout : NodeJS.Timeout;
     private alldone = false;
     private failed = false;
@@ -20,7 +20,9 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     constructor(pk : Packet,req_id: string){
         super();
 
-        pk.encode();
+        if(!pk.isBuilt())
+            pk.encode();
+        
         this.packet = pk;
         this.packet_data = this.packet.getSlicedData();
         this.req_id = req_id;
@@ -29,7 +31,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
             this.failed = true;
             this.setAllDone(true);
             debug("alldone and timeout","build_req",this.req_id);
-        },5000);
+        },12000);
 
         this.initUnsent();
     }

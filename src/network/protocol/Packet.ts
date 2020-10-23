@@ -14,6 +14,9 @@ abstract class Packet{ // Design Mode : Builder Mode
 	constructor(){
 		this.buffer = Buffer.allocUnsafe( 1400 );
 	}
+	isBuilt(){
+		return this.built;
+	}
 	abstract getName() : string;
 
 	getPacketId() : number{
@@ -33,14 +36,17 @@ abstract class Packet{ // Design Mode : Builder Mode
 		this.buffer = buf;
 	}
 	public encode() : void{
-		if(this.built)return;
-
+		if(this.built){
+			throw new Error("this packet has already built");
+		}
 		this.offset = 0;
 		this.built = true;
 
 	}
 	public decode() : void{
-		if(this.built)return;
+		if(this.built){
+			throw new Error("this packet has already built");
+		}
 
 		this.offset = 0;
 		this.built = true;
