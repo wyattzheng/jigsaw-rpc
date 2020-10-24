@@ -25,9 +25,9 @@ class DomainCache{
         this.addrinfo = addrinfo;
         this.expired = expired;
     }
-    isExpired(){
-        let expired = this.createTime + this.expired - new Date().getTime();
-        return expired;
+    isExpired() : boolean{
+        let alive = this.createTime + this.expired - new Date().getTime();
+        return alive < 0;
     }
 }
 
@@ -98,6 +98,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     async resolve(jgname:string,onlycache = false,timeout:number = 5000) : Promise<AddressInfo>{
         if(this.cache.has(jgname)){
             let cache = this.cache.get(jgname) as DomainCache;
+            
             if(!cache.isExpired()) // meet cache
                 return cache.addrinfo;
             

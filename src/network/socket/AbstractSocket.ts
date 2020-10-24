@@ -9,7 +9,7 @@ interface SocketEvent{
 } ;
 
 abstract class AbstractSocket extends events.TypedEmitter<SocketEvent>{
-	constructor(port : number,address:string){
+	constructor(port? : number,address?:string){
 		super();
 
 	}

@@ -7,14 +7,13 @@ class UDPSocket extends AbstractSocket{
 
 	private sock : Dgram.Socket;
 	private state : string = "close";
-	constructor(port : number,address:string){
+	constructor(port? : number,address?:string){
 		super(port,address);
 
 		this.sock = Dgram.createSocket("udp4");
 		
 		this.sock.bind(port,address);
 	
-		
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			
 			this.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
@@ -38,7 +37,7 @@ class UDPSocket extends AbstractSocket{
 		return this.state;
 	}
 	public getAddress() : AddressInfo{
-
+			
 		let addr=this.sock.address();
 		return new AddressInfo(addr.address,addr.port);
 

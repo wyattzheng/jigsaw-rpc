@@ -1,6 +1,6 @@
 {
   "name": "jigsaw.ts",
-  "version": "0.0.1-dev5",
+  "version": "0.0.1-dev7",
   "description": "jigsaw.ts is a RPC framework under Node.js",
   "main": "dist/index.js",
   "scripts": {
@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "debug": "^4.2.0",
-    "get-port-sync": "^1.0.1",
     "tiny-typed-emitter": "^2.0.3"
   }
 }

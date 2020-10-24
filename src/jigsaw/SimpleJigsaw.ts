@@ -28,7 +28,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     public jgname : string;
     private domclient : DomainClient;
-    private entry : AddressInfo;
+    private entry_address : string;
 
     private domserver : AddressInfo;
     private netrouter : NetPacketRouter;
@@ -40,23 +40,23 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private module_ref = new Set<string>();
     private socket : UDPSocket;
 
-    constructor(jgname:string,entry:AddressInfo,domserver:AddressInfo){
+    constructor(jgname:string,entry_address:string,domserver:AddressInfo){
         super();
 
         this.jgname = jgname;
-        this.entry = entry;
+        this.entry_address = entry_address;
 
         this.domserver = domserver;
 
         let factory = new PacketFactory();
         let builder_manager = new PacketBuilderManager(factory);
-        let socket = new UDPSocket(this.entry.port,"0.0.0.0");
+        let socket = new UDPSocket(undefined,"0.0.0.0");
         this.socket = socket;
         
         let client=new BuilderNetworkClient(socket,factory,builder_manager);
         this.netrouter = new NetPacketRouter(client);
 
-        this.domclient = new DomainClient(this.jgname,this.entry.address,this.domserver,this.netrouter);
+        this.domclient = new DomainClient(this.jgname,this.entry_address,this.domserver,this.netrouter);
 
         this.router = new SimplePacketRouter(client,this.domclient);
 
