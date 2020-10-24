@@ -40,6 +40,7 @@ class Invoker{
             return;
         
         this.state = "done";
+        this.invoke_result?.release();
         this.invoke_result = undefined;
         this.slicer = undefined;
     }
@@ -148,6 +149,7 @@ class InvokeHandler extends AbstractHandler{
         packet_slicer.once("alldone",()=>{
             try{
                 //this.invokers.delete(p.request_id);
+                p.release();
                 invoker.setDone();
             }catch(err){
 

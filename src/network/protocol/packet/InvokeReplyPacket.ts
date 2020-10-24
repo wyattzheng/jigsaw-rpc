@@ -10,6 +10,11 @@ class InvokeReplyPacket extends BasePacket{
         super();
         this.data = Buffer.allocUnsafe(1400);
     }
+    release(){
+        super.release.call(this);
+		
+        this.data = Buffer.allocUnsafe(0);
+    }
     getName(){
         return "InvokeReplyPacket";
     }

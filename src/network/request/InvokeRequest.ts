@@ -80,7 +80,10 @@ class InvokeRequest extends BaseRequest<Buffer> {
             
         if(p.getName() == "InvokeReplyPacket"){
             let pk = p as InvokeReplyPacket;
-            this.setResult(pk.data);
+            let data = pk.data;
+            p.release();
+
+            this.setResult(data);
         }else if(p.getName() == "SliceAckPacket"){
             let pk = p as SliceAckPacket;
             

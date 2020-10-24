@@ -101,6 +101,8 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
 
         this.alldone = true;
         this.failed = failed;
+        this.packet_data = Buffer.allocUnsafe(0);
+
         clearTimeout(this.timeout);
         this.emit("alldone");
         

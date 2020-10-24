@@ -9,6 +9,10 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		super();
 
 	}
+	release(){
+		this.buffer = Buffer.allocUnsafe(0);
+		
+	}
 	enlarge(size:number){
 		let newbuffer = Buffer.allocUnsafe(size);
 		//console.log(this.offset);

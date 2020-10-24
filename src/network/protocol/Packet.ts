@@ -17,6 +17,7 @@ abstract class Packet{ // Design Mode : Builder Mode
 	isBuilt(){
 		return this.built;
 	}
+	abstract release() : void;
 	abstract getName() : string;
 
 	getPacketId() : number{

@@ -1,6 +1,6 @@
 {
   "name": "jigsaw.ts",
-  "version": "0.0.1-dev9",
+  "version": "0.0.1-dev10",
   "description": "jigsaw.ts is a RPC framework under Node.js",
   "main": "dist/index.js",
   "scripts": {

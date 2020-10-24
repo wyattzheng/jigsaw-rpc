@@ -11,6 +11,11 @@ class InvokePacket extends BasePacket{
 	getName(){
 		return "InvokePacket";
 	}
+	release(){
+		super.release.call(this);
+		
+		this.data = Buffer.allocUnsafe(0);
+	}
 	constructor(){
 		super();
 		this.buffer = Buffer.allocUnsafe(1400);

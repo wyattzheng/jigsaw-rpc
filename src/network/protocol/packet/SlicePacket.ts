@@ -3,12 +3,17 @@ import BasePacket = require("../BasePacket");
 class SlicePacket extends BasePacket{
 	public static packet_id : number = 2;
 	public buildkey : string = "";
-	public payload : Buffer = Buffer.alloc(0);
+	public payload : Buffer = Buffer.allocUnsafe(0);
 	public partid : number = 0;
 	public partmax : number = 1;
 	constructor(){
 		super();
 		this.buffer = Buffer.allocUnsafe(1400);
+	}
+	release(){
+		super.release.call(this);
+		
+		this.payload = Buffer.allocUnsafe(0);
 	}
 	getName(){
 		return "SlicePacket";
