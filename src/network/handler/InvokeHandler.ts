@@ -18,8 +18,9 @@ import PacketBuilder = require("../protocol/builder/PacketBuilder");
 import PacketSlicer = require("../request/PacketSlicer");
 import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
 import LimitedMap = require("../../utils/LimitedMap");
+import util = require("util")
+const sleep = util.promisify(setTimeout)
 const debug = require("debug")("InvokeHandler");
-
 
 type Handler = (path:Path,buf:Buffer)=>Promise<Buffer>;
 
@@ -82,7 +83,7 @@ class InvokeHandler extends AbstractHandler{
         return r_pk;
     }
 
-    private sendInvokeResult(invoker : Invoker,target : AddressInfo){
+    private async sendInvokeResult(invoker : Invoker,target : AddressInfo){
         if(invoker.state!="invoked")
             throw new Error("doesn't have invoked result right now");
 
@@ -91,6 +92,8 @@ class InvokeHandler extends AbstractHandler{
 
         for(let id of sliceids){
             this.router.sendPacket(slicer.getSlicePacket(id),target.port,target.address);
+            await sleep(0);
+
         }
 
     }

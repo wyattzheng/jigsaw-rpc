@@ -10,13 +10,15 @@ interface PacketSlicerEvent{
 class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     private packet : Packet;
     private unsent_packets = new Set<number>();
-    private slicelen = 1024*50;
+    private slicelen = 20 * 1024;
     private packet_data : Buffer = Buffer.allocUnsafe(0)
-    private packets_send_limit : number = 20;
+    private packets_send_limit : number = 1;
     private timeout : NodeJS.Timeout;
     private alldone = false;
     private failed = false;
     private req_id : string;
+    private start_time : number = new Date().getTime();
+
     constructor(pk : Packet,req_id: string){
         super();
 
@@ -33,6 +35,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
             debug("alldone and timeout","build_req",this.req_id);
         },12000);
 
+
         this.initUnsent();
     }
     close(){
@@ -47,7 +50,27 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     private initUnsent(){
         for(let j = 0;j<this.getSliceCount();j++)
             this.unsent_packets.add(j);
+    }
+    private getSpeed() : number{  //  speed: bytes per s
+        let sent = this.getSliceCount() - this.unsent_packets.size
+        let sent_bytes = sent * this.slicelen;
+        let nowtime = new Date().getTime();
+        let dura = nowtime - this.start_time;
+        return Math.floor(sent_bytes/dura*1000);
+    }
+    private recalcSendLimit(){
+        
+        let div = 7;
+        let send_limit = Math.floor(this.getSpeed() / this.slicelen / div);
+        if(send_limit < 1)
+            send_limit = 1;
+        if(send_limit > 50)
+            send_limit = 50;
+        
+        debug("send_speed = ",this.getSpeed(),"send_limit = ",send_limit)
+        //console.log(this.getSpeed(),send_limit)
 
+        this.packets_send_limit = send_limit;
     }
     public getSliceCount() : number{
 
@@ -84,10 +107,13 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     }
     public ackSlicePacket(partid:number){
         debug("ack",this.req_id,"left:",this.unsent_packets.size);
+
         this.unsent_packets.delete(partid);
         if(this.unsent_packets.size <= 0){
             this.setAllDone(false);
         }
+
+        this.recalcSendLimit();
     }
     public getPartSlices() : Array<number>{
 
