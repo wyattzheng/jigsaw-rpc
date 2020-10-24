@@ -60,7 +60,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     }
     private recalcSendLimit(){
         
-        let div = 7;
+        let div = 4;
         let send_limit = Math.floor(this.getSpeed() / this.slicelen / div);
         if(send_limit < 1)
             send_limit = 1;
