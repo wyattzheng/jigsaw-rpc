@@ -9,6 +9,7 @@ interface RequestEvent{
 }
 abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 	protected state : RequestState = RequestState.BUILDING;
+	protected failed_reason? :Error;
 
 	public async whenBuild(): Promise<void>{
 		if(this.state == RequestState.BUILT)
@@ -44,6 +45,10 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 			})
 		})
 	}
+	protected setFailedState(reason : Error):void{
+		this.failed_reason = reason;
+		this.setState(RequestState.FAILED);
+	}
 	protected setState(s : RequestState) : void{
 		
 		if(this.state == RequestState.BUILDING){
@@ -53,7 +58,8 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 				return;
 			}else if(s==RequestState.FAILED){
 				this.state = s;
-				this.emit("done",new Error("building request failed"));
+				this.emit("built",this.failed_reason as Error);
+				this.emit("done",this.failed_reason as Error);
 				return;
 			}
 
@@ -79,7 +85,11 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 
 		}
 
-		throw new Error("can not set to this state");
+		if(this.state == s){
+			return;
+		}
+
+		throw new Error(`can not set to this state ${this.state} -> ${s}`);
     }
 	getState() : RequestState{
         return this.state;

@@ -18,24 +18,28 @@ abstract class BaseRequest<T> extends AbstractRequest{
     private hasResult : boolean = false;
 
     protected router : AbstractPacketRouter;
+
     protected timeout : NodeJS.Timeout;
+    protected timeout_duration : number;
 
     private pending_defer? : Defer<void>;
     protected resender_defer? : Defer<void>;
     protected resender_loop : boolean  = false;
 
-    constructor(router: AbstractPacketRouter,seq : number){
+    constructor(router: AbstractPacketRouter,seq : number,timeout_duration : number){
         super();
 
         this.router = router;
         this.req_seq = seq;
+
+        this.timeout_duration = timeout_duration;
         this.timeout=setTimeout(()=>{
             if(this.state == RequestState.BUILDING || this.state == RequestState.BUILT)
-                this.setState(RequestState.FAILED);
-            else
-               this.pending_defer?.reject(new Error("request timeout"));
-               
-           },10*1000);
+                this.setFailedState(new Error("building request timeout"));
+            else{
+               this.pending_defer?.reject(new Error("request pending timeout"));
+            }
+           },this.timeout_duration);
 
         this.once("done",(err)=>{
             clearTimeout(this.timeout);
@@ -89,8 +93,10 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.resender_defer = new Defer();
 
         while(this.resender_loop){
-            if(tick++ % 50 == 0)
+            if(tick++ % 50 == 0){
                 await this.dosend();
+
+            }
             await sleep(1);
         }
         this.resender_defer?.resolve();
@@ -106,15 +112,14 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.router.unplug("ErrorPacket",error_refid);
         debug("unplug",refid);
         if(err)
-            this.setState(RequestState.FAILED);
+            this.setFailedState(err);
         else
             this.setState(RequestState.DONE);
         
-
     }
     private async dosend(){
             try{
-                await this.send()
+                await this.send();
             }catch(err){
                 this.pending_defer?.reject(err);
             };

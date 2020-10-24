@@ -126,7 +126,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
                 return req.getResult();   
 
             }catch(err){
-               // console.log(err);
 
             }
             let time=new Date().getTime();

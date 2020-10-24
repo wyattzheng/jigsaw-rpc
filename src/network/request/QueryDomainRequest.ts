@@ -10,7 +10,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
     private jgname : string = "";
     private dst : AddressInfo ;
     constructor(jgname:string,dst:AddressInfo,router : NetPacketRouter,seq_id : number){
-        super(router,seq_id);
+        super(router,seq_id,1*1000); //1s timeout
 
         this.jgname = jgname;
         this.dst = dst;

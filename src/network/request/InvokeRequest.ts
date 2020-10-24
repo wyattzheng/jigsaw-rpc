@@ -19,7 +19,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
     protected router : SimplePacketRouter;
     
     constructor(src_jgname: string,path : Path,data : Buffer,router : SimplePacketRouter,seq:number){
-        super(router,seq);
+        super(router,seq,10*1000); // 10s timeout
+
         this.router = router;
 
         this.path = path;
@@ -51,9 +52,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
         try{
             await this.router.preload(this.path.jgname);
             this.setState(RequestState.BUILT);
-
         }catch(err){
-            this.setState(RequestState.FAILED);
+            this.setFailedState(err);
         }
     }
     public getName(){
