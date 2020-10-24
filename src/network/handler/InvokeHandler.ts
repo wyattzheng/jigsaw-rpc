@@ -27,12 +27,20 @@ class InvokingError extends Error{}
 
 class Invoker{
     public slicer? : PacketSlicer;
-    public state : string = "ready"; // ready,invoking,invoked
+    public state : string = "ready"; // ready,invoking,invoked,done
     public invoke_result? : Packet;
     constructor(){
     }
     setResult(result : Packet){
         this.invoke_result = result;
+    }
+    setDone(){
+        if(this.state != "invoked")
+            return;
+        
+        this.state = "done";
+        this.invoke_result = undefined;
+        this.slicer = undefined;
     }
 
 }
@@ -93,7 +101,7 @@ class InvokeHandler extends AbstractHandler{
             let invoker = this.getInvoker(p.request_id);
             //console.log(invoker.state)
             
-            if(invoker.state != "invoking")
+            if(invoker.state == "invoked")
                 this.sendInvokeResult(invoker, p.reply_info);
 
             return;
@@ -136,7 +144,8 @@ class InvokeHandler extends AbstractHandler{
 
         packet_slicer.once("alldone",()=>{
             try{
-                this.invokers.delete(p.request_id);
+                //this.invokers.delete(p.request_id);
+                invoker.setDone();
             }catch(err){
 
             }
