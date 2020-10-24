@@ -40,7 +40,9 @@ abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
 	public getBuilt(key : string) : P{
 		let builder = this.getBuilder(key);
 		let data = builder.getData();
-		this.deleteBuilder(key);
+		//this.deleteBuilder(key);
+
+		//TODO: manage this built data, to keep lower memory usage
 		return data;
 	}
 

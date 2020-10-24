@@ -17,7 +17,7 @@ class PacketBuilder extends AbstractBuilder<SlicePacket,Packet>{
 	build(parts : Array<SlicePacket>){
 		let bufs = new Array<Buffer>();
 		for(let part of parts){
-			bufs.push(part.payload);
+			bufs[part.partid] = part.payload;
 		}
 		let fullbuf=Buffer.concat(bufs)
 		let product = this.factory.getProduct(fullbuf);
