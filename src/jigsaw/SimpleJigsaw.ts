@@ -10,9 +10,10 @@ import InvokeRequest = require("../network/request/InvokeRequest");
 import Path = require("../network/request/Path");
 import SimplePacketRouter = require("../network/request/packetrouter/SimplePacketRouter");
 import InvokeHandler = require("../network/handler/InvokeHandler");
+import Crypto = require("crypto");
+import Url = require("url");
 import { TypedEmitter } from "tiny-typed-emitter";
-import { Socket } from "dgram";
-import { debug } from "console";
+
 
 interface JigsawEvent{
     ready:()=>void;
@@ -28,9 +29,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     public jgname : string;
     private domclient : DomainClient;
+    
     private entry_address : string;
+    private entry_port? : number;
+    
+    private registry_path : Url.Url;
 
-    private domserver : AddressInfo;
     private netrouter : NetPacketRouter;
     private router : SimplePacketRouter;
     private request_seq : number = 0;
@@ -40,23 +44,33 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private module_ref = new Set<string>();
     private socket : UDPSocket;
 
-    constructor(jgname:string,entry_address:string,domserver:AddressInfo){
+    constructor(jgname:string,entry_address:string,entry_port:number | undefined,registry_path:Url.Url){
         super();
+
+        if(!registry_path.hostname)
+            throw new Error("regsitry_path.hostname must be specified");
+        if(!registry_path.port)
+            throw new Error("regsitry_path.port must be specified");
 
         this.jgname = jgname;
         this.entry_address = entry_address;
+        this.entry_port = entry_port;
 
-        this.domserver = domserver;
+        this.registry_path = registry_path;
 
         let factory = new PacketFactory();
         let builder_manager = new PacketBuilderManager(factory);
-        let socket = new UDPSocket(undefined,"0.0.0.0");
+        let socket = new UDPSocket(this.entry_port,"0.0.0.0");
         this.socket = socket;
         
         let client=new BuilderNetworkClient(socket,factory,builder_manager);
         this.netrouter = new NetPacketRouter(client);
 
-        this.domclient = new DomainClient(this.jgname,this.entry_address,this.domserver,this.netrouter);
+        let registry_addr = this.registry_path.hostname as string;
+        let registry_port = parseInt(this.registry_path.port as string) || 3793;
+        this.domclient = new DomainClient(this.jgname,this.entry_address,
+             new AddressInfo(registry_addr,registry_port)
+        ,this.netrouter);
 
         this.router = new SimplePacketRouter(client,this.domclient);
 
@@ -116,6 +130,11 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             ret_data = {};
         
         return Buffer.from(JSON.stringify(ret_data as object));
+    }
+    static getRandomName(){
+        let hash = Crypto.createHash("md5");
+        hash.update(Math.random()+"");
+        return `rand-${hash.digest("hex").substr(0,8)}`;
     }
     async close(){
         this.state = "closing";

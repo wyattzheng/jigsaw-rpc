@@ -1,2 +1,4 @@
-module.exports = require("./api/get-jigsaw");
+import RpcApi = require("./api");
+
+export = RpcApi;
 

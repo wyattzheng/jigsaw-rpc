@@ -19,11 +19,11 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
     private handler : DomainHandler;
     private state : string = "close";
 
-    constructor(bind_port:number,bind_address:string){
+    constructor(bind_port?:number,bind_address?:string){
         super();
 
-        this.address = bind_address;
-        this.port = bind_port;
+        this.address = bind_address || "0.0.0.0";
+        this.port = bind_port || 3793;
 
         let factory = new PacketFactory();
         let builder_manager = new PacketBuilderManager(factory);

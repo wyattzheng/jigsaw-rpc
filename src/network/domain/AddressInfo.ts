@@ -5,6 +5,14 @@ class AddressInfo{
         this.address=address;
         this.port=port;
     }
+    static parse(path:string){
+        if(path.indexOf(":") == -1)
+            return new AddressInfo(path,-1);
+
+        let [address,strport] = path.split(":");
+        return new AddressInfo(address,parseInt(strport));
+    }
+
 }
 
 export = AddressInfo;
