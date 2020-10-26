@@ -1,7 +1,7 @@
 {
-  "name": "jigsaw.ts",
+  "name": "jigsaw-rpc",
   "version": "0.0.1-dev14",
-  "description": "jigsaw.ts is a RPC framework under Node.js",
+  "description": "jigsaw-rpc is a RPC framework under Node.js",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,17 +12,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ZhyMC/jigsaw.ts.git"
+    "url": "git+https://github.com/ZhyMC/jigsaw-rpc.git"
   },
   "keywords": [
-    "rpc"
+    "rpc",
+    "http",
+    "client",
+    "tcp",
+    "udp",
+    "remote",
+    "call",
+    "framework",
+    "json-rpc",
+    "jsonrpc",
+    "jsonrpc2",
+    "web"
   ],
   "author": "zhymc",
   "license": "GPL-2.0",
   "bugs": {
-    "url": "https://github.com/ZhyMC/jigsaw.ts/issues"
+    "url": "https://github.com/ZhyMC/jigsaw-rpc/issues"
   },
-  "homepage": "https://github.com/ZhyMC/jigsaw.ts#readme",
+  "homepage": "https://github.com/ZhyMC/jigsaw-rpc#readme",
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/mocha": "^8.0.3",
