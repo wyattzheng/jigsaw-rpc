@@ -4,7 +4,7 @@ import DomainServer = require("../network/domain/server/DomainServer");
 import Url = require("url");
 
 const DomainApi = {
-    Server : DomainServer
+    Server : DomainServer,
 }
 const RpcApi = {
     domain : DomainApi,

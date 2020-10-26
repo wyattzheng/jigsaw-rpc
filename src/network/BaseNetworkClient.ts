@@ -1,7 +1,6 @@
 import AbstractSocket = require("./socket/AbstractSocket");
 import IBuilderManager = require("./protocol/builder/manager/IBuilderManager");
 import IFactory = require("./protocol/factory/IFactory");
-import StateManager = require("./StateManager");
 import Packet = require("./protocol/Packet");
 import Events = require("tiny-typed-emitter");
 import AbstractNetworkClient = require("./AbstractNetworkClient");
@@ -10,17 +9,16 @@ import AddressInfo = require("./domain/AddressInfo");
 
 class BaseNetworkClient extends AbstractNetworkClient{
 	protected socket : AbstractSocket;
-	protected state_manager : StateManager;
+	protected state : string = "starting";
 	protected factory : IFactory<Buffer,Packet>;
 	protected clientid : string = "";
+
 	constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>){
 		super();
 
-		this.state_manager = new StateManager("close",["ready","close"]);
 		this.factory = factory;
 		this.socket = socket;
 
-		this.state_manager.on("changed",this.onStateChanged.bind(this));
 		this.socket.on("ready",this.onSocketReady.bind(this));
 		this.socket.on("message",this.onSocketMessage.bind(this));
 		this.socket.on("close",this.onSocketClose.bind(this));
@@ -29,12 +27,6 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	}
 	public getState(){
 		return this.socket.getState();
-	}
-	public close(){
-		if(this.socket.getState() == "close")
-			return;
-			
-		this.socket.close();
 	}
 	private initClientId() : void{
 		this.clientid = "jg#" + Math.random() + "#";
@@ -45,15 +37,21 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	public getSocket() : AbstractSocket{
 		return this.socket;
 	}
-	private onStateChanged(event : string){
-		
-		this.emit(event as 'ready' | 'close' );
-	}
 	private onSocketReady(){
-		this.state_manager.setState("ready");
+		if(this.state != "starting"){
+			this.emit("error",new Error("state transform error"))
+			return;
+		}
+
+		this.state = "ready";
+		this.emit("ready");
 	}
 	private onSocketClose(){
-		this.state_manager.setState("close");
+		if(this.state == "close")
+			return;
+
+		this.state = "close";
+		this.emit("close");
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
 		let product = this.factory.getProduct(message);

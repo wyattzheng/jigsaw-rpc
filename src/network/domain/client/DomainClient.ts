@@ -104,7 +104,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         this.state = "closing";
         this.loop = false;
         await this.closing_defer.promise;
-    }
+     }
     private getCached(jgname:string){
         if(this.cache.has(jgname)){
             let cache = this.cache.get(jgname) as DomainCache;

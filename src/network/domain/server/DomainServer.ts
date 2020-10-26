@@ -49,8 +49,8 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
     getStorage(){
         return this.handler.storage;
     }
-    close(){
-        this.socket.close();
+    async close(){
+        await this.socket.close();
     }
 
 }

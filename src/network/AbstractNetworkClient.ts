@@ -7,6 +7,7 @@ interface NetworkClientEvent{
 	ready: () => void
 	packet: (p:Packet)=> void;
 	close: () => void;	
+	error: (err : Error) => void;
 }
 
 abstract class AbstractNetworkClient extends Events.TypedEmitter<NetworkClientEvent>{
@@ -15,7 +16,6 @@ abstract class AbstractNetworkClient extends Events.TypedEmitter<NetworkClientEv
 	public abstract getClientId() : string;
 	public abstract sendPacket(packet : Packet,dst_port:number,dst_address:string) : void;
 	public abstract getSocket() :AbstractSocket;
-	public abstract close() : void;
 }
 
 export = AbstractNetworkClient;

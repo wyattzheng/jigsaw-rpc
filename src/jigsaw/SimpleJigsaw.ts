@@ -91,6 +91,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.domclient.on("ready",()=>{
             this.setModuleReady("domclient");
         });
+
     }
     private setModuleReady(name:string){
         if(this.state != "starting")

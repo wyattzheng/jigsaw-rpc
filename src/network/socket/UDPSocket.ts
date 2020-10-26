@@ -48,11 +48,9 @@ class UDPSocket extends AbstractSocket{
 		this.sock.send(data,port,address);
 	}
 	public close(){
-		try{
-			this.sock.close();
-		}catch(err){
-			
-		}
+		return new Promise((resolve)=>{
+			this.sock.close(resolve);
+		})
 	}
 }
 

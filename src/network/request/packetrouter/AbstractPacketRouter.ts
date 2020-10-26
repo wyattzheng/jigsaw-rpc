@@ -14,7 +14,8 @@ type Handler = (pk:Packet)=>void;
 
 interface PacketRouterEvent{
 	ready: () => void;
-	close: () => void;	
+    close: () => void;	
+    error: (err : Error) => void;
 }
 
 
