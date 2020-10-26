@@ -11,6 +11,7 @@ import Path = require("../network/request/Path");
 import SimplePacketRouter = require("../network/request/packetrouter/SimplePacketRouter");
 import InvokeHandler = require("../network/handler/InvokeHandler");
 import Crypto = require("crypto");
+import DataValidator = require("./DataValidator");
 import Url = require("url");
 import { TypedEmitter } from "tiny-typed-emitter";
 
@@ -137,15 +138,24 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return `rand-${hash.digest("hex").substr(0,8)}`;
     }
     async close(){
-        this.state = "closing";
+        if(this.state == "closing" || this.state == "close")
+            return;
+        if(this.state != "ready")
+            throw new Error("at this state, the jigsaw can not be closed");
 
+        this.state = "closing";
+        
         //this.router.close();
-        await this.domclient.close();    
+        await this.domclient.close();   
+        
         this.socket.close();
 
     }
     
     send(path_str:string,data:object) : Promise<object>{
+        let validator = new DataValidator(data);
+        validator.validate();
+
         let path = Path.fromString(path_str);
         return this.doSend(path,data);
     }

@@ -53,7 +53,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
             this.start_updating_loop();
             this.state = "ready";
             this.emit("ready");
-            
         });
         this.router.on("close",()=>{
             this.close();
@@ -67,20 +66,25 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     }
 	public async start_updating_loop(){
         
+        let tick = 0;
+        let loop_interval = 100;
+
         this.loop = true;
 		while(this.loop == true){
-            
-            let addr = this.getAddress();
-            let update_addr = new AddressInfo(this.entry_address,addr.port);
+            let tick_time = Math.floor((tick * loop_interval) / 1000);
+            if(tick_time % 10 == 0){
+                let addr = this.getAddress();
+                let update_addr = new AddressInfo(this.entry_address,addr.port);
+                //console.log("update",update_addr);
+                try{
+                    this.updateAddress(this.client_name,update_addr);
 
-            //console.log("update",update_addr);
-            try{
-                this.updateAddress(this.client_name,update_addr);
-
-            }catch(err){
-                console.error("updating address error",err);
+                }catch(err){
+                    console.error("updating address error",err);
+                }
             }
-             await sleep(10*1000);
+             await sleep(loop_interval);
+             tick++;
         }
         
         this.closing_defer.resolve();
@@ -88,8 +92,10 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         this.emit("close");
     }
     async close(){
-        if(this.state!="ready")
-            throw new Error("at this state,client can not be closed");
+        if(this.state == "closing" || this.state =="close")
+            return;
+        if(this.state != "ready")
+            throw new Error("at this state, instance can not close");
 
         this.state = "closing";
         this.loop = false;
