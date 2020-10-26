@@ -16,6 +16,8 @@ interface DomainClientEvent{
 	ready: () => void;
 	close: () => void;	
 }
+class CacheExpiredError extends Error{};
+class CacheNoExistsError extends Error{};
 
 class DomainCache{
     public addrinfo : AddressInfo;
@@ -41,6 +43,8 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     private loop : boolean = false;
     private cache = new LimitedMap<string,DomainCache>(1000);
     private closing_defer = new Defer<void>();
+    private resolving : number = 0;
+    private max_resolving : number = 100;
 
     constructor(client_name:string,entry_address:string,server_address:AddressInfo,router:NetPacketRouter){
         super();
@@ -101,14 +105,23 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         this.loop = false;
         await this.closing_defer.promise;
     }
-    async resolve(jgname:string,onlycache = false,timeout:number = 5000) : Promise<AddressInfo>{
+    private getCached(jgname:string){
         if(this.cache.has(jgname)){
             let cache = this.cache.get(jgname) as DomainCache;
             
             if(!cache.isExpired()) // meet cache
                 return cache.addrinfo;
-            
-        }else{
+            else
+                throw new CacheExpiredError("domain has expired");
+
+        }else
+            throw new CacheNoExistsError("doesn't have domain cache")
+    }
+    async resolve(jgname:string,onlycache = false,timeout:number = 5000) : Promise<AddressInfo>{
+
+        try{
+            return this.getCached(jgname);
+        }catch(err){
             if(onlycache)
                 throw new Error("dont have this address cache")
         }
@@ -131,14 +144,25 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         let loops = Math.floor(max_time / loop_interval);
 
         for(let i=0;i<loops;i++){
+            
             try{
-                let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
-                await req.whenBuild();
-                await req.run();
-                return req.getResult();   
+                
+                this.resolving++;
+                if(this.resolving > this.max_resolving)
+                    throw new Error("reach max resolving limit")
+                    
+                try{ // try to check if have cache
+                    let cache=this.getCached(jgname);
+                    return cache;
+                }catch(err){} // do a realResolve
 
-            }catch(err){
 
+                return await this.realResolve(jgname);
+                
+            }catch(err){   
+
+            }finally{
+                this.resolving--;
             }
             let time=new Date().getTime();
 
@@ -149,6 +173,15 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         }
         throw new Error("resolve reach its max retry time");
         
+    }
+    private async realResolve(jgname:string){
+        
+        let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
+        await req.whenBuild();
+        await req.run();
+        
+        return req.getResult();
+
     }
     updateAddress(jgname:string,addrinfo:AddressInfo):void{
         let pk=new DomainUpdatePacket();
