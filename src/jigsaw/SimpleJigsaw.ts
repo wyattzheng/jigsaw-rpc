@@ -150,7 +150,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         //this.router.close();
         await this.domclient.close();   
-        
+
         this.socket.close();
 
     }

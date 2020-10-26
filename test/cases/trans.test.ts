@@ -114,8 +114,9 @@ describe("Base Transfer Test",()=>{
         })
         let tasks = [];
         let buf = "x".repeat(10240);
+        let times = 500;
 
-        for(let i=0;i<500;i++){
+        for(let i=0;i<times;i++){
             tasks.push(B.send("A:call",{buf,index:i}));
         }
 
@@ -128,11 +129,10 @@ describe("Base Transfer Test",()=>{
             array[ar.index] = true;
         }
 
-        assert(array.length == 500);
+        assert(array.length == times);
 
         await A.close();
         await B.close();        
-
     });
 
     after(async ()=>{

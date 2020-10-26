@@ -131,7 +131,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         let addrinfo = await this.doResolve(jgname,timeout);
         debug("real resolve",jgname,addrinfo);
 
-
         this.cache.set(jgname,new DomainCache(addrinfo));
 
         return addrinfo;
@@ -155,7 +154,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
                     let cache=this.getCached(jgname);
                     return cache;
                 }catch(err){} // do a realResolve
-
 
                 return await this.realResolve(jgname);
                 
