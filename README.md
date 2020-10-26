@@ -1,5 +1,6 @@
 # Jigsaw-RPC
 
+[![Build Status](https://www.travis-ci.org/ZhyMC/jigsaw-rpc.svg?branch=master)](https://www.travis-ci.org/ZhyMC/jigsaw-rpc)
 [![npm version](https://badge.fury.io/js/jigsaw-rpc.svg)](https://npmjs.org/package/jigsaw-rpc)
 
 jigsaw-rpc is an RPC framework written in TypeScript, it implements RPC used completely Node.js Socket API to ensure the performance of calling a remote method.
