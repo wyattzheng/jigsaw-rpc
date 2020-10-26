@@ -4,10 +4,10 @@
   "description": "jigsaw-rpc is a RPC framework under Node.js",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "build": "tsc",
     "prepare": "npm run build",
-    "cov-report": "nyc report",
+    "test-cov": "nyc npm test",
     "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" "
   },
   "repository": {
@@ -40,7 +40,9 @@
     "@types/node": "^14.11.8",
     "cz-conventional-changelog": "^3.3.0",
     "mocha": "^8.2.0",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.3"
   },
   "config": {
     "commitizen": {

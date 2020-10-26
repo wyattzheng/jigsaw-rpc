@@ -163,6 +163,20 @@ jg.send("call_2",{abc:123});
 
 **handler** can be a Async Function if you want to.
 
+## Test
+
+This project use mocha test framework, run:
+
+```
+npm test
+```
+at the project folder to do tests
+
+you can also run:
+```
+npm run test-cov
+```
+to check the coverage of test cases
 
 ## LICENSE
 
