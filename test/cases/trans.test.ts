@@ -14,6 +14,7 @@ describe("Base Transfer Test",()=>{
     before(()=>{
         app.registry = new RPC.domain.Server();
     });
+    
     it("should succeed when transfer a simple object",async ()=>{
         let A = RPC.GetJigsaw({name:"A"});
         let B = RPC.GetJigsaw({name:"B"});
@@ -95,6 +96,41 @@ describe("Base Transfer Test",()=>{
         
 
     })
+    it("should succeed when transfer 500 requests at the same time",async function(){
+        this.timeout(10000);
+
+        let A = RPC.GetJigsaw({name:"A"});
+        let B = RPC.GetJigsaw({name:"B"});
+        await Promise.all([
+            waitForEvent(A,"ready"),
+            waitForEvent(B,"ready")
+        ]);
+
+        A.port("call",(obj)=>{
+            return obj;
+        })
+        let tasks = [];
+        let buf = "x".repeat(10240);
+
+        for(let i=0;i<500;i++){
+            tasks.push(B.send("A:call",{buf,index:i}));
+        }
+
+        let array : Array<boolean> = [];
+        let res = await Promise.all(tasks);
+        for(let r of res){
+            let ar = (r as any);
+            if(ar.buf != buf)
+                throw new Error("result is error");
+            array[ar.index] = true;
+        }
+
+        assert(array.length == 500);
+
+        await A.close();
+        await B.close();        
+
+    });
 
     after(async ()=>{
         await app.registry.close();

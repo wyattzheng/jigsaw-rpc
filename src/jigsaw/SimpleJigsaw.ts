@@ -26,7 +26,7 @@ type Handler = (data : object) => HandlerRet;
 type FinalHandler = (port_name:string,data:object)=> object | void;
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
-    private state = "close";
+    private state = "starting"; // starting ready closing close
 
     public jgname : string;
     private domclient : DomainClient;
@@ -93,7 +93,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         });
     }
     private setModuleReady(name:string){
-        if(this.state != "close")
+        if(this.state != "starting")
             throw new Error("not a correct state");
 
         this.module_ref.add(name);
@@ -138,6 +138,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return `rand-${hash.digest("hex").substr(0,8)}`;
     }
     async close(){
+        if(this.state == "starting")
+            throw new Error("this instance is starting.");
+
         if(this.state == "closing" || this.state == "close")
             return;
         if(this.state != "ready")
