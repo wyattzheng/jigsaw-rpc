@@ -47,7 +47,9 @@ describe("Base Transfer Test",()=>{
         await A.close();
     })    
 
-    it("should succeed when transfer an 1MB object",async()=>{
+    it("should succeed when transfer an 1MB object",async function(){
+        this.timeout(20*1000);
+
         let A = RPC.GetJigsaw({name:"A"});
         let B = RPC.GetJigsaw({name:"B"});
         await Promise.all([
@@ -68,6 +70,7 @@ describe("Base Transfer Test",()=>{
     });
 
     it("should succeed when object contains a undefined",async()=>{
+        
         let A = RPC.GetJigsaw({name:"A"});
         let B = RPC.GetJigsaw({name:"B"});
         await Promise.all([
@@ -97,7 +100,7 @@ describe("Base Transfer Test",()=>{
 
     })
     it("should succeed when transfer 500 requests at the same time",async function(){
-        this.timeout(10000);
+        this.timeout(20000);
 
         let A = RPC.GetJigsaw({name:"A"});
         let B = RPC.GetJigsaw({name:"B"});
