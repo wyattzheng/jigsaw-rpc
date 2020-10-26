@@ -10,4 +10,10 @@ install:
   - npm ci
 
 script:
+  - npm install codecov -g
   - npm test
+
+
+after_success:
+  - npm run test-cov
+  - codecov

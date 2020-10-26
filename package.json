@@ -7,7 +7,7 @@
     "test": "mocha",
     "build": "tsc",
     "prepare": "npm run build",
-    "test-cov": "nyc npm test",
+    "test-cov": "nyc --reporter=lcov npm test",
     "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" "
   },
   "repository": {
