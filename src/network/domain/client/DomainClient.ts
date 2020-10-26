@@ -125,7 +125,12 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     }
     private async doResolve(jgname:string,timeout:number){
         let start_time = new Date().getTime();
-        for(let i=0;i<5;i++){
+        let loop_interval = 200;
+        let max_time = 10*1000;
+        
+        let loops = Math.floor(max_time / loop_interval);
+
+        for(let i=0;i<loops;i++){
             try{
                 let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
                 await req.whenBuild();
@@ -140,7 +145,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
             if(time - start_time > timeout)
                 break;
             
-            await sleep(200);
+            await sleep(loop_interval);
         }
         throw new Error("resolve reach its max retry time");
         
