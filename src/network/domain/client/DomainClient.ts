@@ -117,13 +117,12 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         }else
             throw new CacheNoExistsError("doesn't have domain cache")
     }
-    async resolve(jgname:string,onlycache = false,timeout:number = 5000) : Promise<AddressInfo>{
+    async resolve(jgname:string,timeout:number = 5000) : Promise<AddressInfo>{
 
         try{
             return this.getCached(jgname);
         }catch(err){
-            if(onlycache)
-                throw new Error("dont have this address cache")
+
         }
 
         

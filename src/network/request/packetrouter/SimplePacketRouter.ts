@@ -15,7 +15,7 @@ class SimplePacketRouter extends AbstractPacketRouter{
     }
 
     async sendPacket(jgname:string,p : Packet){
-        let address = await this.domclient.resolve(jgname,true);
+        let address = await this.domclient.resolve(jgname);
        
         let client=this.getClient();
         client.sendPacket(p,address.port,address.address);
