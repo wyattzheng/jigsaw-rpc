@@ -1,10 +1,10 @@
-# Jigsaw.ts
+# Jigsaw-RPC
 
-[![npm version](https://badge.fury.io/js/jigsaw.ts.svg)](https://npmjs.org/package/jigsaw.ts)
+[![npm version](https://badge.fury.io/js/jigsaw-rpc.svg)](https://npmjs.org/package/jigsaw-rpc)
 
-Jigsaw.ts is an RPC framework written in TypeScript, it implements RPC used completely Node.js Socket API to ensure the performance of calling a remote method.
+jigsaw-rpc is an RPC framework written in TypeScript, it implements RPC used completely Node.js Socket API to ensure the performance of calling a remote method.
 
-The API of Jigsaw.ts is designed to easy to use.
+The API of jigsaw-rpc is designed to easy to use.
 
 And the project is **Expandable and Maintainable**, so your contribution is welcome.
 
@@ -12,13 +12,13 @@ And the project is **Expandable and Maintainable**, so your contribution is welc
 
 in a npm project folder, run:
 ```
-npm install jigsaw.ts --save
+npm install jigsaw-rpc --save
 ```
 ## Easy-to-start Sample
 
 serv.js
 ```
-const RPC = require("jigsaw.ts");
+const RPC = require("jigsaw-rpc");
 new RPC.domain.Server();
 
 let jg = RPC.GetJigsaw({ name :"calculator" });
@@ -34,7 +34,7 @@ jg.port("add",({a,b})=>{
 
 app.js
 ```
-const RPC = require("jigsaw.ts");
+const RPC = require("jigsaw-rpc");
 
 jg.send("calculator:add",{ a:3, b:7 }).then((res)=>{
     console.log(res);
