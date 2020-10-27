@@ -35,11 +35,10 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
             debug("alldone and timeout","build_req",this.req_id);
         },12000);
 
-
         this.initUnsent();
     }
     close(){
-        this.setAllDone(false);
+        this.setAllDone(true);
     }
     isAllDone(){
         return this.alldone;

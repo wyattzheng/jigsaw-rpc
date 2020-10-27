@@ -44,7 +44,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     private cache = new LimitedMap<string,DomainCache>(1000);
     private closing_defer = new Defer<void>();
     private resolving : number = 0;
-    private max_resolving : number = 100;
+    private max_resolving : number = 300;
 
     constructor(client_name:string,entry_address:string,server_address:AddressInfo,router:NetPacketRouter){
         super();
@@ -90,7 +90,6 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
              await sleep(loop_interval);
              tick++;
         }
-        
         this.closing_defer.resolve();
         this.state = "close";
         this.emit("close");

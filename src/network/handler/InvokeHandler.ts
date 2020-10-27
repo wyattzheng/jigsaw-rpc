@@ -28,30 +28,52 @@ class InvokingError extends Error{}
 
 class Invoker{
     public slicer? : PacketSlicer;
-    public state : string = "ready"; // ready,invoking,invoked,done
-    public invoke_result? : Packet;
+    public build_req : string = "";
+    private state : string = "invoking"; //invoking,invoked,done,closing
     constructor(){
+
     }
-    setResult(result : Packet){
-        this.invoke_result = result;
+    setSlicer(slicer : PacketSlicer){
+        this.slicer = slicer;
     }
-    setDone(){
+    getState() : string{
+        return this.state;
+    }
+    setState(state : string){
+
+        
+        if(state == "invoked" && this.state == "closing"){
+            this.state = "invoked";
+
+            this.close();
+            return;
+        }
+            this.state = state;
+    }
+    close(){
+        if(this.state == "done")
+            return;
+
+        if(this.state == "invoking"){
+            this.state = "closing";
+            return;
+        }
         if(this.state != "invoked")
             return;
         
         this.state = "done";
-        this.invoke_result?.release();
-        this.invoke_result = undefined;
-        this.slicer = undefined;
+        this.slicer?.close();
     }
+    
 
 }
 
 class InvokeHandler extends AbstractHandler{
     public router : NetPacketRouter;
     public handler : Handler;
-
+    public state : string = "starting";
     private invokers = new LimitedMap<string,Invoker>(500);
+    private reply_ref : number= 0;
 
     constructor(router:NetPacketRouter,handler:Handler){
         super(router);
@@ -60,7 +82,40 @@ class InvokeHandler extends AbstractHandler{
 
         this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
+        this.router.on("ready",()=>{
+            this.state = "ready";
+        });
+        this.router.on("close",()=>{
+            this.close();
+        });
+
+        this.invokers.on("deleted",(item : Invoker)=>{
+            
+            item.close();
+            
+        })
     }
+    close(){
+        if(this.state == "close")
+            return;
+        if(this.state == "starting")
+            throw new Error("right now starting")
+        
+        this.closeAllInvokers();
+        
+        this.state = "closing";
+        this.setReplyRef(0);
+    }
+    private closeAllInvokers(){
+        let keys = Array.from(this.invokers.getMap().keys());
+
+        debug("closing total invokers:",keys.length);
+        for(let key of keys){
+            let invoker = this.invokers.get(key);
+            invoker.close();
+        }
+    }
+    
     getInvoker(name : string) : Invoker{
         if(!this.invokers.has(name))
             throw new Error("this invoker can not find");
@@ -70,98 +125,111 @@ class InvokeHandler extends AbstractHandler{
     hasInvoker(name : string){
         return this.invokers.has(name);
     }
-    protected async getResponsePacket(p:Packet):Promise<Packet>{
-        let pk = p as InvokePacket;
 
-        let r_pk = new InvokeReplyPacket();
-
-        let ret_data = await this.handler(pk.dst_path,pk.data);
-
-        r_pk.request_id = pk.request_id;
-        r_pk.data = ret_data;
-
-
-        return r_pk;
-    }
 
     private async sendInvokeResult(invoker : Invoker,target : AddressInfo){
-        if(invoker.state!="invoked")
-            throw new Error("doesn't have invoked result right now");
+       
+       
+        if(invoker.getState()!="invoked")
+            return;
 
+        if(this.state == "closing")
+            return;
+            
+        this.setReplyRef(+1);
         let slicer = invoker.slicer as PacketSlicer;
         let sliceids = slicer.getPartSlices();
 
-        for(let id of sliceids){
-            this.router.sendPacket(slicer.getSlicePacket(id),target.port,target.address);
-            await sleep(0);
+        try{
+            for(let id of sliceids){
+                if(this.state != "ready")
+                    break;
+    
+                this.router.sendPacket(slicer.getSlicePacket(id),target.port,target.address);
+                await sleep(0);
+            }    
+        }catch(err){
 
         }
 
+        this.setReplyRef(-1);
     }
+    private setReplyRef(offset:number){
+        this.reply_ref+=offset;
+        if(this.reply_ref == 0 && this.state == "closing"){
+            this.state = "close";
+        }
+    }
+    private async getReplyPacket(invoke_packet:Packet):Promise<Packet>{
+        let pk = invoke_packet as InvokePacket;
+
+        try{
+            let r_pk = new InvokeReplyPacket();
+
+            let ret_data = await this.handler(pk.dst_path,pk.data);
     
+            r_pk.request_id = pk.request_id;
+            r_pk.data = ret_data;
+            return r_pk;
+        }catch(err){
+            let err_pk = new ErrorPacket();
+            err_pk.request_id = pk.request_id;
+            err_pk.error = err;
+
+            return err_pk;
+        }
+    }
+    private async addNewInvoker(invoke_pk:Packet) : Promise<Invoker>{
+        let build_req =Math.random() + "-build";
+
+
+        let invoker = new Invoker();
+        this.invokers.set(invoke_pk.request_id,invoker);
+
+        invoker.build_req = build_req;
+
+        let result = await this.getReplyPacket(invoke_pk);
+        let slicer = new PacketSlicer(result as Packet,build_req);        
+
+        invoker.setSlicer(slicer);
+
+
+        let refid=this.router.plug(invoker.build_req,(p:Packet)=>{
+            let ack = p as SliceAckPacket;
+            slicer.ackSlicePacket(ack.partid);
+        });
+        slicer.once("alldone",()=>{
+                //this.invokers.delete(p.request_id);
+            invoke_pk.release();
+            invoker.close();
+        
+            this.router.unplug(invoker.build_req,refid);
+            debug("alldone","requestid:",invoke_pk.request_id,"build_req",invoker.build_req);
+        });
+        
+
+
+        invoker.setState("invoked");
+
+        debug("invoked, start to reply","requestid:",invoke_pk.request_id,"build_req",invoker.build_req);
+
+        return invoker;
+    }    
     protected async handlePacket(p:Packet){
+        if(this.state != "ready")
+            return;
 
         if(this.hasInvoker(p.request_id)){
             let invoker = this.getInvoker(p.request_id);
-            //console.log(invoker.state)
             
-            if(invoker.state == "invoked")
+
+            if(invoker.getState() == "invoked")
                 this.sendInvokeResult(invoker, p.reply_info);
 
             return;
         }
         
-        let invoker = new Invoker();
-        invoker.state = "invoking";
-        this.invokers.set(p.request_id,invoker);
-
-        let invoke_result;
-        try{
-            invoke_result = await this.getResponsePacket(p);
-    
-        }catch(err){
-            let err_pk = new ErrorPacket();
-            err_pk.request_id = p.request_id;
-            err_pk.error = err;
-
-            invoke_result = err_pk;
-        }
-        
-        /*
-
-        this.router.sendPacket(invoke_result,p.reply_info.port,p.reply_info.address)
-        return;
-        
-        */
-
-        invoker.setResult(invoke_result);    
-        
-        let build_req = Math.random() + "-build";
-        let packet_slicer = new PacketSlicer(invoke_result as Packet,build_req);
-
-        invoker.slicer = packet_slicer;
-
-        let refid=this.router.plug(build_req,(p:Packet)=>{
-            let ack = p as SliceAckPacket;
-            packet_slicer.ackSlicePacket(ack.partid);
-        });
-
-        packet_slicer.once("alldone",()=>{
-            try{
-                //this.invokers.delete(p.request_id);
-                p.release();
-                invoker.setDone();
-            }catch(err){
-
-            }
-            this.router.unplug(build_req,refid);
-            debug("alldone","requestid:",p.request_id,"build_req",build_req);
-        });
-        
-
-        debug("invoked, start to reply","requestid:",p.request_id,"build_req",build_req);
-        
-        invoker.state = "invoked";
+        let invoker = await this.addNewInvoker(p);        
 
         this.sendInvokeResult(invoker,p.reply_info);
     }

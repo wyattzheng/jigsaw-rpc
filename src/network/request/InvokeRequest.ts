@@ -32,6 +32,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
         this.once("done",()=>{
             this.packet_slicer.close();
         });
+
         
         this.preloadDomain();
     }
