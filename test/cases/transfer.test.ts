@@ -47,7 +47,7 @@ describe("Base Transfer Test",()=>{
         await A.close();
     })    
 
-    it("should succeed when transfer an 1MB object",async function(){
+    it("should succeed when transfer an 512KB object",async function(){
         this.timeout(20*1000);
 
         let A = RPC.GetJigsaw({name:"A"});
@@ -60,7 +60,7 @@ describe("Base Transfer Test",()=>{
         A.port("call",(obj)=>{
             return obj;
         });
-        let large_object = "x".repeat(1024*1024);
+        let large_object = "x".repeat(512*1024);
 
         let res : any = await B.send("A:call",{test:large_object});
         assert(res.test == large_object);
