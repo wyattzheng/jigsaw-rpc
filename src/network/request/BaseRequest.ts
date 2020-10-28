@@ -7,6 +7,10 @@ import Defer = require("../../utils/Defer");
 import SwitchRule = require("./packetrouter/subrouter/RouterRule");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
 import util = require("util");
+import RequestTimeoutError = require("../../error/request/RequestTimeoutError");
+import RequestRemoteError = require("../../error/request/RequestRemoteError");
+import Path = require("./Path");
+
 const sleep = util.promisify(setTimeout);
 
 
@@ -15,16 +19,14 @@ const debug = require("debug")("BaseRequest");
 abstract class BaseRequest<T> extends AbstractRequest{
     protected req_seq : number = -1;
     protected result? : T;
-    private hasResult : boolean = false;
-
+    protected hasResult : boolean = false;
+    protected timeout_duration : number;
     protected router : AbstractPacketRouter;
 
-    protected timeout : NodeJS.Timeout;
-    protected timeout_duration : number;
-
+    private timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
-    protected resender_defer? : Defer<void>;
-    protected resender_loop : boolean  = false;
+    private resender_defer? : Defer<void>;
+    private resender_loop : boolean  = false;
 
     constructor(router: AbstractPacketRouter,seq : number,timeout_duration : number){
         super();
@@ -35,9 +37,9 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.timeout_duration = timeout_duration;
         this.timeout=setTimeout(()=>{
             if(this.state == RequestState.BUILDING || this.state == RequestState.BUILT)
-                this.setFailedState(new Error("building request timeout"));
+                this.setFailedState(this.getTimeoutError());
             else{
-               this.pending_defer?.reject(new Error("request pending timeout"));
+               this.pending_defer?.reject(this.getTimeoutError());
             }
            },this.timeout_duration);
 
@@ -46,18 +48,25 @@ abstract class BaseRequest<T> extends AbstractRequest{
         });
 
     }
-    private handleErrorPacket(p : Packet){
-        if(this.state!=RequestState.PENDING){
-            return;
-        }
-
+    protected getTimeoutError(){
+        return new RequestTimeoutError(this.timeout_duration);
+    }
+    protected handleErrorPacket(p : Packet){
         let pk = p as ErrorPacket;
-        this.pending_defer?.reject(pk.error)
+        throw new RequestRemoteError(pk.error);
+    }
+    private onErrorPacket(p : Packet){
+        try{
+            this.handleErrorPacket(p);
+        }catch(err){
+            this.pending_defer?.reject(err);
+        }
     }
     private checkRequestKey(){
         if(this.req_seq < 0)
             throw new Error("request key must be set.")
     }
+    
     setRequestSeq(seq : number){
         this.req_seq = seq;
     }
@@ -137,7 +146,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
         
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
-        let error_refid = this.router.plug("ErrorPacket",this.handleErrorPacket.bind(this));
+        let error_refid = this.router.plug("ErrorPacket",this.onErrorPacket.bind(this));
     
         debug("plug",refid);
 

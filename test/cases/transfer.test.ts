@@ -1,6 +1,7 @@
 import RPC = require("../../src/index");
 import assert = require("assert");
 import util = require("util");
+import InvokeRemoteError = require("../../src/error/request/InvokeRemoteError");
 const sleep = util.promisify(setTimeout);
 
 function waitForEvent(obj:any,event_name:string){
@@ -176,17 +177,18 @@ describe("Base Transfer Test",()=>{
         });
 
 
-        let error : Error | undefined;
+        let error : InvokeRemoteError | undefined;
 
         try{
             let res : any = await B.send("A:callError",{test:"abc123"});
         }catch(err){
             error = err;
         }
+        assert(error instanceof InvokeRemoteError,"error must be InvokeRemoteError");
         
-        assert(error instanceof Error,"error must happend");
-        assert.strictEqual(error.message,realError.message);
-        assert.strictEqual(error.name,realError.name);
+
+        assert.strictEqual(error.error.message,realError.message);
+        assert.strictEqual(error.error.name,realError.name);
         
         
         await A.close();

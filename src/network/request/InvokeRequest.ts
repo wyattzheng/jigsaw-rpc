@@ -9,6 +9,9 @@ import InvokePacket = require("../protocol/packet/InvokePacket");
 import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
 import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
 import PacketSlicer = require("../request/PacketSlicer");
+import InvokeTimeoutError = require("../../error/request/InvokeTimeoutError");
+import InvokeRemoteError = require("../../error/request/InvokeRemoteError");
+import ErrorPacket = require("../protocol/packet/ErrorPacket");
 
 class InvokeRequest extends BaseRequest<Buffer> {
     private path : Path;
@@ -72,9 +75,14 @@ class InvokeRequest extends BaseRequest<Buffer> {
                 await this.router.sendPacket(this.path.jgname,this.packet_slicer.getSlicePacket(sliceid));
             }
         } 
-    
     }
-
+    protected getTimeoutError(){
+        return new InvokeTimeoutError(this.timeout_duration,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
+    }
+    protected handleErrorPacket(p : Packet){
+        let pk = p as ErrorPacket;
+        throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
+    }
     protected handlePacket(p : Packet){
         if(this.state!=RequestState.PENDING)
             return;
