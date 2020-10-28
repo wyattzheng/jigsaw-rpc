@@ -2,7 +2,7 @@ import BasePacket = require("../BasePacket");
 
 class TestPacket extends BasePacket{
 	public static packet_id : number = 1;
-	public testdata : string = "";
+	public testdata : Array<Buffer> = [];
 
 	constructor(){
 		super();
@@ -14,16 +14,25 @@ class TestPacket extends BasePacket{
 	public encode() : void{
 		if(this.built)return;
 
-		super.encode.call(this);
-		this.writeString(this.testdata);
+		if(this.testdata.length>100)
+			throw new Error("this array too large")
 
+		super.encode.call(this);
+		for(let data of this.testdata)
+			this.writeBuffer(data);
+		this.writeBuffer(Buffer.allocUnsafe(0));
 	}
 	public decode() : void{
 		if(this.built)return;
 		
 		super.decode.call(this);
 
-		this.testdata = this.readString();
+		for(let i=0;i<100;i++){
+			let buf = this.readBuffer();
+			if(buf.length == 0)
+				break;
+			this.testdata[i] = buf;
+		}
 	}
 }
 

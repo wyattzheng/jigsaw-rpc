@@ -1,5 +1,7 @@
 import RPC = require("../../src/index");
 import assert = require("assert");
+import util = require("util");
+const sleep = util.promisify(setTimeout);
 
 function waitForEvent(obj:any,event_name:string){
     return new Promise((resolve)=>{
@@ -135,6 +137,62 @@ describe("Base Transfer Test",()=>{
         await B.close();        
     });
 
+    it("should succeed and won't recv same request twice when network delay",async function (){
+        this.timeout(10000);
+
+        let A = RPC.GetJigsaw({name:"A"});
+        let B = RPC.GetJigsaw({name:"B"});
+        await Promise.all([
+            waitForEvent(A,"ready"),
+            waitForEvent(B,"ready")
+        ]);
+
+        let times = 0;
+        A.port("call",async (obj)=>{
+            times++;
+            await sleep(2000);
+            return obj;
+        });
+
+        let res : any = await B.send("A:call",{test:"abc123"});
+        assert(res.test == "abc123");
+        assert(times == 1);
+
+        await A.close();
+        await B.close();
+    });
+    it("should throw the same error when remote invoke occur an error",async function(){
+        let A = RPC.GetJigsaw({name:"A"});
+        let B = RPC.GetJigsaw({name:"B"});
+        await Promise.all([
+            waitForEvent(A,"ready"),
+            waitForEvent(B,"ready")
+        ]);
+
+        let realError = new SyntaxError("testerror");
+        A.port("callError",(obj)=>{
+            throw realError;
+            return obj;
+        });
+
+
+        let error : Error | undefined;
+
+        try{
+            let res : any = await B.send("A:callError",{test:"abc123"});
+        }catch(err){
+            error = err;
+        }
+        
+        assert(error instanceof Error,"error must happend");
+        assert.strictEqual(error.message,realError.message);
+        assert.strictEqual(error.name,realError.name);
+        
+        
+        await A.close();
+        await B.close();
+
+    })
     after(async ()=>{
         await app.registry.close();
 

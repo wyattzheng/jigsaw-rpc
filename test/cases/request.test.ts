@@ -1,6 +1,7 @@
 import BaseNetworkClient from "../../src/network/BaseNetworkClient"
 import AddressInfo from "../../src/network/domain/AddressInfo"
 import DomainClient from "../../src/network/domain/client/DomainClient"
+import PacketBuilder from "../../src/network/protocol/builder/PacketBuilder"
 import PacketFactory from "../../src/network/protocol/factory/PacketFactory"
 import BaseRequest from "../../src/network/request/BaseRequest"
 import InvokeRequest from "../../src/network/request/InvokeRequest"
@@ -53,7 +54,5 @@ describe("Request Test",()=>{
                 done();
             }
         });
-        
-        
-    })
+    });
 })
