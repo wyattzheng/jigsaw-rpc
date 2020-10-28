@@ -46,6 +46,9 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     isFailed(){
         return this.failed;
     }
+    public getPacket(){
+        return this.packet;
+    }
     private initUnsent(){
         for(let j = 0;j<this.getSliceCount();j++)
             this.unsent_packets.add(j);

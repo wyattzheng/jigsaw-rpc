@@ -30,6 +30,8 @@ class Invoker{
     public slicer? : PacketSlicer;
     public build_req : string = "";
     private state : string = "invoking"; //invoking,invoked,done,closing
+
+
     constructor(){
 
     }
@@ -73,8 +75,10 @@ class InvokeHandler extends AbstractHandler{
     public handler : Handler;
     public state : string = "starting";
     private invokers = new LimitedMap<string,Invoker>(500);
-    private reply_ref : number= 0;
-
+    private refs : Map<string,number> = new Map(Object.entries({
+        reply:0,
+        invokers:0
+    }));
     constructor(router:NetPacketRouter,handler:Handler){
         super(router);
         this.router = router;
@@ -90,10 +94,10 @@ class InvokeHandler extends AbstractHandler{
         });
 
         this.invokers.on("deleted",(item : Invoker)=>{
-            
             item.close();
             
         })
+
     }
     close(){
         if(this.state == "close")
@@ -104,7 +108,8 @@ class InvokeHandler extends AbstractHandler{
         this.closeAllInvokers();
         
         this.state = "closing";
-        this.setReplyRef(0);
+        this.setRef("reply",0);
+        
     }
     private closeAllInvokers(){
         let keys = Array.from(this.invokers.getMap().keys());
@@ -136,7 +141,7 @@ class InvokeHandler extends AbstractHandler{
         if(this.state == "closing")
             return;
             
-        this.setReplyRef(+1);
+        this.setRef("reply",+1);
         let slicer = invoker.slicer as PacketSlicer;
         let sliceids = slicer.getPartSlices();
 
@@ -152,14 +157,9 @@ class InvokeHandler extends AbstractHandler{
 
         }
 
-        this.setReplyRef(-1);
+        this.setRef("reply",-1);
     }
-    private setReplyRef(offset:number){
-        this.reply_ref+=offset;
-        if(this.reply_ref == 0 && this.state == "closing"){
-            this.state = "close";
-        }
-    }
+
     private async getReplyPacket(invoke_packet:Packet):Promise<Packet>{
         let pk = invoke_packet as InvokePacket;
 
@@ -180,6 +180,8 @@ class InvokeHandler extends AbstractHandler{
         }
     }
     private async addNewInvoker(invoke_pk:Packet) : Promise<Invoker>{
+        this.setRef("invokers",+1);
+
         let build_req =Math.random() + "-build";
 
 
@@ -200,9 +202,12 @@ class InvokeHandler extends AbstractHandler{
         });
         slicer.once("alldone",()=>{
                 //this.invokers.delete(p.request_id);
+
+            this.setRef("invokers",-1);
+
             invoke_pk.release();
             invoker.close();
-        
+            result.release();
             this.router.unplug(invoker.build_req,refid);
             debug("alldone","requestid:",invoke_pk.request_id,"build_req",invoker.build_req);
         });
@@ -233,6 +238,24 @@ class InvokeHandler extends AbstractHandler{
 
         this.sendInvokeResult(invoker,p.reply_info);
     }
+    private setRef(ref_type:string,offset:number){
+        let ref = this.refs.get(ref_type) as number;
+        this.refs.set(ref_type,ref+offset);
+        //console.log(this.refs);
+
+        if(this.state == "closing"){
+            let alldone = true;
+            for(let key of this.refs.keys()){
+                let r = this.refs.get(key) as number;
+                if(r > 0)
+                    alldone = false;
+            }
+            if(alldone){
+                this.state = "close";
+
+            }
+        }
+    }    
 
 }
 
