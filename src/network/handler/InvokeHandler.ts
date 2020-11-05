@@ -1,4 +1,3 @@
-import NetPacketRouter = require("../request/packetrouter/NetPacketRouter");
 import AbstractHandler = require("./AbstractHandler");
 import Packet = require("../protocol/Packet");
 import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
@@ -6,7 +5,7 @@ import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
 import DomainStorage = require("../domain/server/DomainStorage");
 import DomainUpdatePacket = require("../protocol/packet/DomainUpdatePacket");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
-import SimplePacketRouter = require("../request/packetrouter/SimplePacketRouter");
+import SimplePacketRouter = require("../router/packetrouter/SimplePacketRouter");
 import { TypedEmitter } from "tiny-typed-emitter";
 import InvokePacket = require("../protocol/packet/InvokePacket");
 import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
@@ -18,13 +17,15 @@ import PacketBuilder = require("../protocol/builder/PacketBuilder");
 import PacketSlicer = require("../request/PacketSlicer");
 import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
 import LimitedMap = require("../../utils/LimitedMap");
-import util = require("util")
+import IRouter = require("../router/IRouter");
+import NetRoute = require("../router/route/NetRoute");
+import util = require("util");
+
+
 const sleep = util.promisify(setTimeout)
 const debug = require("debug")("InvokeHandler");
 
 type Handler = (path:Path,buf:Buffer)=>Promise<Buffer>;
-
-class InvokingError extends Error{}
 
 class Invoker{
     public slicer? : PacketSlicer;
@@ -71,7 +72,7 @@ class Invoker{
 }
 
 class InvokeHandler extends AbstractHandler{
-    public router : NetPacketRouter;
+    public router : IRouter;
     public handler : Handler;
     public state : string = "starting";
     private invokers = new LimitedMap<string,Invoker>(500);
@@ -79,17 +80,17 @@ class InvokeHandler extends AbstractHandler{
         reply:0,
         invokers:0
     }));
-    constructor(router:NetPacketRouter,handler:Handler){
+    constructor(router:IRouter,handler:Handler){
         super(router);
         this.router = router;
         this.handler = handler;
 
         this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
-        this.router.on("ready",()=>{
+        this.router.getEventEmitter().on("ready",()=>{
             this.state = "ready";
         });
-        this.router.on("close",()=>{
+        this.router.getEventEmitter().on("close",()=>{
             this.close();
         });
 
@@ -150,7 +151,7 @@ class InvokeHandler extends AbstractHandler{
                 if(this.state != "ready")
                     break;
     
-                this.router.sendPacket(slicer.getSlicePacket(id),target.port,target.address);
+                this.router.sendPacket(slicer.getSlicePacket(id),new NetRoute(target.port,target.address));
                 await sleep(0);
             }    
         }catch(err){

@@ -1,15 +1,15 @@
 import AbstractRequest = require("./AbstractRequest")
 import RequestState = require("./RequestState");
 import AbstractNetworkClient = require("../AbstractNetworkClient");
-import AbstractPacketRouter = require("./packetrouter/AbstractPacketRouter");
+import AbstractPacketRouter = require("../router/packetrouter/AbstractPacketRouter");
 import Packet = require("../protocol/Packet");
 import Defer = require("../../utils/Defer");
-import SwitchRule = require("./packetrouter/subrouter/RouterRule");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
 import util = require("util");
 import RequestTimeoutError = require("../../error/request/RequestTimeoutError");
 import RequestRemoteError = require("../../error/request/RequestRemoteError");
 import Path = require("./Path");
+import IRouter = require("../router/IRouter");
 
 const sleep = util.promisify(setTimeout);
 
@@ -21,14 +21,14 @@ abstract class BaseRequest<T> extends AbstractRequest{
     protected result? : T;
     protected hasResult : boolean = false;
     protected timeout_duration : number;
-    protected router : AbstractPacketRouter;
+    protected router : IRouter;
 
     private timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
     private resender_defer? : Defer<void>;
     private resender_loop : boolean  = false;
 
-    constructor(router: AbstractPacketRouter,seq : number,timeout_duration : number){
+    constructor(router: IRouter,seq : number,timeout_duration : number){
         super();
 
         this.router = router;
@@ -71,7 +71,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.req_seq = seq;
     }
     getRequestId() : string{
-        return this.router.getClient().getClientId() + ":" +this.getName() + ":" + this.req_seq;
+        return this.router.getRouterId() + ":" +this.getName() + ":" + this.req_seq;
     }
     protected setResult(result : T){
         if(this.state!=RequestState.PENDING)

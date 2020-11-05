@@ -37,7 +37,6 @@ class UDPSocket extends AbstractSocket{
 		return this.state;
 	}
 	public getAddress() : AddressInfo{
-			
 		let addr=this.sock.address();
 		return new AddressInfo(addr.address,addr.port);
 

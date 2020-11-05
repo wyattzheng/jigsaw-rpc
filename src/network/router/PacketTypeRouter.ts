@@ -1,7 +1,5 @@
 import AbstractRouter from "./AbstractRouter";
-import Packet = require("../../../protocol/Packet");
-import RouterRule = require("./RouterRule");
-import HandlerRef = require("./HandlerRef");
+import Packet = require("../protocol/Packet");
 const debug = require("debug")("PacketTypeRouter");
 
 class PacketTypeRouter extends AbstractRouter{
@@ -9,8 +7,8 @@ class PacketTypeRouter extends AbstractRouter{
         super();
 
     }
-    getRule(){
-        return RouterRule.PacketType;
+    sendPacket(){
+        throw new Error("this router can not sendPacket");
     }
     handlePacket(pk:Packet){
 

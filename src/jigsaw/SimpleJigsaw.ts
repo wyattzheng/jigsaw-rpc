@@ -4,16 +4,20 @@ import PacketFactory = require("../network/protocol/factory/PacketFactory");
 import PacketBuilderManager = require("../network/protocol/builder/manager/PacketBuilderManager");
 import UDPSocket = require("../network/socket/UDPSocket");
 import BuilderNetworkClient = require("../network/BuilderNetworkClient");
-import NetPacketRouter = require("../network/request/packetrouter/NetPacketRouter");
 import AddressInfo = require("../network/domain/AddressInfo");
 import InvokeRequest = require("../network/request/InvokeRequest");
 import Path = require("../network/request/Path");
-import SimplePacketRouter = require("../network/request/packetrouter/SimplePacketRouter");
+import SimplePacketRouter = require("../network/router/packetrouter/SimplePacketRouter");
+import IRouter = require("../network/router/IRouter");
+
 import InvokeHandler = require("../network/handler/InvokeHandler");
 import Crypto = require("crypto");
 import DataValidator = require("./DataValidator");
 import Url = require("url");
-import { TypedEmitter } from "tiny-typed-emitter";
+import events = require("tiny-typed-emitter");
+
+import IDomainClient = require("src/network/domain/client/IDomainClient");
+import assert = require("assert");
 
 
 interface JigsawEvent{
@@ -25,22 +29,22 @@ type HandlerRet = Promise<object> | Promise<void>  | object | void;
 type Handler = (data : object) => HandlerRet;
 type FinalHandler = (port_name:string,data:object)=> object | void;
 
-class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
+class SimpleJigsaw extends events.TypedEmitter<JigsawEvent> implements IJigsaw{
     private state = "starting"; // starting ready closing close
 
     public jgname : string;
-    private domclient : DomainClient;
+    private domclient? : DomainClient;
     
     private entry_address : string;
     private entry_port? : number;
     
     private registry_path : Url.Url;
 
-    private netrouter : NetPacketRouter;
-    private router : SimplePacketRouter;
+    private router? : IRouter;
+    
     private request_seq : number = 0;
     private port_handlers : Map<string,Handler> = new Map();
-    private invoke_handler : InvokeHandler;
+    private invoke_handler? : InvokeHandler;
     private final_handler : FinalHandler = ()=>{};
     private module_ref = new Set<string>();
     private socket : UDPSocket;
@@ -59,38 +63,52 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         this.registry_path = registry_path;
 
-        let factory = new PacketFactory();
-        let builder_manager = new PacketBuilderManager(factory);
         let socket = new UDPSocket(this.entry_port,"0.0.0.0");
         this.socket = socket;
-        
-        let client=new BuilderNetworkClient(socket,factory,builder_manager);
-        this.netrouter = new NetPacketRouter(client);
+
+        this.initSubModules();
+    }
+    private initSubModules(){
+        let factory = new PacketFactory();
+        let builder_manager = new PacketBuilderManager(factory);
+        let client=new BuilderNetworkClient(this.socket,factory,builder_manager);
+        this.router = new SimplePacketRouter(client);
 
         let registry_addr = this.registry_path.hostname as string;
         let registry_port = parseInt(this.registry_path.port as string) || 3793;
-        this.domclient = new DomainClient(this.jgname,this.entry_address,
-             new AddressInfo(registry_addr,registry_port)
-        ,this.netrouter);
 
-        this.router = new SimplePacketRouter(client,this.domclient);
+        this.invoke_handler = new InvokeHandler(this.router,this.handleInvoke.bind(this));
 
-        this.invoke_handler = new InvokeHandler(this.netrouter,this.handleInvoke.bind(this));
-
-        this.router.on("close",()=>{
+        this.router.getEventEmitter().on("close",()=>{
             this.setModuleClose("router");
             this.close();
         });
-        this.domclient.on("close",()=>{
-            this.setModuleClose("domclient");
-            this.close();
-        });
-        this.router.on("ready",()=>{
+
+        this.socket.on("ready",()=>{
+            this.domclient = new DomainClient(this.jgname,this.entry_address,this.socket.getAddress().port,
+                new AddressInfo(registry_addr,registry_port)
+            ,this.router as IRouter);
+                    
+            this.domclient.on("close",()=>{
+                this.setModuleClose("domclient");
+                this.close();
+            });
+            if(this.domclient.getState() == "ready"){
+                this.setModuleReady("domclient");
+            }else
+                this.domclient.on("ready",()=>{
+                    this.setModuleReady("domclient");
+                });
+                
+
+        })
+
+    
+        this.router.getEventEmitter().on("ready",()=>{
             this.setModuleReady("router");
         });
-        this.domclient.on("ready",()=>{
-            this.setModuleReady("domclient");
-        });
+       
+
 
     }
     private setModuleReady(name:string){
@@ -150,13 +168,15 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.state = "closing";
         
         //this.router.close();
-        await this.domclient.close();   
+        await (this.domclient as IDomainClient).close();   
 
         this.socket.close();
 
     }
     
     send(path_str:string,data:object) : Promise<object>{
+        assert(this.state == "ready", "jigsaw state must be ready");
+        
         let validator = new DataValidator(data);
         validator.validate();
 
@@ -164,11 +184,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return this.doSend(path,data);
     }
     private async doSend(path:Path,data:object){
+
         let req_seq = this.request_seq++;
         
         let buffer = Buffer.from(JSON.stringify(data));
-        let request = new InvokeRequest(this.jgname,path,buffer,this.router,req_seq);
-
+        let request = new InvokeRequest(this.jgname,path,buffer,this.domclient as IDomainClient,this.router as IRouter,req_seq);
+        
         await request.whenBuild();
         await request.run();
         let ret_buf = request.getResult();

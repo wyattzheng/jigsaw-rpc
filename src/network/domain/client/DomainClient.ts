@@ -1,4 +1,3 @@
-import NetPacketRouter = require("../../request/packetrouter/NetPacketRouter");
 import QueryDomainRequest = require("../../request/QueryDomainRequest");
 import AddressInfo = require("../AddressInfo");
 import IDomainClient = require("./IDomainClient");
@@ -7,8 +6,10 @@ import Events = require("tiny-typed-emitter");
 import util = require("util");
 import LimitedMap = require("../../../utils/LimitedMap");
 import Defer = require("../../../utils/Defer");
-const debug = require("debug")("DomainClient");
+import IRouter = require("../../router/IRouter");
+import NetRoute = require("../../router/route/NetRoute");
 
+const debug = require("debug")("DomainClient");
 const sleep = util.promisify(setTimeout);
 
 
@@ -35,38 +36,45 @@ class DomainCache{
 
 class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDomainClient{
     private address : AddressInfo;
-    private router : NetPacketRouter;
+    private router : IRouter;
     private request_seq : number = 0;
     private state : string = "close";
     private client_name : string;
     private entry_address : string ;
+    private entry_port : number ;
     private loop : boolean = false;
     private cache = new LimitedMap<string,DomainCache>(1000);
     private closing_defer = new Defer<void>();
     private resolving : number = 0;
     private max_resolving : number = 300;
 
-    constructor(client_name:string,entry_address:string,server_address:AddressInfo,router:NetPacketRouter){
+    constructor(client_name:string,entry_address:string,entry_port:number,server_address:AddressInfo,router:IRouter){
         super();
         this.address = server_address;
         this.router = router;
         this.client_name = client_name;
         this.entry_address = entry_address;
+        this.entry_port = entry_port;
 
-        this.router.on("ready",()=>{
-            this.start_updating_loop();
-            this.state = "ready";
-            this.emit("ready");
-        });
-        this.router.on("close",()=>{
+        if(this.router.getState() == "ready"){
+            this.init();
+        }else
+            this.router.getEventEmitter().on("ready",()=>{
+                this.init();
+            });
+        
+        this.router.getEventEmitter().on("close",()=>{
             this.close();
         });
 
     }
-    private getAddress() : AddressInfo{
-        let client = this.router.getClient();
-        let socket = client.getSocket();
-        return socket.getAddress();
+    public getState(){
+        return this.state;
+    }
+    private init(){
+        this.start_updating_loop();
+        this.state = "ready";
+        this.emit("ready");
     }
 	public async start_updating_loop(){
         
@@ -77,8 +85,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
 		while(this.loop == true){
             let tick_time = Math.floor((tick * loop_interval) / 1000);
             if(tick_time % 10 == 0){
-                let addr = this.getAddress();
-                let update_addr = new AddressInfo(this.entry_address,addr.port);
+                let update_addr = new AddressInfo(this.entry_address,this.entry_port);
                 //console.log("update",update_addr);
                 try{
                     this.updateAddress(this.client_name,update_addr);
@@ -184,7 +191,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         pk.jgname=jgname;
         pk.addrinfo = addrinfo;
         
-        this.router.sendPacket(pk,this.address.port,this.address.address);
+        this.router.sendPacket(pk,new NetRoute(this.address.port,this.address.address));
     }
 
 }

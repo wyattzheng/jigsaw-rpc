@@ -1,10 +1,10 @@
-import AbstractPacketRouter = require("../request/packetrouter/AbstractPacketRouter");
 import Packet = require("../protocol/Packet");
+import IRouter = require("../router/IRouter");
 
 abstract class AbstractHandler{
-    protected router : AbstractPacketRouter;
+    protected router : IRouter;
 
-    constructor(router:AbstractPacketRouter){
+    constructor(router:IRouter){
         this.router = router;
     }
     protected abstract handlePacket(pk : Packet):void;

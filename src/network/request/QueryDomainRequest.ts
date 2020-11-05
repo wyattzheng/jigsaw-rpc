@@ -1,15 +1,16 @@
 import BaseRequest = require("./BaseRequest");
 import AddressInfo = require("../domain/AddressInfo");
-import NetPacketRouter = require("./packetrouter/NetPacketRouter");
 import Packet = require("../protocol/Packet");
 import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
 import RequestState = require("./RequestState");
 import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
+import IRouter = require("../router/IRouter");
+import NetRoute = require("../router/route/NetRoute");
 
 class QueryDomainRequest extends BaseRequest<AddressInfo>{
     private jgname : string = "";
     private dst : AddressInfo ;
-    constructor(jgname:string,dst:AddressInfo,router : NetPacketRouter,seq_id : number){
+    constructor(jgname:string,dst:AddressInfo,router : IRouter,seq_id : number){
         super(router,seq_id,1*1000); //1s timeout
 
         this.jgname = jgname;
@@ -23,7 +24,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
         pk.request_id = this.getRequestId();
         pk.jgname = this.jgname;
 
-        (this.router as NetPacketRouter).sendPacket(pk,this.dst.port,this.dst.address);
+        this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
     }
     getName(){
         return "QueryDomainRequest";

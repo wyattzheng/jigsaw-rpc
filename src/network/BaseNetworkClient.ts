@@ -7,11 +7,19 @@ import AbstractNetworkClient = require("./AbstractNetworkClient");
 import SlicePacket = require("./protocol/packet/SlicePacket");
 import AddressInfo = require("./domain/AddressInfo");
 
+interface NetworkClientEvent{
+	ready: () => void
+	packet: (p:Packet)=> void;
+	close: () => void;	
+	error: (err : Error) => void;
+}
+
 class BaseNetworkClient extends AbstractNetworkClient{
 	protected socket : AbstractSocket;
 	protected state : string = "starting";
 	protected factory : IFactory<Buffer,Packet>;
 	protected clientid : string = "";
+	private eventEmitter : Events.TypedEmitter<NetworkClientEvent>;
 
 	constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>){
 		super();
@@ -23,7 +31,14 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		this.socket.on("message",this.onSocketMessage.bind(this));
 		this.socket.on("close",this.onSocketClose.bind(this));
 
+		this.eventEmitter = new Events.TypedEmitter<NetworkClientEvent>();
 		this.initClientId();
+	}
+	public getEventEmitter(){
+		return this.eventEmitter;
+	}
+	public getAddressInfo(){
+		return this.socket.getAddress();
 	}
 	public getState(){
 		return this.socket.getState();
@@ -39,19 +54,19 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	}
 	private onSocketReady(){
 		if(this.state != "starting"){
-			this.emit("error",new Error("state transform error"))
+			this.eventEmitter.emit("error",new Error("state transform error"))
 			return;
 		}
 
 		this.state = "ready";
-		this.emit("ready");
+		this.eventEmitter.emit("ready");
 	}
 	private onSocketClose(){
 		if(this.state == "close")
 			return;
 
 		this.state = "close";
-		this.emit("close");
+		this.eventEmitter.emit("close");
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
 		let product = this.factory.getProduct(message);
@@ -61,7 +76,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		this.handlePacket(product);
 	}
 	protected handlePacket(pk : Packet){
-		this.emit("packet",pk);
+		this.eventEmitter.emit("packet",pk);
 	}
 
 	public sendPacket(packet : Packet,dst_port:number , dst_address:string){

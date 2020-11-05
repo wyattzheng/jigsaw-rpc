@@ -1,27 +1,19 @@
-import AbstractNetworkClient from "../../AbstractNetworkClient";
-import assert = require("assert");
+import AbstractNetworkClient = require("../../AbstractNetworkClient");
 import Packet = require("../../protocol/Packet");
-import AbstractRouter = require("./subrouter/AbstractRouter");
+import AbstractRouter = require("../AbstractRouter");
 
-import PacketTypeRouter = require("./subrouter/PacketTypeRouter");
-import RequestIdRouter = require("./subrouter/RequestIdRouter");
-import IRouter = require("./subrouter/IRouter");
-import Events = require("tiny-typed-emitter");
+import PacketTypeRouter = require("../PacketTypeRouter");
+import RequestIdRouter = require("../RequestIdRouter");
 import HandlerMap = require("../../../utils/HandlerMap");
+import IRoute = require("../route/IRoute");
 
 type Handler = (pk:Packet)=>void;
 
 
-interface PacketRouterEvent{
-	ready: () => void;
-    close: () => void;	
-    error: (err : Error) => void;
-}
 
+abstract class AbstractPacketRouter extends AbstractRouter{
 
-abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEvent> implements IRouter{
-
-    private client : AbstractNetworkClient;
+    protected client : AbstractNetworkClient;
     private routers : Array<AbstractRouter>;
     private handler_map = new HandlerMap<Array<number>>();
 
@@ -29,27 +21,27 @@ abstract class AbstractPacketRouter extends Events.TypedEmitter<PacketRouterEven
         super();
 
         this.client = client;
-
-        this.client.on("packet",this.handlePacket.bind(this));
-
         this.routers = [];
 
-        this.client.on("ready",()=>{
-            this.emit("ready");
-        })
-        this.client.on("close",()=>{
-            this.emit("close");
-        })
+        
+        this.client.getEventEmitter().on("packet",this.handlePacket.bind(this));
 
+        
+        this.client.getSocket().on("ready",()=>{
+            this.getEventEmitter().emit("ready");
+        })
+        this.client.getSocket().on("close",()=>{
+            this.getEventEmitter().emit("close");
+        })
 
         this.initRouters();
     }
+    abstract sendPacket(pk:Packet,route:IRoute) : void;
     public getState(){
         return this.client.getState();
     }
     public close(){
         //this.client.close();
-
     }
     private initRouters(){
         this.routers.push(new PacketTypeRouter());

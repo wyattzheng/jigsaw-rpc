@@ -1,4 +1,3 @@
-import NetPacketRouter = require("../request/packetrouter/NetPacketRouter");
 import AbstractHandler = require("./AbstractHandler");
 import Packet = require("../protocol/Packet");
 import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
@@ -6,13 +5,15 @@ import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
 import DomainStorage = require("../domain/server/DomainStorage");
 import DomainUpdatePacket = require("../protocol/packet/DomainUpdatePacket");
 import ErrorPacket = require("../protocol/packet/ErrorPacket");
+import IRouter = require("../router/IRouter");
+import NetRoute = require("../router/route/NetRoute");
 
 
 class DomainHandler extends AbstractHandler{
     public storage : DomainStorage;
-    public router : NetPacketRouter;
+    public router : IRouter;
 
-    constructor(router:NetPacketRouter){
+    constructor(router:IRouter){
         super(router);
         this.router = router;
 
@@ -31,7 +32,7 @@ class DomainHandler extends AbstractHandler{
             r_pk.port = addr.port;
             r_pk.request_id=pk.request_id;
             
-            this.router.sendPacket(r_pk,pk.reply_info.port,pk.reply_info.address);    
+            this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
 
         }else if(p.getName() == "DomainUpdatePacket"){
             let pk = p as DomainUpdatePacket;
@@ -48,7 +49,7 @@ class DomainHandler extends AbstractHandler{
         }catch(err){
             let pk=new ErrorPacket();
             pk.error = err;
-            this.router.sendPacket(pk,p.reply_info.port,p.reply_info.address);
+            this.router.sendPacket(pk,new NetRoute(p.reply_info.port,p.reply_info.address));
         }
 
     }

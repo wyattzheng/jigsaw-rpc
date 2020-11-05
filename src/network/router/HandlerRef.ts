@@ -1,4 +1,4 @@
-import Packet = require("../../../protocol/Packet")
+import Packet = require("../protocol/Packet")
 
 type Handler = (pk:Packet)=>void;
 

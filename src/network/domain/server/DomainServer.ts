@@ -2,10 +2,12 @@ import BuilderNetworkClient = require("../../BuilderNetworkClient");
 import UDPSocket = require("../../socket/UDPSocket");
 import PacketBuilderManager = require("../../protocol/builder/manager/PacketBuilderManager");
 import PacketFactory = require("../../protocol/factory/PacketFactory");
-import NetRequestRouter = require("../../request/packetrouter/NetPacketRouter");
 import Packet = require("../../protocol/Packet");
 import DomainHandler = require("../../handler/DomainHandler");
 import { TypedEmitter } from "tiny-typed-emitter";
+import SimplePacketRouter = require("../../router/packetrouter/SimplePacketRouter");
+import IRouter = require("../../router/IRouter");
+
 interface DomainServerEvent{
     ready:()=>void;
     close:()=>void;
@@ -13,7 +15,7 @@ interface DomainServerEvent{
 class DomainServer extends TypedEmitter<DomainServerEvent>{
     private address:string;
     private port:number;
-    private router:NetRequestRouter;
+    private router:IRouter;
     private client : BuilderNetworkClient;
     private socket : UDPSocket;
     private handler : DomainHandler;
@@ -31,7 +33,7 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         this.socket = new UDPSocket(this.port,this.address);
         this.client = new BuilderNetworkClient(this.socket,factory,builder_manager);
         
-        this.router = new NetRequestRouter(this.client,-1,"No a valid destination"); 
+        this.router = new SimplePacketRouter(this.client); 
 
         this.handler = new DomainHandler(this.router);
 

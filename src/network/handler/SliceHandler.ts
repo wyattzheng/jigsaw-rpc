@@ -1,9 +1,9 @@
-import { TypedEmitter } from "tiny-typed-emitter";
 import IBuilderManager = require("../protocol/builder/manager/IBuilderManager");
 import Packet = require("../protocol/Packet");
 import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
 import SlicePacket = require("../protocol/packet/SlicePacket");
-import NetPacketRouter = require("../request/packetrouter/NetPacketRouter");
+import IRouter = require("../router/IRouter");
+import NetRoute = require("../router/route/NetRoute");
 import AbstractHandler = require("./AbstractHandler");
 
 type Handler = (p : Packet) => void;
@@ -11,9 +11,9 @@ type Handler = (p : Packet) => void;
 class SliceHandler extends AbstractHandler{
 	protected builder_manager : IBuilderManager<SlicePacket,Packet>;
     protected packet_handler : Handler = ()=>{};
-    protected router : NetPacketRouter;
+    protected router : IRouter;
 
-    constructor(router : NetPacketRouter,builder_manager : IBuilderManager<SlicePacket,Packet>){
+    constructor(router : IRouter,builder_manager : IBuilderManager<SlicePacket,Packet>){
         super(router);
         this.router = router;
 
@@ -48,7 +48,7 @@ class SliceHandler extends AbstractHandler{
         ack.request_id = spk.request_id;
         ack.partid = spk.partid;
 
-        this.router.sendPacket(ack,spk.reply_info.port,spk.reply_info.address);    
+        this.router.sendPacket(ack,new NetRoute(spk.reply_info.port,spk.reply_info.address));    
     }
 
 
