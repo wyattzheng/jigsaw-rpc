@@ -1,4 +1,4 @@
-import assert = require("assert")
+import assert from "assert"
 
 class DataValidator{
     private data : object;
@@ -23,4 +23,4 @@ class DataValidator{
     
 }
 
-export = DataValidator;
+export default DataValidator;

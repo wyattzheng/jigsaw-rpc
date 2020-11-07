@@ -1,7 +1,7 @@
-import AddressInfo = require("../network/domain/AddressInfo");
-import Jigsaw = require("../jigsaw/SimpleJigsaw");
-import DomainServer = require("../network/domain/server/DomainServer");
-import Url = require("url");
+import AddressInfo from "../network/domain/AddressInfo";
+import Jigsaw from "../jigsaw/SimpleJigsaw";
+import DomainServer from "../network/domain/server/DomainServer";
+import Url from "url";
 
 const DomainApi = {
     Server : DomainServer,
@@ -31,5 +31,5 @@ function GetJigsaw(option : JigsawOption={}) : Jigsaw{
     return new Jigsaw(jgname,entry_address,entry_port,registry_url);
 };
 
-export = RpcApi;
+export default RpcApi;
 

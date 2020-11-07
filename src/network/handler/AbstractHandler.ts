@@ -1,5 +1,5 @@
-import Packet = require("../protocol/Packet");
-import IRouter = require("../router/IRouter");
+import Packet from "../protocol/Packet";
+import IRouter from "../router/IRouter";
 
 abstract class AbstractHandler{
     protected router : IRouter;
@@ -10,4 +10,4 @@ abstract class AbstractHandler{
     protected abstract handlePacket(pk : Packet):void;
 }
 
-export = AbstractHandler;
+export default AbstractHandler;

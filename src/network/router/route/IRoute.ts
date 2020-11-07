@@ -1,8 +1,8 @@
-import AddressInfo = require("../../domain/AddressInfo");
+import AddressInfo from "../../domain/AddressInfo";
 
 interface IRoute{
     preload(): Promise<void>;
     getAddressInfo() : Promise<AddressInfo>;
 }
 
-export = IRoute;
+export default IRoute;

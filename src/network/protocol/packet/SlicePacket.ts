@@ -1,4 +1,4 @@
-import BasePacket = require("../BasePacket");
+import BasePacket from "../BasePacket";
 
 class SlicePacket extends BasePacket{
 	public static packet_id : number = 2;
@@ -37,5 +37,5 @@ class SlicePacket extends BasePacket{
 	}
 }
 
-export = SlicePacket;
+export default SlicePacket;
 

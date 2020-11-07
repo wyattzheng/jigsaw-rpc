@@ -1,4 +1,4 @@
-import RpcApi = require("./api");
+import RpcApi from "./api";
 
 export = RpcApi;
 

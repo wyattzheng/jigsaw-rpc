@@ -1,11 +1,11 @@
-import AbstractNetworkClient = require("../../AbstractNetworkClient");
-import Packet = require("../../protocol/Packet");
-import AbstractRouter = require("../AbstractRouter");
+import AbstractNetworkClient from "../../client/AbstractNetworkClient";
+import Packet from "../../protocol/Packet";
+import AbstractRouter from "../AbstractRouter";
 
-import PacketTypeRouter = require("../PacketTypeRouter");
-import RequestIdRouter = require("../RequestIdRouter");
-import HandlerMap = require("../../../utils/HandlerMap");
-import IRoute = require("../route/IRoute");
+import PacketTypeRouter from "../PacketTypeRouter";
+import RequestIdRouter from "../RequestIdRouter";
+import HandlerMap from "../../../utils/HandlerMap";
+import IRoute from "../route/IRoute";
 
 type Handler = (pk:Packet)=>void;
 
@@ -79,4 +79,4 @@ abstract class AbstractPacketRouter extends AbstractRouter{
 
 }
 
-export = AbstractPacketRouter;
+export default AbstractPacketRouter;

@@ -141,4 +141,4 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
 
 }
 
-export = PacketSlicer;
+export default PacketSlicer;

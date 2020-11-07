@@ -1,6 +1,6 @@
-import AddressInfo = require("../../domain/AddressInfo");
-import IDomainClient = require("../../domain/client/IDomainClient");
-import IRoute = require("./IRoute");
+import AddressInfo from "../../domain/AddressInfo";
+import IDomainClient from "../../domain/client/IDomainClient";
+import IRoute from "./IRoute";
 
 class RegistryRoute implements IRoute{
     private registryClient : IDomainClient;
@@ -19,4 +19,4 @@ class RegistryRoute implements IRoute{
 
 }
 
-export = RegistryRoute;
+export default RegistryRoute;

@@ -8,4 +8,4 @@ interface IFactory<Z,T>{
 	
 }
 
-export = IFactory;
+export default IFactory;

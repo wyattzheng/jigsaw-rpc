@@ -1,6 +1,6 @@
-import Packet = require("../Packet");
-import BasePacket = require("../BasePacket");
-import IFactory = require("./IFactory");
+import Packet from "../Packet";
+import BasePacket from "../BasePacket";
+import IFactory from "./IFactory";
 
 type PacketCls = {new():Packet};
 
@@ -8,15 +8,15 @@ class PacketFactory implements IFactory<Buffer,Packet>{
 	public classes = new Map<number,{ new():Packet }>();
 
 	constructor(){
-		this.register(require("../packet/TestPacket"));
-		this.register(require("../packet/SlicePacket"));
-		this.register(require("../packet/InvokePacket"));
-		this.register(require("../packet/DomainQueryPacket"));
-		this.register(require("../packet/DomainReplyPacket"));
-		this.register(require("../packet/DomainUpdatePacket"));
-		this.register(require("../packet/ErrorPacket"));
-		this.register(require("../packet/InvokeReplyPacket"));
-		this.register(require("../packet/SliceAckPacket"));
+		this.register(require("../packet/TestPacket").default);
+		this.register(require("../packet/SlicePacket").default);
+		this.register(require("../packet/InvokePacket").default);
+		this.register(require("../packet/DomainQueryPacket").default);
+		this.register(require("../packet/DomainReplyPacket").default);
+		this.register(require("../packet/DomainUpdatePacket").default);
+		this.register(require("../packet/ErrorPacket").default);
+		this.register(require("../packet/InvokeReplyPacket").default);
+		this.register(require("../packet/SliceAckPacket").default);
 		
 		
 	}
@@ -51,4 +51,4 @@ class PacketFactory implements IFactory<Buffer,Packet>{
 
 }
 
-export = PacketFactory;
+export default PacketFactory;

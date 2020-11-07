@@ -1,4 +1,4 @@
-import assert = require("assert");
+import assert from "assert";
 import PacketBuilder from "../../src/network/protocol/builder/PacketBuilder";
 import PacketFactory from "../../src/network/protocol/factory/PacketFactory";
 import InvokePacket from "../../src/network/protocol/packet/InvokePacket";

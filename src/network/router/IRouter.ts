@@ -1,6 +1,6 @@
 import { TypedEmitter } from "tiny-typed-emitter";
-import Packet = require("../protocol/Packet");
-import IRoute = require("./route/IRoute");
+import Packet from "../protocol/Packet";
+import IRoute from "./route/IRoute";
 
 
 interface RouterEvent{
@@ -19,4 +19,4 @@ interface IRouter{
     
 }
 
-export = IRouter;
+export default IRouter;

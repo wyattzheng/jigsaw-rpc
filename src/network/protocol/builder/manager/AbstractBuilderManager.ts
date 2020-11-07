@@ -1,6 +1,6 @@
-import IBuilderManager = require("./IBuilderManager");
-import IBuilder = require("../IBuilder");
-import LimitedMap = require("../../../../utils/LimitedMap")
+import IBuilderManager from "./IBuilderManager";
+import IBuilder from "../IBuilder";
+import LimitedMap from "../../../../utils/LimitedMap"
 
 
 abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
@@ -48,4 +48,4 @@ abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
 
 }
 
-export = AbstractBuilderManager;
+export default AbstractBuilderManager;

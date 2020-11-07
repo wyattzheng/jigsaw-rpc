@@ -1,4 +1,4 @@
-import BasePacket = require("../BasePacket");
+import BasePacket from "../BasePacket";
 
 class DomainReplyPacket extends BasePacket{
 	public static packet_id : number = 4;
@@ -27,4 +27,4 @@ class DomainReplyPacket extends BasePacket{
     }
 }
 
-export = DomainReplyPacket;
+export default DomainReplyPacket;

@@ -1,13 +1,13 @@
-import QueryDomainRequest = require("../../request/QueryDomainRequest");
-import AddressInfo = require("../AddressInfo");
-import IDomainClient = require("./IDomainClient");
-import DomainUpdatePacket = require("../../protocol/packet/DomainUpdatePacket");
-import Events = require("tiny-typed-emitter");
-import util = require("util");
-import LimitedMap = require("../../../utils/LimitedMap");
-import Defer = require("../../../utils/Defer");
-import IRouter = require("../../router/IRouter");
-import NetRoute = require("../../router/route/NetRoute");
+import QueryDomainRequest from "../../request/QueryDomainRequest";
+import AddressInfo from "../AddressInfo";
+import IDomainClient from "./IDomainClient";
+import DomainUpdatePacket from "../../protocol/packet/DomainUpdatePacket";
+import { TypedEmitter } from "tiny-typed-emitter";
+import util from "util";
+import LimitedMap from "../../../utils/LimitedMap";
+import Defer from "../../../utils/Defer";
+import IRouter from "../../router/IRouter";
+import NetRoute from "../../router/route/NetRoute";
 
 const debug = require("debug")("DomainClient");
 const sleep = util.promisify(setTimeout);
@@ -17,6 +17,8 @@ interface DomainClientEvent{
 	ready: () => void;
 	close: () => void;	
 }
+
+
 class CacheExpiredError extends Error{};
 class CacheNoExistsError extends Error{};
 
@@ -34,7 +36,7 @@ class DomainCache{
     }
 }
 
-class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDomainClient{
+class DomainClient implements IDomainClient{
     private address : AddressInfo;
     private router : IRouter;
     private request_seq : number = 0;
@@ -47,9 +49,10 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
     private closing_defer = new Defer<void>();
     private resolving : number = 0;
     private max_resolving : number = 300;
+    private eventEmitter = new TypedEmitter<DomainClientEvent>();
+
 
     constructor(client_name:string,entry_address:string,entry_port:number,server_address:AddressInfo,router:IRouter){
-        super();
         this.address = server_address;
         this.router = router;
         this.client_name = client_name;
@@ -68,13 +71,16 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         });
 
     }
+    public getEventEmitter(){
+        return this.eventEmitter;
+    }
     public getState(){
         return this.state;
     }
     private init(){
         this.start_updating_loop();
         this.state = "ready";
-        this.emit("ready");
+        this.eventEmitter.emit("ready");
     }
 	public async start_updating_loop(){
         
@@ -99,7 +105,7 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
         }
         this.closing_defer.resolve();
         this.state = "close";
-        this.emit("close");
+        this.eventEmitter.emit("close");
     }
     async close(){
         if(this.state == "closing" || this.state =="close")
@@ -196,4 +202,4 @@ class DomainClient extends Events.TypedEmitter<DomainClientEvent> implements IDo
 
 }
 
-export = DomainClient;
+export default DomainClient;

@@ -13,4 +13,4 @@ class NoRouteError extends JGError{
     }
 }
 
-export = NoRouteError;
+export default NoRouteError;

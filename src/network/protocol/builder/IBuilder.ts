@@ -8,4 +8,4 @@ interface IBuilder<T,P>{
 	 getData() : P;
 }
 
-export = IBuilder;
+export default IBuilder;

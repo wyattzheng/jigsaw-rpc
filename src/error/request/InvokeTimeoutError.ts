@@ -27,5 +27,5 @@ class InvokeTimeoutError extends JGError{
     }
 }
 
-export = InvokeTimeoutError;
+export default InvokeTimeoutError;
 

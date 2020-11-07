@@ -1,5 +1,5 @@
-import BasePacket = require("../BasePacket");
-import Path = require("../../request/Path");
+import BasePacket from "../BasePacket";
+import Path from "../../request/Path";
 
 class InvokePacket extends BasePacket{
 	public static packet_id : number = 3;
@@ -54,5 +54,5 @@ class InvokePacket extends BasePacket{
 	}
 }
 
-export = InvokePacket;
+export default InvokePacket;
 

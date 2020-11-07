@@ -1,5 +1,5 @@
 import assert=require("assert");
-import Packet = require("../protocol/Packet");
+import Packet from "../protocol/Packet";
 
 class Path{
 	public jgname : string = "";
@@ -26,4 +26,4 @@ class Path{
 
 }
 
-export = Path;
+export default Path;

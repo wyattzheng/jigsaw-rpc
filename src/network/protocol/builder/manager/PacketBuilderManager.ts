@@ -1,9 +1,9 @@
-import AbstractBuilderManager=require("./AbstractBuilderManager");
-import Packet = require("../../Packet");
-import IBuilder = require("../IBuilder");
-import PacketBuilder = require("../PacketBuilder");
-import SlicePacket = require("../../packet/SlicePacket");
-import IFactory = require("../../factory/IFactory");
+import AbstractBuilderManager from "./AbstractBuilderManager";
+import Packet from "../../Packet";
+import IBuilder from "../IBuilder";
+import PacketBuilder from "../PacketBuilder";
+import SlicePacket from "../../packet/SlicePacket";
+import IFactory from "../../factory/IFactory";
 
 class PacketBuilderManager extends AbstractBuilderManager<SlicePacket,Packet>{
 	protected factory : IFactory<Buffer,Packet>;
@@ -17,4 +17,4 @@ class PacketBuilderManager extends AbstractBuilderManager<SlicePacket,Packet>{
 
 }
 
-export = PacketBuilderManager;
+export default PacketBuilderManager;

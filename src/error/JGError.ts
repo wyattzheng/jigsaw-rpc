@@ -16,4 +16,4 @@ abstract class JGError extends Error{
     abstract getDetail() : string;
 }
 
-export = JGError;
+export default JGError;

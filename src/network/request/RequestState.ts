@@ -6,4 +6,4 @@ enum RequestState{
     FAILED
 }
 
-export = RequestState;
+export default RequestState;

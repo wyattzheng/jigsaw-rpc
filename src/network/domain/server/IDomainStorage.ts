@@ -1,5 +1,5 @@
-import AddressInfo = require("../AddressInfo");
-import DomainOption = require("./DomainOption");
+import AddressInfo from "../AddressInfo";
+import DomainOption from "./DomainOption";
 
 interface IDomainStorage{
     setAddress(jgname:string,addrinfo:AddressInfo) : void;
@@ -9,4 +9,4 @@ interface IDomainStorage{
 }
 
 
-export = IDomainStorage;
+export default IDomainStorage;

@@ -1,6 +1,6 @@
 import { Address } from "cluster";
-import events = require("tiny-typed-emitter");
-import AddressInfo = require("../domain/AddressInfo");
+import { TypedEmitter } from "tiny-typed-emitter";
+import AddressInfo from "../domain/AddressInfo";
 
 interface SocketEvent{
 	ready: () => void;
@@ -8,7 +8,7 @@ interface SocketEvent{
 	message: (body:Buffer,rinfo:AddressInfo) => void;
 } ;
 
-abstract class AbstractSocket extends events.TypedEmitter<SocketEvent>{
+abstract class AbstractSocket extends TypedEmitter<SocketEvent>{
 	constructor(port? : number,address?:string){
 		super();
 
@@ -20,4 +20,4 @@ abstract class AbstractSocket extends events.TypedEmitter<SocketEvent>{
 };
 
 
-export = AbstractSocket;
+export default AbstractSocket;

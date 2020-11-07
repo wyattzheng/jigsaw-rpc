@@ -1,25 +1,25 @@
-import AbstractHandler = require("./AbstractHandler");
-import Packet = require("../protocol/Packet");
-import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
-import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
-import DomainStorage = require("../domain/server/DomainStorage");
-import DomainUpdatePacket = require("../protocol/packet/DomainUpdatePacket");
-import ErrorPacket = require("../protocol/packet/ErrorPacket");
-import SimplePacketRouter = require("../router/packetrouter/SimplePacketRouter");
+import AbstractHandler from "./AbstractHandler";
+import Packet from "../protocol/Packet";
+import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
+import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
+import DomainStorage from "../domain/server/DomainStorage";
+import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
+import ErrorPacket from "../protocol/packet/ErrorPacket";
+import SimplePacketRouter from "../router/packetrouter/SimplePacketRouter";
 import { TypedEmitter } from "tiny-typed-emitter";
-import InvokePacket = require("../protocol/packet/InvokePacket");
-import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
-import Path = require("../request/Path");
-import InvokeRequest = require("../request/InvokeRequest");
-import SlicePacket = require("../protocol/packet/SlicePacket");
-import AddressInfo = require("../domain/AddressInfo");
-import PacketBuilder = require("../protocol/builder/PacketBuilder");
-import PacketSlicer = require("../request/PacketSlicer");
-import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
-import LimitedMap = require("../../utils/LimitedMap");
-import IRouter = require("../router/IRouter");
-import NetRoute = require("../router/route/NetRoute");
-import util = require("util");
+import InvokePacket from "../protocol/packet/InvokePacket";
+import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
+import Path from "../request/Path";
+import InvokeRequest from "../request/InvokeRequest";
+import SlicePacket from "../protocol/packet/SlicePacket";
+import AddressInfo from "../domain/AddressInfo";
+import PacketBuilder from "../protocol/builder/PacketBuilder";
+import PacketSlicer from "../request/PacketSlicer";
+import SliceAckPacket from "../protocol/packet/SliceAckPacket";
+import LimitedMap from "../../utils/LimitedMap";
+import IRouter from "../router/IRouter";
+import NetRoute from "../router/route/NetRoute";
+import util from "util";
 
 
 const sleep = util.promisify(setTimeout)
@@ -260,4 +260,4 @@ class InvokeHandler extends AbstractHandler{
 
 }
 
-export = InvokeHandler;
+export default InvokeHandler;

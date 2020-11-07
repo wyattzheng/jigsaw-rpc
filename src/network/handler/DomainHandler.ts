@@ -1,12 +1,12 @@
-import AbstractHandler = require("./AbstractHandler");
-import Packet = require("../protocol/Packet");
-import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
-import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
-import DomainStorage = require("../domain/server/DomainStorage");
-import DomainUpdatePacket = require("../protocol/packet/DomainUpdatePacket");
-import ErrorPacket = require("../protocol/packet/ErrorPacket");
-import IRouter = require("../router/IRouter");
-import NetRoute = require("../router/route/NetRoute");
+import AbstractHandler from "./AbstractHandler";
+import Packet from "../protocol/Packet";
+import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
+import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
+import DomainStorage from "../domain/server/DomainStorage";
+import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
+import ErrorPacket from "../protocol/packet/ErrorPacket";
+import IRouter from "../router/IRouter";
+import NetRoute from "../router/route/NetRoute";
 
 
 class DomainHandler extends AbstractHandler{
@@ -56,4 +56,4 @@ class DomainHandler extends AbstractHandler{
 
 }
 
-export = DomainHandler;
+export default DomainHandler;

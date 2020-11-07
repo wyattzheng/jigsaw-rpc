@@ -1,8 +1,7 @@
-import AbstractPacketRouter = require("./AbstractPacketRouter");
-import IDomainClient = require("../../domain/client/IDomainClient");
-import AbstractNetworkClient = require("../../AbstractNetworkClient");
-import Packet = require("../../protocol/Packet");
-import IRoute = require("../route/IRoute");
+import AbstractPacketRouter from "./AbstractPacketRouter";
+import AbstractNetworkClient from "../../client/AbstractNetworkClient";
+import Packet from "../../protocol/Packet";
+import IRoute from "../route/IRoute";
 
 class SimplePacketRouter extends AbstractPacketRouter{
     constructor(client : AbstractNetworkClient){
@@ -17,4 +16,4 @@ class SimplePacketRouter extends AbstractPacketRouter{
 
 }
 
-export = SimplePacketRouter;
+export default SimplePacketRouter;

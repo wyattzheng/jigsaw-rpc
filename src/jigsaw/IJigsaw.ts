@@ -11,4 +11,4 @@ interface IJigsaw{
     close() : void;
 }
 
-export = IJigsaw;
+export default IJigsaw;

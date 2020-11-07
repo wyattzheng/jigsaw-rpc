@@ -1,8 +1,8 @@
 
-import Events = require("tiny-typed-emitter");
-import AddressInfo = require("./domain/AddressInfo");
-import Packet = require("./protocol/Packet")
-import AbstractSocket = require("./socket/AbstractSocket");
+import { TypedEmitter } from "tiny-typed-emitter";
+import AddressInfo from "../domain/AddressInfo";
+import Packet from "../protocol/Packet"
+import AbstractSocket from "../socket/AbstractSocket";
 
 interface NetworkClientEvent{
 	ready: () => void
@@ -12,7 +12,7 @@ interface NetworkClientEvent{
 }
 
 abstract class AbstractNetworkClient {
-	public abstract getEventEmitter() : Events.TypedEmitter<NetworkClientEvent>;
+	public abstract getEventEmitter() : TypedEmitter<NetworkClientEvent>;
 	public abstract getState() : string;
 	public abstract getClientId() : string;
 	public abstract getAddressInfo() : AddressInfo;
@@ -21,4 +21,4 @@ abstract class AbstractNetworkClient {
 	public abstract getSocket() :AbstractSocket;
 }
 
-export = AbstractNetworkClient;
+export default AbstractNetworkClient;

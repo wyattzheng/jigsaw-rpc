@@ -1,5 +1,5 @@
 import AbstractRouter from "./AbstractRouter";
-import Packet = require("../protocol/Packet");
+import Packet from "../protocol/Packet";
 const debug = require("debug")("RequestIdRouter");
 
 class RequestIdRouter extends AbstractRouter{
@@ -27,4 +27,4 @@ class RequestIdRouter extends AbstractRouter{
 
 }
 
-export = RequestIdRouter;
+export default RequestIdRouter;

@@ -1,7 +1,7 @@
-import LimitedMap = require("../../../utils/LimitedMap");
-import IBuilder = require("./IBuilder");
-import assert = require("assert");
-import IFactory = require("../factory/IFactory");
+import LimitedMap from "../../../utils/LimitedMap";
+import IBuilder from "./IBuilder";
+import assert from "assert";
+import IFactory from "../factory/IFactory";
 
 abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 	public partmax : number;
@@ -51,4 +51,4 @@ abstract class AbstractBuilder<T,P> implements IBuilder<T,P>{
 	abstract build( parts : Array<T>) : P;
 }
 
-export = AbstractBuilder;
+export default AbstractBuilder;

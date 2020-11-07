@@ -16,5 +16,5 @@ class RequestTimeoutError extends JGError{
 
 }
 
-export = RequestTimeoutError;
+export default RequestTimeoutError;
 

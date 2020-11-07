@@ -1,7 +1,7 @@
-import AbstractSocket = require("./AbstractSocket");
-import Dgram = require("dgram");
-import assert = require("assert");
-import AddressInfo = require("../domain/AddressInfo");
+import AbstractSocket from "./AbstractSocket";
+import Dgram from "dgram";
+import assert from "assert";
+import AddressInfo from "../domain/AddressInfo";
 
 class UDPSocket extends AbstractSocket{
 
@@ -54,4 +54,4 @@ class UDPSocket extends AbstractSocket{
 }
 
 
-export = UDPSocket
+export default UDPSocket

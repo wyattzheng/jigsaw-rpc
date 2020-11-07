@@ -70,4 +70,4 @@ class HandlerMap<Z>{
     }
 }
 
-export = HandlerMap;
+export default HandlerMap;

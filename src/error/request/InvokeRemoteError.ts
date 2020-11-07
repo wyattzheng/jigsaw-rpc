@@ -35,4 +35,4 @@ class InvokeRemoteError extends JGError{
 
 }
 
-export = InvokeRemoteError;
+export default InvokeRemoteError;

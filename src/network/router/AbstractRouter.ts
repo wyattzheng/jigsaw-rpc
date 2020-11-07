@@ -1,9 +1,9 @@
-import Packet = require("../protocol/Packet");
-import IRouter = require("./IRouter");
-import IRoute = require("./route/IRoute");
+import Packet from "../protocol/Packet";
+import IRouter from "./IRouter";
+import IRoute from "./route/IRoute";
 
-import HandlerMap = require("../../utils/HandlerMap");
-import events = require("tiny-typed-emitter");;
+import HandlerMap from "../../utils/HandlerMap";
+import { TypedEmitter } from "tiny-typed-emitter";;
 
 interface RouterEvent{
 	ready: () => void;
@@ -14,14 +14,14 @@ interface RouterEvent{
 type Handler = (pk:Packet)=>void;
 
 abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
-    private eventEmitter : events.TypedEmitter<RouterEvent>;
+    private eventEmitter : TypedEmitter<RouterEvent>;
     private routerId: string;
     constructor(){
         super();
-        this.eventEmitter = new events.TypedEmitter<RouterEvent>();
+        this.eventEmitter = new TypedEmitter<RouterEvent>();
         this.routerId = Math.random()+"";
     }
-    public getEventEmitter() : events.TypedEmitter<RouterEvent>{
+    public getEventEmitter() : TypedEmitter<RouterEvent>{
         return this.eventEmitter;
     }
     public getRouterId() : string{
@@ -34,4 +34,4 @@ abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
     public abstract handlePacket(pk : Packet) : void;
 }
 
-export = AbstractRouter;
+export default AbstractRouter;

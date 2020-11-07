@@ -1,4 +1,4 @@
-import Packet = require("./Packet");
+import Packet from "./Packet";
 
 class BasePacket extends Packet{ // Design Mode : Builder Mode
 	private packetid : number = 0;
@@ -117,4 +117,4 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 		
 }
 
-export = BasePacket;
+export default BasePacket;

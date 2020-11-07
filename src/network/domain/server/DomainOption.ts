@@ -3,4 +3,4 @@ class DomainOption{
 
 }
 
-export = DomainOption;
+export default DomainOption;

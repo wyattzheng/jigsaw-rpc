@@ -1,5 +1,5 @@
-import AddressInfo = require("../../domain/AddressInfo");
-import BasePacket = require("../BasePacket");
+import AddressInfo from "../../domain/AddressInfo";
+import BasePacket from "../BasePacket";
 class DomainUpdatePacket extends BasePacket{
 	public static packet_id : number = 6;
 
@@ -28,4 +28,4 @@ class DomainUpdatePacket extends BasePacket{
 
 }
 
-export = DomainUpdatePacket;
+export default DomainUpdatePacket;

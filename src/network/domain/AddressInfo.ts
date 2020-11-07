@@ -15,4 +15,4 @@ class AddressInfo{
 
 }
 
-export = AddressInfo;
+export default AddressInfo;

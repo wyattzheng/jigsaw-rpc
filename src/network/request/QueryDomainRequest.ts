@@ -1,11 +1,11 @@
-import BaseRequest = require("./BaseRequest");
-import AddressInfo = require("../domain/AddressInfo");
-import Packet = require("../protocol/Packet");
-import DomainQueryPacket = require("../protocol/packet/DomainQueryPacket");
-import RequestState = require("./RequestState");
-import DomainReplyPacket = require("../protocol/packet/DomainReplyPacket");
-import IRouter = require("../router/IRouter");
-import NetRoute = require("../router/route/NetRoute");
+import BaseRequest from "./BaseRequest";
+import AddressInfo from "../domain/AddressInfo";
+import Packet from "../protocol/Packet";
+import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
+import RequestState from "./RequestState";
+import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
+import IRouter from "../router/IRouter";
+import NetRoute from "../router/route/NetRoute";
 
 class QueryDomainRequest extends BaseRequest<AddressInfo>{
     private jgname : string = "";
@@ -38,4 +38,4 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
     }
 }
 
-export = QueryDomainRequest
+export default QueryDomainRequest

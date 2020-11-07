@@ -1,10 +1,10 @@
-import IBuilderManager = require("../protocol/builder/manager/IBuilderManager");
-import Packet = require("../protocol/Packet");
-import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
-import SlicePacket = require("../protocol/packet/SlicePacket");
-import IRouter = require("../router/IRouter");
-import NetRoute = require("../router/route/NetRoute");
-import AbstractHandler = require("./AbstractHandler");
+import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
+import Packet from "../protocol/Packet";
+import SliceAckPacket from "../protocol/packet/SliceAckPacket";
+import SlicePacket from "../protocol/packet/SlicePacket";
+import IRouter from "../router/IRouter";
+import NetRoute from "../router/route/NetRoute";
+import AbstractHandler from "./AbstractHandler";
 
 type Handler = (p : Packet) => void;
 
@@ -55,4 +55,4 @@ class SliceHandler extends AbstractHandler{
 }
 
 
-export = SliceHandler;
+export default SliceHandler;

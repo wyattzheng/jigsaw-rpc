@@ -56,4 +56,4 @@ abstract class Packet{ // Design Mode : Builder Mode
 
 }
 
-export = Packet;
+export default Packet;

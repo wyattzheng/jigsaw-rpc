@@ -1,15 +1,12 @@
-import AbstractRequest = require("./AbstractRequest")
-import RequestState = require("./RequestState");
-import AbstractNetworkClient = require("../AbstractNetworkClient");
-import AbstractPacketRouter = require("../router/packetrouter/AbstractPacketRouter");
-import Packet = require("../protocol/Packet");
-import Defer = require("../../utils/Defer");
-import ErrorPacket = require("../protocol/packet/ErrorPacket");
-import util = require("util");
-import RequestTimeoutError = require("../../error/request/RequestTimeoutError");
-import RequestRemoteError = require("../../error/request/RequestRemoteError");
-import Path = require("./Path");
-import IRouter = require("../router/IRouter");
+import AbstractRequest from "./AbstractRequest"
+import RequestState from "./RequestState";
+import Packet from "../protocol/Packet";
+import Defer from "../../utils/Defer";
+import ErrorPacket from "../protocol/packet/ErrorPacket";
+import util from "util";
+import RequestTimeoutError from "../../error/request/RequestTimeoutError";
+import RequestRemoteError from "../../error/request/RequestRemoteError";
+import IRouter from "../router/IRouter";
 
 const sleep = util.promisify(setTimeout);
 
@@ -171,4 +168,4 @@ abstract class BaseRequest<T> extends AbstractRequest{
     protected abstract async send() : Promise<void>;
 }
 
-export = BaseRequest
+export default BaseRequest

@@ -17,4 +17,4 @@ class Defer<T>{
 
 }
 
-export = Defer;
+export default Defer;

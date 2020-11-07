@@ -1,4 +1,4 @@
-import BasePacket = require("../BasePacket");
+import BasePacket from "../BasePacket";
 
 class InvokeReplyPacket extends BasePacket{
 	public static packet_id : number = 8;
@@ -35,4 +35,4 @@ class InvokeReplyPacket extends BasePacket{
     }
 }
 
-export = InvokeReplyPacket;
+export default InvokeReplyPacket;

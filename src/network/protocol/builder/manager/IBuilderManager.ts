@@ -9,4 +9,4 @@ interface IBuilderManager<T,P>{
 
 }
 
-export = IBuilderManager;
+export default IBuilderManager;

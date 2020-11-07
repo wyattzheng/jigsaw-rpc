@@ -20,4 +20,4 @@ class RequestRemoteError extends JGError{
     
 }
 
-export = RequestRemoteError;
+export default RequestRemoteError;

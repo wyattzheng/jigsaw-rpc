@@ -1,6 +1,6 @@
-import IDomainStorage = require("./IDomainStorage");
-import DomainOption = require("./DomainOption");
-import AddressInfo = require("../AddressInfo");
+import IDomainStorage from "./IDomainStorage";
+import DomainOption from "./DomainOption";
+import AddressInfo from "../AddressInfo";
 
 class DomainStorage implements IDomainStorage{
     private map = new Map<string,AddressInfo>();
@@ -22,4 +22,4 @@ class DomainStorage implements IDomainStorage{
 
 }
 
-export = DomainStorage;
+export default DomainStorage;

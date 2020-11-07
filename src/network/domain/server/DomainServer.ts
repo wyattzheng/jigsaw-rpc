@@ -1,12 +1,12 @@
-import BuilderNetworkClient = require("../../BuilderNetworkClient");
-import UDPSocket = require("../../socket/UDPSocket");
-import PacketBuilderManager = require("../../protocol/builder/manager/PacketBuilderManager");
-import PacketFactory = require("../../protocol/factory/PacketFactory");
-import Packet = require("../../protocol/Packet");
-import DomainHandler = require("../../handler/DomainHandler");
+import BuilderNetworkClient from "../../client/BuilderNetworkClient";
+import UDPSocket from "../../socket/UDPSocket";
+import PacketBuilderManager from "../../protocol/builder/manager/PacketBuilderManager";
+import PacketFactory from "../../protocol/factory/PacketFactory";
+import Packet from "../../protocol/Packet";
+import DomainHandler from "../../handler/DomainHandler";
 import { TypedEmitter } from "tiny-typed-emitter";
-import SimplePacketRouter = require("../../router/packetrouter/SimplePacketRouter");
-import IRouter = require("../../router/IRouter");
+import SimplePacketRouter from "../../router/packetrouter/SimplePacketRouter";
+import IRouter from "../../router/IRouter";
 
 interface DomainServerEvent{
     ready:()=>void;
@@ -57,4 +57,4 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
 
 }
 
-export = DomainServer;
+export default DomainServer;

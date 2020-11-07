@@ -1,5 +1,5 @@
-import RPC = require("../../src/index");
-import assert = require("assert");
+import RPC from "../../src/index";
+import assert from "assert";
 
 function waitForEvent(obj:any,event_name:string){
     return new Promise((resolve)=>{

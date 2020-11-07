@@ -1,17 +1,17 @@
-import Packet = require("../protocol/Packet");
-import Path = require("./Path");
-import RequestState = require("./RequestState");
-import BaseRequest = require("./BaseRequest")
-import InvokePacket = require("../protocol/packet/InvokePacket");
-import InvokeReplyPacket = require("../protocol/packet/InvokeReplyPacket");
-import SliceAckPacket = require("../protocol/packet/SliceAckPacket");
-import PacketSlicer = require("../request/PacketSlicer");
-import InvokeTimeoutError = require("../../error/request/InvokeTimeoutError");
-import InvokeRemoteError = require("../../error/request/InvokeRemoteError");
-import ErrorPacket = require("../protocol/packet/ErrorPacket");
-import IRouter = require("../router/IRouter");
-import IDomainClient = require("../domain/client/IDomainClient");
-import RegistryRoute = require("../router/route/RegistryRoute");
+import Packet from "../protocol/Packet";
+import Path from "./Path";
+import RequestState from "./RequestState";
+import BaseRequest from "./BaseRequest"
+import InvokePacket from "../protocol/packet/InvokePacket";
+import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
+import SliceAckPacket from "../protocol/packet/SliceAckPacket";
+import PacketSlicer from "../request/PacketSlicer";
+import InvokeTimeoutError from "../../error/request/InvokeTimeoutError";
+import InvokeRemoteError from "../../error/request/InvokeRemoteError";
+import ErrorPacket from "../protocol/packet/ErrorPacket";
+import IRouter from "../router/IRouter";
+import IDomainClient from "../domain/client/IDomainClient";
+import RegistryRoute from "../router/route/RegistryRoute";
 
 
 class InvokeRequest extends BaseRequest<Buffer> {
@@ -109,4 +109,4 @@ class InvokeRequest extends BaseRequest<Buffer> {
     
 }
 
-export = InvokeRequest;
+export default InvokeRequest;

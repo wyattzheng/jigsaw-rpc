@@ -1,23 +1,23 @@
-import DomainClient = require("../network/domain/client/DomainClient");
-import IJigsaw = require("./IJigsaw");
-import PacketFactory = require("../network/protocol/factory/PacketFactory");
-import PacketBuilderManager = require("../network/protocol/builder/manager/PacketBuilderManager");
-import UDPSocket = require("../network/socket/UDPSocket");
-import BuilderNetworkClient = require("../network/BuilderNetworkClient");
-import AddressInfo = require("../network/domain/AddressInfo");
-import InvokeRequest = require("../network/request/InvokeRequest");
-import Path = require("../network/request/Path");
-import SimplePacketRouter = require("../network/router/packetrouter/SimplePacketRouter");
-import IRouter = require("../network/router/IRouter");
+import DomainClient from "../network/domain/client/DomainClient";
+import IJigsaw from "./IJigsaw";
+import PacketFactory from "../network/protocol/factory/PacketFactory";
+import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
+import UDPSocket from "../network/socket/UDPSocket";
+import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
+import AddressInfo from "../network/domain/AddressInfo";
+import InvokeRequest from "../network/request/InvokeRequest";
+import Path from "../network/request/Path";
+import SimplePacketRouter from "../network/router/packetrouter/SimplePacketRouter";
+import IRouter from "../network/router/IRouter";
 
-import InvokeHandler = require("../network/handler/InvokeHandler");
-import Crypto = require("crypto");
-import DataValidator = require("./DataValidator");
-import Url = require("url");
-import events = require("tiny-typed-emitter");
+import InvokeHandler from "../network/handler/InvokeHandler";
+import Crypto from "crypto";
+import DataValidator from "./DataValidator";
+import Url from "url";
+import { TypedEmitter } from "tiny-typed-emitter";
 
-import IDomainClient = require("src/network/domain/client/IDomainClient");
-import assert = require("assert");
+import IDomainClient from "src/network/domain/client/IDomainClient";
+import assert from "assert";
 
 
 interface JigsawEvent{
@@ -29,11 +29,11 @@ type HandlerRet = Promise<object> | Promise<void>  | object | void;
 type Handler = (data : object) => HandlerRet;
 type FinalHandler = (port_name:string,data:object)=> object | void;
 
-class SimpleJigsaw extends events.TypedEmitter<JigsawEvent> implements IJigsaw{
+class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private state = "starting"; // starting ready closing close
 
     public jgname : string;
-    private domclient? : DomainClient;
+    private domclient? : IDomainClient;
     
     private entry_address : string;
     private entry_port? : number;
@@ -89,14 +89,14 @@ class SimpleJigsaw extends events.TypedEmitter<JigsawEvent> implements IJigsaw{
                 new AddressInfo(registry_addr,registry_port)
             ,this.router as IRouter);
                     
-            this.domclient.on("close",()=>{
+            this.domclient.getEventEmitter().on("close",()=>{
                 this.setModuleClose("domclient");
                 this.close();
             });
             if(this.domclient.getState() == "ready"){
                 this.setModuleReady("domclient");
             }else
-                this.domclient.on("ready",()=>{
+                this.domclient.getEventEmitter().on("ready",()=>{
                     this.setModuleReady("domclient");
                 });
                 
@@ -216,4 +216,4 @@ class SimpleJigsaw extends events.TypedEmitter<JigsawEvent> implements IJigsaw{
 
 }
 
-export = SimpleJigsaw;
+export default SimpleJigsaw;

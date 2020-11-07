@@ -1,4 +1,4 @@
-import BaseNetworkClient from "../../src/network/BaseNetworkClient"
+import BaseNetworkClient from "../../src/network/client/BaseNetworkClient"
 import AddressInfo from "../../src/network/domain/AddressInfo"
 import DomainClient from "../../src/network/domain/client/DomainClient"
 import PacketFactory from "../../src/network/protocol/factory/PacketFactory"

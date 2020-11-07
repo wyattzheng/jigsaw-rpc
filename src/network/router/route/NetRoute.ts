@@ -1,5 +1,5 @@
-import AddressInfo = require("../../domain/AddressInfo");
-import IRoute = require("./IRoute");
+import AddressInfo from "../../domain/AddressInfo";
+import IRoute from "./IRoute";
 
 class NetRoute implements IRoute{
     private dst_port : number;
@@ -17,4 +17,4 @@ class NetRoute implements IRoute{
     }
 }
 
-export = NetRoute;
+export default NetRoute;

@@ -1,11 +1,9 @@
-import AbstractSocket = require("./socket/AbstractSocket");
-import IBuilderManager = require("./protocol/builder/manager/IBuilderManager");
-import IFactory = require("./protocol/factory/IFactory");
-import Packet = require("./protocol/Packet");
-import Events = require("tiny-typed-emitter");
-import AbstractNetworkClient = require("./AbstractNetworkClient");
-import SlicePacket = require("./protocol/packet/SlicePacket");
-import AddressInfo = require("./domain/AddressInfo");
+import AbstractSocket from "../socket/AbstractSocket";
+import IFactory from "../protocol/factory/IFactory";
+import Packet from "../protocol/Packet";
+import { TypedEmitter } from "tiny-typed-emitter";
+import AbstractNetworkClient from "./AbstractNetworkClient";
+import AddressInfo from "../domain/AddressInfo";
 
 interface NetworkClientEvent{
 	ready: () => void
@@ -19,7 +17,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	protected state : string = "starting";
 	protected factory : IFactory<Buffer,Packet>;
 	protected clientid : string = "";
-	private eventEmitter : Events.TypedEmitter<NetworkClientEvent>;
+	private eventEmitter : TypedEmitter<NetworkClientEvent>;
 
 	constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>){
 		super();
@@ -31,7 +29,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		this.socket.on("message",this.onSocketMessage.bind(this));
 		this.socket.on("close",this.onSocketClose.bind(this));
 
-		this.eventEmitter = new Events.TypedEmitter<NetworkClientEvent>();
+		this.eventEmitter = new TypedEmitter<NetworkClientEvent>();
 		this.initClientId();
 	}
 	public getEventEmitter(){
@@ -88,4 +86,4 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	}
 }
 
-export = BaseNetworkClient;
+export default BaseNetworkClient;

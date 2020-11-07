@@ -1,11 +1,11 @@
 import assert from "assert";
-import RPC = require("../../src/index");
-import BaseNetworkClient = require("../../src/network/BaseNetworkClient");
-import AddressInfo = require("../../src/network/domain/AddressInfo");
-import DomainClient = require("../../src/network/domain/client/DomainClient");
-import PacketFactory = require("../../src/network/protocol/factory/PacketFactory");
-import SimplePacketRouter = require("../../src/network/router/packetrouter/SimplePacketRouter");
-import UDPSocket = require("../../src/network/socket/UDPSocket");
+import RPC from "../../src/index";
+import BaseNetworkClient from "../../src/network/client/BaseNetworkClient";
+import AddressInfo from "../../src/network/domain/AddressInfo";
+import DomainClient from "../../src/network/domain/client/DomainClient";
+import PacketFactory from "../../src/network/protocol/factory/PacketFactory";
+import SimplePacketRouter from "../../src/network/router/packetrouter/SimplePacketRouter";
+import UDPSocket from "../../src/network/socket/UDPSocket";
 
 function getDomainClient(socket:UDPSocket ,name:string){
     

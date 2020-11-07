@@ -1,4 +1,4 @@
-import assert = require("assert");
+import assert from "assert";
 import { TypedEmitter } from "tiny-typed-emitter";
 
 class Value<T>{
@@ -102,4 +102,4 @@ class LimitedMap<T,Z> extends TypedEmitter<LimitedMapEvent<Z>>{
 
 }
 
-export = LimitedMap;
+export default LimitedMap;

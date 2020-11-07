@@ -1,5 +1,5 @@
 import AbstractRouter from "./AbstractRouter";
-import Packet = require("../protocol/Packet");
+import Packet from "../protocol/Packet";
 const debug = require("debug")("PacketTypeRouter");
 
 class PacketTypeRouter extends AbstractRouter{
@@ -27,4 +27,4 @@ class PacketTypeRouter extends AbstractRouter{
 
 }
 
-export = PacketTypeRouter;
+export default PacketTypeRouter;

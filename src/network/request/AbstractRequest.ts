@@ -1,13 +1,14 @@
-import Packet = require("../protocol/Packet");
-import RequestState = require("./RequestState");
+import Packet from "../protocol/Packet";
+import RequestState from "./RequestState";
 
-import Events = require("tiny-typed-emitter");
+import { TypedEmitter } from "tiny-typed-emitter";
 
 interface RequestEvent{
 	done:(err : Error | undefined)=>void;
 	built:(err : Error | undefined)=>void;
 }
-abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
+
+abstract class AbstractRequest extends TypedEmitter<RequestEvent>{
 	protected state : RequestState = RequestState.BUILDING;
 	protected failed_reason? :Error;
 
@@ -100,4 +101,4 @@ abstract class AbstractRequest extends Events.TypedEmitter<RequestEvent>{
 }
 
 
-export = AbstractRequest
+export default AbstractRequest

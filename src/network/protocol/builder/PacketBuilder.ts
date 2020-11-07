@@ -1,8 +1,8 @@
-import AbstractBuilder = require("./AbstractBuilder");
-import SlicePacket = require("../packet/SlicePacket");
-import Packet = require("../Packet");
-import IBuilder = require("./IBuilder");
-import IFactory = require("../factory/IFactory");
+import AbstractBuilder from "./AbstractBuilder";
+import SlicePacket from "../packet/SlicePacket";
+import Packet from "../Packet";
+import IBuilder from "./IBuilder";
+import IFactory from "../factory/IFactory";
 
 class PacketBuilder extends AbstractBuilder<SlicePacket,Packet>{
 
@@ -26,4 +26,4 @@ class PacketBuilder extends AbstractBuilder<SlicePacket,Packet>{
 	}
 }
 
-export = PacketBuilder;
+export default PacketBuilder;

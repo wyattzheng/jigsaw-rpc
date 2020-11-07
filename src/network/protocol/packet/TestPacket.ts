@@ -1,4 +1,4 @@
-import BasePacket = require("../BasePacket");
+import BasePacket from "../BasePacket";
 
 class TestPacket extends BasePacket{
 	public static packet_id : number = 1;
@@ -36,4 +36,4 @@ class TestPacket extends BasePacket{
 	}
 }
 
-export = TestPacket;
+export default TestPacket;

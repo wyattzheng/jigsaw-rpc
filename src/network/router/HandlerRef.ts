@@ -1,4 +1,4 @@
-import Packet = require("../protocol/Packet")
+import Packet from "../protocol/Packet"
 
 type Handler = (pk:Packet)=>void;
 
@@ -12,4 +12,4 @@ class HandlerRef {
 }
 
 
-export = HandlerRef;
+export default HandlerRef;

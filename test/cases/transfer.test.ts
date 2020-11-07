@@ -1,7 +1,7 @@
-import RPC = require("../../src/index");
-import assert = require("assert");
-import util = require("util");
-import InvokeRemoteError = require("../../src/error/request/InvokeRemoteError");
+import RPC from "../../src/index";
+import assert from "assert";
+import util from "util";
+import InvokeRemoteError from "../../src/error/request/InvokeRemoteError";
 const sleep = util.promisify(setTimeout);
 
 function waitForEvent(obj:any,event_name:string){
