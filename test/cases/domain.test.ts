@@ -26,7 +26,7 @@ describe("Domain Module Test",()=>{
 
         let port = 1234;
         let socket = new UDPSocket(port,"0.0.0.0");
-        await new Promise((resolve)=>socket.once("ready",resolve));
+        await new Promise((resolve)=>socket.getLifeCycle().on("ready",resolve));
 
         let client = getDomainClient(socket,"test_client");
         let addr = await client.resolve("test_client",5000);

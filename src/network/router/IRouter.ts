@@ -1,5 +1,6 @@
+import LifeCycle from "../../utils/LifeCycle";
 import { TypedEmitter } from "tiny-typed-emitter";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import IRoute from "./route/IRoute";
 
 
@@ -9,12 +10,11 @@ interface RouterEvent{
     error: (err : Error) => void;
 }
 interface IRouter{
-    getEventEmitter():TypedEmitter<RouterEvent>;
-    getState():string;
+    getLifeCycle():LifeCycle;
     getRouterId():string;
-    sendPacket(pk:Packet,route:IRoute) : void;
-    handlePacket(pk:Packet):void;
-    plug(sign:string,handler:(pk:Packet)=>void):number;
+    sendPacket(pk:IPacket,route:IRoute) : void;
+    handlePacket(pk:IPacket):void;
+    plug(sign:string,handler:(pk:IPacket)=>void):number;
     unplug(sign:string,refid:number):void;
     
 }

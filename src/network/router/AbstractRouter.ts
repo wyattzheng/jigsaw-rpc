@@ -1,37 +1,30 @@
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import IRouter from "./IRouter";
 import IRoute from "./route/IRoute";
 
 import HandlerMap from "../../utils/HandlerMap";
-import { TypedEmitter } from "tiny-typed-emitter";;
+import { TypedEmitter } from "tiny-typed-emitter";
+import LifeCycle from "../../utils/LifeCycle";
 
-interface RouterEvent{
-	ready: () => void;
-    close: () => void;	
-    error: (err : Error) => void;
-}
 
-type Handler = (pk:Packet)=>void;
+type Handler = (pk:IPacket)=>void;
 
 abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
-    private eventEmitter : TypedEmitter<RouterEvent>;
+    private lifeCycle = new LifeCycle();
     private routerId: string;
     constructor(){
         super();
-        this.eventEmitter = new TypedEmitter<RouterEvent>();
         this.routerId = Math.random()+"";
     }
-    public getEventEmitter() : TypedEmitter<RouterEvent>{
-        return this.eventEmitter;
+    public getLifeCycle(){
+        return this.lifeCycle;
     }
     public getRouterId() : string{
         return this.routerId;
     }
-    public getState() : string{
-        return "ready";
-    }
-    public abstract sendPacket(pk : Packet,route : IRoute) : void;
-    public abstract handlePacket(pk : Packet) : void;
+
+    public abstract sendPacket(pk : IPacket,route : IRoute) : void;
+    public abstract handlePacket(pk : IPacket) : void;
 }
 
 export default AbstractRouter;

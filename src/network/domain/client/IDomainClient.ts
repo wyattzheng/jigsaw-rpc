@@ -1,3 +1,4 @@
+import LifeCycle from "src/utils/LifeCycle";
 import { TypedEmitter } from "tiny-typed-emitter";
 import AddressInfo from "../AddressInfo";
 
@@ -7,8 +8,7 @@ interface DomainClientEvent{
 }
 
 interface IDomainClient{
-    getEventEmitter() : TypedEmitter<DomainClientEvent> ;
-    getState():string;
+    getLifeCycle():LifeCycle;
     resolve(jgname:string) : Promise<AddressInfo>;    
     updateAddress(jgname:string,addr:AddressInfo) : void;
     close() : void;

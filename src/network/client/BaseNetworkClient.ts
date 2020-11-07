@@ -1,33 +1,26 @@
-import AbstractSocket from "../socket/AbstractSocket";
+import AbstractSocket from "../socket/ISocket";
 import IFactory from "../protocol/factory/IFactory";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import { TypedEmitter } from "tiny-typed-emitter";
-import AbstractNetworkClient from "./AbstractNetworkClient";
 import AddressInfo from "../domain/AddressInfo";
+import INetworkClient from "./INetworkClient";
 
 interface NetworkClientEvent{
-	ready: () => void
-	packet: (p:Packet)=> void;
-	close: () => void;	
-	error: (err : Error) => void;
+	packet: (p:IPacket)=> void;
 }
 
-class BaseNetworkClient extends AbstractNetworkClient{
+class BaseNetworkClient implements INetworkClient{
 	protected socket : AbstractSocket;
-	protected state : string = "starting";
-	protected factory : IFactory<Buffer,Packet>;
+	protected factory : IFactory<Buffer,IPacket>;
 	protected clientid : string = "";
 	private eventEmitter : TypedEmitter<NetworkClientEvent>;
 
-	constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>){
-		super();
+	constructor(socket : AbstractSocket, factory : IFactory<Buffer,IPacket>){
 
 		this.factory = factory;
 		this.socket = socket;
 
-		this.socket.on("ready",this.onSocketReady.bind(this));
-		this.socket.on("message",this.onSocketMessage.bind(this));
-		this.socket.on("close",this.onSocketClose.bind(this));
+		this.socket.getEventEmitter().on("message",this.onSocketMessage.bind(this));
 
 		this.eventEmitter = new TypedEmitter<NetworkClientEvent>();
 		this.initClientId();
@@ -39,7 +32,7 @@ class BaseNetworkClient extends AbstractNetworkClient{
 		return this.socket.getAddress();
 	}
 	public getState(){
-		return this.socket.getState();
+		return this.socket.getLifeCycle().getState();
 	}
 	private initClientId() : void{
 		this.clientid = "jg#" + Math.random() + "#";
@@ -50,34 +43,21 @@ class BaseNetworkClient extends AbstractNetworkClient{
 	public getSocket() : AbstractSocket{
 		return this.socket;
 	}
-	private onSocketReady(){
-		if(this.state != "starting"){
-			this.eventEmitter.emit("error",new Error("state transform error"))
-			return;
-		}
-
-		this.state = "ready";
-		this.eventEmitter.emit("ready");
-	}
-	private onSocketClose(){
-		if(this.state == "close")
-			return;
-
-		this.state = "close";
-		this.eventEmitter.emit("close");
+	public getLifeCycle(){
+		return this.socket.getLifeCycle();
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
 		let product = this.factory.getProduct(message);
-		product.reply_info = rinfo;
+		product.setReplyInfo(rinfo);
 		product.setBuffer(message);
 		product.decode();
 		this.handlePacket(product);
 	}
-	protected handlePacket(pk : Packet){
+	protected handlePacket(pk : IPacket){
 		this.eventEmitter.emit("packet",pk);
 	}
 
-	public sendPacket(packet : Packet,dst_port:number , dst_address:string){
+	public sendPacket(packet : IPacket,dst_port:number , dst_address:string){
 		if(!packet.isBuilt())
 			packet.encode();
 

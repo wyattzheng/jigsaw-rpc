@@ -16,7 +16,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
         this.jgname = jgname;
         this.dst = dst;
         
-        this.setState(RequestState.BUILT);
+        this.getLifeCycle().setState("ready");
     }
     async send(){
         let pk=new DomainQueryPacket();

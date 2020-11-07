@@ -1,20 +1,19 @@
 import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import SlicePacket from "../protocol/packet/SlicePacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
-import AbstractHandler from "./AbstractHandler";
+import IHandler from "./IHandler";
 
-type Handler = (p : Packet) => void;
+type Handler = (p : IPacket) => void;
 
-class SliceHandler extends AbstractHandler{
-	protected builder_manager : IBuilderManager<SlicePacket,Packet>;
+class SliceHandler implements IHandler{
+	protected builder_manager : IBuilderManager<SlicePacket,IPacket>;
     protected packet_handler : Handler = ()=>{};
     protected router : IRouter;
 
-    constructor(router : IRouter,builder_manager : IBuilderManager<SlicePacket,Packet>){
-        super(router);
+    constructor(router : IRouter,builder_manager : IBuilderManager<SlicePacket,IPacket>){
         this.router = router;
 
         this.builder_manager = builder_manager;
@@ -24,7 +23,7 @@ class SliceHandler extends AbstractHandler{
     setHandler(handler : Handler){
         this.packet_handler = handler;
     }
-    handlePacket(p : Packet){
+    public handlePacket(p : IPacket){
         let spk = p as SlicePacket;
         let manager = this.builder_manager;
         
@@ -38,7 +37,7 @@ class SliceHandler extends AbstractHandler{
             let built=manager.getBuilt(spk.buildkey);
             if(!built.isBuilt())
                 built.decode();
-            built.reply_info = spk.reply_info;
+            built.setReplyInfo(spk.reply_info);
             
             
             this.packet_handler(built);

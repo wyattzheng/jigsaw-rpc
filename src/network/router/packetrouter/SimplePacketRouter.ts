@@ -1,10 +1,10 @@
 import AbstractPacketRouter from "./AbstractPacketRouter";
-import AbstractNetworkClient from "../../client/AbstractNetworkClient";
+import INetworkClient from "../../client/INetworkClient";
 import Packet from "../../protocol/Packet";
 import IRoute from "../route/IRoute";
 
 class SimplePacketRouter extends AbstractPacketRouter{
-    constructor(client : AbstractNetworkClient){
+    constructor(client : INetworkClient){
         super(client);
         
     }

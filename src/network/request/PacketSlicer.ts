@@ -1,5 +1,5 @@
 import { TypedEmitter } from "tiny-typed-emitter";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import SlicePacket from "../protocol/packet/SlicePacket";
 const debug = require("debug")("PacketSlicer");
 
@@ -8,7 +8,7 @@ interface PacketSlicerEvent{
 }
 
 class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
-    private packet : Packet;
+    private packet : IPacket;
     private unsent_packets = new Set<number>();
     private slicelen = 20 * 1024;
     private packet_data : Buffer = Buffer.allocUnsafe(0)
@@ -19,7 +19,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
     private req_id : string;
     private start_time : number = new Date().getTime();
 
-    constructor(pk : Packet,req_id: string){
+    constructor(pk : IPacket,req_id: string){
         super();
 
         if(!pk.isBuilt())
@@ -83,7 +83,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
         let slicecount = buf.length % slicelen == 0 ? buf.length/slicelen : Math.floor(buf.length/slicelen) + 1;
         return slicecount;
     }
-    public getSlicePacket(partid:number) : Packet {
+    public getSlicePacket(partid:number) : IPacket {
         
         let buf = this.packet_data;
 
@@ -127,7 +127,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
 
         return tosend;
     }
-    public getEmptySlice() : Packet{
+    public getEmptySlice() : IPacket{
         /*let slice = new SlicePacket();
         slice.partid = -1;
         slice.partmax = this.getSliceCount();

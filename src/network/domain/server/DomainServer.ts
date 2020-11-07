@@ -1,8 +1,8 @@
 import BuilderNetworkClient from "../../client/BuilderNetworkClient";
+import INetworkClient from "../../client/INetworkClient";
 import UDPSocket from "../../socket/UDPSocket";
 import PacketBuilderManager from "../../protocol/builder/manager/PacketBuilderManager";
 import PacketFactory from "../../protocol/factory/PacketFactory";
-import Packet from "../../protocol/Packet";
 import DomainHandler from "../../handler/DomainHandler";
 import { TypedEmitter } from "tiny-typed-emitter";
 import SimplePacketRouter from "../../router/packetrouter/SimplePacketRouter";
@@ -10,16 +10,16 @@ import IRouter from "../../router/IRouter";
 
 interface DomainServerEvent{
     ready:()=>void;
-    close:()=>void;
+    closed:()=>void;
 }
+
 class DomainServer extends TypedEmitter<DomainServerEvent>{
     private address:string;
     private port:number;
     private router:IRouter;
-    private client : BuilderNetworkClient;
+    private client : INetworkClient;
     private socket : UDPSocket;
     private handler : DomainHandler;
-    private state : string = "close";
 
     constructor(bind_port?:number,bind_address?:string){
         super();
@@ -37,14 +37,12 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
 
         this.handler = new DomainHandler(this.router);
 
-        this.socket.on("ready",()=>{
-            this.state="ready";
+        this.socket.getLifeCycle().on("ready",()=>{
             this.emit("ready");
         })
         
-        this.socket.on("close",()=>{
-            this.state="close";
-            this.emit("close");
+        this.socket.getLifeCycle().on("closed",()=>{
+            this.emit("closed");
         })
 
     }

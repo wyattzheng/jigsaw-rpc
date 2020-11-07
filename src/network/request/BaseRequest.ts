@@ -1,58 +1,61 @@
-import AbstractRequest from "./AbstractRequest"
-import RequestState from "./RequestState";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import Defer from "../../utils/Defer";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import util from "util";
 import RequestTimeoutError from "../../error/request/RequestTimeoutError";
 import RequestRemoteError from "../../error/request/RequestRemoteError";
 import IRouter from "../router/IRouter";
+import LifeCycle from "../../utils/LifeCycle";
+import IRequest from "./IRequest";
 
 const sleep = util.promisify(setTimeout);
 
 
 const debug = require("debug")("BaseRequest");
 
-abstract class BaseRequest<T> extends AbstractRequest{
+abstract class BaseRequest<T> implements IRequest<T>{
     protected req_seq : number = -1;
     protected result? : T;
     protected hasResult : boolean = false;
     protected timeout_duration : number;
     protected router : IRouter;
 
+
     private timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
     private resender_defer? : Defer<void>;
     private resender_loop : boolean  = false;
+	protected failed_reason? :Error;
+	private lifeCycle = new LifeCycle();
 
     constructor(router: IRouter,seq : number,timeout_duration : number){
-        super();
 
         this.router = router;
         this.req_seq = seq;
 
         this.timeout_duration = timeout_duration;
         this.timeout=setTimeout(()=>{
-            if(this.state == RequestState.BUILDING || this.state == RequestState.BUILT)
-                this.setFailedState(this.getTimeoutError());
-            else{
+            if(this.lifeCycle.getState() == "starting" || this.lifeCycle.getState() == "ready"){
+                this.lifeCycle.setDead(this.getTimeoutError());
+            }else{
                this.pending_defer?.reject(this.getTimeoutError());
             }
            },this.timeout_duration);
 
-        this.once("done",(err)=>{
+        this.lifeCycle.on("closed",()=>{
             clearTimeout(this.timeout);
         });
 
     }
+
     protected getTimeoutError(){
         return new RequestTimeoutError(this.timeout_duration);
     }
-    protected handleErrorPacket(p : Packet){
+    protected handleErrorPacket(p : IPacket){
         let pk = p as ErrorPacket;
         throw new RequestRemoteError(pk.error);
     }
-    private onErrorPacket(p : Packet){
+    private onErrorPacket(p : IPacket){
         try{
             this.handleErrorPacket(p);
         }catch(err){
@@ -67,12 +70,15 @@ abstract class BaseRequest<T> extends AbstractRequest{
     setRequestSeq(seq : number){
         this.req_seq = seq;
     }
+
     getRequestId() : string{
         return this.router.getRouterId() + ":" +this.getName() + ":" + this.req_seq;
     }
     protected setResult(result : T){
-        if(this.state!=RequestState.PENDING)
+
+        if(this.lifeCycle.getState()!="closing")
             throw new Error("this result isn't pending,can not set result");
+
         if(this.hasResult)
             return;
 //            throw new Error("already has result");
@@ -88,11 +94,11 @@ abstract class BaseRequest<T> extends AbstractRequest{
         return this.result as T;
     }
     private async before_wait(){
-        if(this.state!=RequestState.BUILT)
+        if(this.lifeCycle.getState()!="ready")
             throw new Error("at this state,can not before_run")
         
         this.pending_defer = new Defer();
-        this.setState(RequestState.PENDING);
+        this.lifeCycle.setState("closing");
     
         let tick : number = 0;
         this.resender_loop = true;
@@ -108,7 +114,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.resender_defer?.resolve();
     }
     private async after_wait(refid:number,error_refid:number,err:Error | undefined){
-        if(this.state!=RequestState.PENDING)
+        if(this.lifeCycle.getState()!="closing")
             throw new Error("at this state,can not after_end");
 
         this.resender_loop = false;
@@ -117,10 +123,12 @@ abstract class BaseRequest<T> extends AbstractRequest{
         this.router.unplug(this.getRequestId(),refid);
         this.router.unplug("ErrorPacket",error_refid);
         debug("unplug",refid);
+        
         if(err)
-            this.setFailedState(err);
-        else
-            this.setState(RequestState.DONE);
+            this.lifeCycle.setDead(err);
+        else{
+            this.lifeCycle.setState("closed");
+        }
         
     }
     private async dosend(){
@@ -136,12 +144,13 @@ abstract class BaseRequest<T> extends AbstractRequest{
 
         this.checkRequestKey();
 
-        if(this.state == RequestState.PENDING)
+        if(this.lifeCycle.getState() == "closing")
             throw new Error("right now this request is pending")
-		if(this.state != RequestState.BUILT)
+		if(this.lifeCycle.getState() != "ready")
             throw new Error("this request can not run because of it hasn't been built.");
 
         
+
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));
         let error_refid = this.router.plug("ErrorPacket",this.onErrorPacket.bind(this));
     
@@ -155,7 +164,7 @@ abstract class BaseRequest<T> extends AbstractRequest{
             await (this.pending_defer as Defer<void>).promise;        
         }catch(err){
             error = err;
-        }
+        }        
 
         this.after_wait(refid,error_refid,error);
 
@@ -164,7 +173,12 @@ abstract class BaseRequest<T> extends AbstractRequest{
             
         return this.getResult();
     }
-    protected abstract handlePacket(p:Packet) : void;
+
+    getLifeCycle(){
+        return this.lifeCycle;
+    }
+    abstract getName():string;
+    protected abstract handlePacket(p:IPacket) : void;
     protected abstract async send() : Promise<void>;
 }
 

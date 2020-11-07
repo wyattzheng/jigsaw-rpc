@@ -1,5 +1,5 @@
-import AbstractNetworkClient from "../../client/AbstractNetworkClient";
-import Packet from "../../protocol/Packet";
+import INetworkClient from "../../client/INetworkClient";
+import IPacket from "../../protocol/IPacket";
 import AbstractRouter from "../AbstractRouter";
 
 import PacketTypeRouter from "../PacketTypeRouter";
@@ -7,17 +7,16 @@ import RequestIdRouter from "../RequestIdRouter";
 import HandlerMap from "../../../utils/HandlerMap";
 import IRoute from "../route/IRoute";
 
-type Handler = (pk:Packet)=>void;
-
+type Handler = (pk:IPacket)=>void;
 
 
 abstract class AbstractPacketRouter extends AbstractRouter{
 
-    protected client : AbstractNetworkClient;
+    protected client : INetworkClient;
     private routers : Array<AbstractRouter>;
     private handler_map = new HandlerMap<Array<number>>();
 
-    constructor(client: AbstractNetworkClient){
+    constructor(client: INetworkClient){
         super();
 
         this.client = client;
@@ -27,19 +26,12 @@ abstract class AbstractPacketRouter extends AbstractRouter{
         this.client.getEventEmitter().on("packet",this.handlePacket.bind(this));
 
         
-        this.client.getSocket().on("ready",()=>{
-            this.getEventEmitter().emit("ready");
-        })
-        this.client.getSocket().on("close",()=>{
-            this.getEventEmitter().emit("close");
-        })
-
         this.initRouters();
     }
-    abstract sendPacket(pk:Packet,route:IRoute) : void;
-    public getState(){
-        return this.client.getState();
+    getLifeCycle(){
+        return this.client.getSocket().getLifeCycle();
     }
+    abstract sendPacket(pk:IPacket,route:IRoute) : void;
     public close(){
         //this.client.close();
     }
@@ -49,13 +41,13 @@ abstract class AbstractPacketRouter extends AbstractRouter{
 
         
     }
-    public handlePacket(pk : Packet){ // not a good design here, to do: Filter Class
+    public handlePacket(pk : IPacket){ // not a good design here, to do: Filter Class
         for(let router of this.routers){
             router.handlePacket(pk);
         }
     }
     
-    public getClient() : AbstractNetworkClient{
+    public getClient() : INetworkClient{
         return this.client;
     }
 

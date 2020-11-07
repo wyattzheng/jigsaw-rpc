@@ -1,5 +1,5 @@
-import AbstractHandler from "./AbstractHandler";
-import Packet from "../protocol/Packet";
+import IHandler from "./IHandler";
+import IPacket from "../protocol/IPacket";
 import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
 import DomainStorage from "../domain/server/DomainStorage";
@@ -9,12 +9,11 @@ import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
 
-class DomainHandler extends AbstractHandler{
+class DomainHandler implements IHandler{
     public storage : DomainStorage;
     public router : IRouter;
 
     constructor(router:IRouter){
-        super(router);
         this.router = router;
 
         this.storage = new DomainStorage();
@@ -22,7 +21,7 @@ class DomainHandler extends AbstractHandler{
         this.router.plug("DomainUpdatePacket",this.handlePacket.bind(this));
         
     }
-    protected onPacket(p:Packet):void{
+    protected onPacket(p:IPacket):void{
         if(p.getName() == "DomainQueryPacket"){
             let pk = p as DomainQueryPacket;
 
@@ -43,13 +42,14 @@ class DomainHandler extends AbstractHandler{
             throw new Error("recv an unknown packet");
 
     }
-    protected handlePacket(p:Packet):void{
+    public handlePacket(p:IPacket):void{
         try{
             this.onPacket(p);
         }catch(err){
             let pk=new ErrorPacket();
             pk.error = err;
-            this.router.sendPacket(pk,new NetRoute(p.reply_info.port,p.reply_info.address));
+            let reply_info = p.getReplyInfo();
+            this.router.sendPacket(pk,new NetRoute(reply_info.port,reply_info.address));
         }
 
     }

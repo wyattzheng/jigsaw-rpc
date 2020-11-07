@@ -1,9 +1,8 @@
-import AbstractSocket from "../socket/AbstractSocket";
+import ISocket from "../socket/ISocket";
 import BaseNetworkClient from "./BaseNetworkClient";
 import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
-import PacketBuilderManager from "../protocol/builder/manager/PacketBuilderManager";
 import IFactory from "../protocol/factory/IFactory";
-import Packet from "../protocol/Packet";
+import IPacket from "../protocol/IPacket";
 import SlicePacket from "../protocol/packet/SlicePacket";
 import SliceHandler from "../handler/SliceHandler";
 import SimplePacketRouter from "../router/packetrouter/SimplePacketRouter";
@@ -11,16 +10,15 @@ import SimplePacketRouter from "../router/packetrouter/SimplePacketRouter";
 class BuilderNetworkClient extends BaseNetworkClient{
     private slice_handler : SliceHandler;
 
-    constructor(socket : AbstractSocket, factory : IFactory<Buffer,Packet>, builder_manager : IBuilderManager<SlicePacket,Packet>){
+    constructor(socket : ISocket, factory : IFactory<Buffer,IPacket>, builder_manager : IBuilderManager<SlicePacket,IPacket>){
         super(socket,factory);
        
         this.slice_handler = new SliceHandler(new SimplePacketRouter(this),builder_manager);
 
         this.slice_handler.setHandler(this.handlePacket.bind(this));
     }
-    protected handlePacket(pk : Packet){
-
-            this.getEventEmitter().emit("packet",pk);
+    protected handlePacket(pk : IPacket){
+        this.getEventEmitter().emit("packet",pk);
     }
     
 }

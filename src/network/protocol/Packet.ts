@@ -1,7 +1,7 @@
 import AddressInfo from "../domain/AddressInfo";
+import IPacket from "./IPacket";
 
-abstract class Packet{ // Design Mode : Builder Mode
-	public static packet_id : number = 0;
+abstract class Packet implements IPacket{ // Design Mode : Builder Mode
 	public request_id : string = "";
 	public reply_info : AddressInfo = new AddressInfo("Not a valid target",-1);
 
@@ -20,9 +20,22 @@ abstract class Packet{ // Design Mode : Builder Mode
 	abstract release() : void;
 	abstract getName() : string;
 
+	setReplyInfo(reply:AddressInfo){
+		this.reply_info = reply;
+	}
+	getReplyInfo():AddressInfo{
+		return this.reply_info;
+	}
+	setRequestId(reqid:string){
+		this.request_id = reqid;
+	}
+	getRequestId():string{
+		return this.request_id;
+	}
 	getPacketId() : number{
 		return (this.constructor as any).packet_id;
 	}
+
 	public getSlicedData(check : boolean = true) : Buffer{
 //		if(this.offset > Packet.buffer_size && check)
 //			throw new Error("this buffer is too large to get")

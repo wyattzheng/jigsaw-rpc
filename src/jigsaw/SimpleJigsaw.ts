@@ -18,11 +18,12 @@ import { TypedEmitter } from "tiny-typed-emitter";
 
 import IDomainClient from "src/network/domain/client/IDomainClient";
 import assert from "assert";
+import LifeCycle from "../utils/LifeCycle";
 
 
 interface JigsawEvent{
     ready:()=>void;
-    close:()=>void;
+    closed:()=>void;
 }
 
 type HandlerRet = Promise<object> | Promise<void>  | object | void;
@@ -30,7 +31,8 @@ type Handler = (data : object) => HandlerRet;
 type FinalHandler = (port_name:string,data:object)=> object | void;
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
-    private state = "starting"; // starting ready closing close
+
+    private lifeCycle = new LifeCycle();
 
     public jgname : string;
     private domclient? : IDomainClient;
@@ -66,6 +68,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let socket = new UDPSocket(this.entry_port,"0.0.0.0");
         this.socket = socket;
 
+        this.lifeCycle.when("ready").then(()=>this.emit("ready"));
+        this.lifeCycle.on("closed",()=>this.emit("closed"));
+
         this.initSubModules();
     }
     private initSubModules(){
@@ -79,32 +84,31 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         this.invoke_handler = new InvokeHandler(this.router,this.handleInvoke.bind(this));
 
-        this.router.getEventEmitter().on("close",()=>{
-            this.setModuleClose("router");
-            this.close();
-        });
 
-        this.socket.on("ready",()=>{
+        this.socket.getLifeCycle().on("ready",async ()=>{
             this.domclient = new DomainClient(this.jgname,this.entry_address,this.socket.getAddress().port,
                 new AddressInfo(registry_addr,registry_port)
             ,this.router as IRouter);
                     
-            this.domclient.getEventEmitter().on("close",()=>{
+
+            this.domclient.getLifeCycle().on("closed",()=>{
                 this.setModuleClose("domclient");
-                this.close();
+                this.close();    
             });
-            if(this.domclient.getState() == "ready"){
+
+            this.domclient.getLifeCycle().when("ready").then(()=>{
                 this.setModuleReady("domclient");
-            }else
-                this.domclient.getEventEmitter().on("ready",()=>{
-                    this.setModuleReady("domclient");
-                });
-                
-
-        })
-
+            });  
     
-        this.router.getEventEmitter().on("ready",()=>{
+        })
+    
+        
+        this.router.getLifeCycle().on("closed",()=>{
+            this.setModuleClose("router");
+            this.close();
+        });
+        
+        this.router.getLifeCycle().when("ready").then(()=>{
             this.setModuleReady("router");
         });
        
@@ -112,25 +116,24 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     }
     private setModuleReady(name:string){
-        if(this.state != "starting")
+        if(this.lifeCycle.getState() != "starting")
             throw new Error("not a correct state");
 
         this.module_ref.add(name);
 
         if(this.module_ref.size == 2){
-            this.state="ready";
-            this.emit("ready");
+            this.lifeCycle.setState("ready")
         }
     }
     private setModuleClose(name:string){
-        if(this.state != "closing")
+        if(this.lifeCycle.getState() != "closing")
             throw new Error("not at closing state, but module closed");
         
         this.module_ref.delete(name);
         
         if(this.module_ref.size == 0){
-            this.state = "close";
-            this.emit("close");
+
+            this.lifeCycle.setState("closed");
         }
 
     }
@@ -157,15 +160,15 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return `rand-${hash.digest("hex").substr(0,8)}`;
     }
     async close(){
-        if(this.state == "starting")
+        if(this.lifeCycle.getState() == "starting")
             throw new Error("this instance is starting.");
 
-        if(this.state == "closing" || this.state == "close")
+        if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() == "closed")
             return;
-        if(this.state != "ready")
+        if(this.lifeCycle.getState() != "ready")
             throw new Error("at this state, the jigsaw can not be closed");
 
-        this.state = "closing";
+        this.lifeCycle.setState("closing");
         
         //this.router.close();
         await (this.domclient as IDomainClient).close();   
@@ -175,7 +178,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     
     send(path_str:string,data:object) : Promise<object>{
-        assert(this.state == "ready", "jigsaw state must be ready");
+        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
         
         let validator = new DataValidator(data);
         validator.validate();
@@ -190,7 +193,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let buffer = Buffer.from(JSON.stringify(data));
         let request = new InvokeRequest(this.jgname,path,buffer,this.domclient as IDomainClient,this.router as IRouter,req_seq);
         
-        await request.whenBuild();
+        await request.getLifeCycle().when("ready");
         await request.run();
         let ret_buf = request.getResult();
 

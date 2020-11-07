@@ -1,14 +1,21 @@
-import AbstractSocket from "./AbstractSocket";
+import ISocket from "./ISocket";
 import Dgram from "dgram";
 import assert from "assert";
 import AddressInfo from "../domain/AddressInfo";
+import LifeCycle from "../../utils/LifeCycle";
+import { TypedEmitter } from "tiny-typed-emitter";
 
-class UDPSocket extends AbstractSocket{
+interface SocketEvent{
+	message: (body:Buffer,rinfo:AddressInfo) => void;
+} ;
+
+class UDPSocket implements ISocket{
 
 	private sock : Dgram.Socket;
-	private state : string = "close";
+	private lifeCycle : LifeCycle = new LifeCycle();
+	private eventEmitter = new TypedEmitter<SocketEvent>();
+
 	constructor(port? : number,address?:string){
-		super(port,address);
 
 		this.sock = Dgram.createSocket("udp4");
 		
@@ -16,25 +23,25 @@ class UDPSocket extends AbstractSocket{
 	
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			
-			this.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
+			this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
 		});
 		this.sock.on("listening",()=>{ 
 			this.sock.setRecvBufferSize(1024*1024*10);
 			this.sock.setSendBufferSize(1024*1024*10);
 		
-			this.state = "ready";
-			this.emit("ready"); 
-
+			this.lifeCycle.setState("ready");
 		});
 		this.sock.on("close",()=>{ 
-			this.state = "close";
-			this.emit("close"); 
+			this.lifeCycle.setState("closed"); 
+
 		})
 	}
-	
-	public getState() : string{
-		return this.state;
+	public getEventEmitter(){
+		return this.eventEmitter;
+	}
+	public getLifeCycle(){
+		return this.lifeCycle;
 	}
 	public getAddress() : AddressInfo{
 		let addr=this.sock.address();
@@ -42,7 +49,7 @@ class UDPSocket extends AbstractSocket{
 
 	}
 	public send(data : Buffer, port : number, address : string = "") : void{
-		assert(this.state == "ready","socket must be ready state");
+		assert(this.getLifeCycle().getState() == "ready","socket must be ready state");
 
 		this.sock.send(data,port,address);
 	}

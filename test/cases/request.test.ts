@@ -38,15 +38,16 @@ describe("Request Test",()=>{
 
         let req = new TestRequest(router,0,1000);
         let ref = 0;
-        req.on("built",(err)=>{
+        req.getLifeCycle().on("closed",async ()=>{
             ++ref;
         });
-        req.on("done",async (err)=>{
+        
+        req.getLifeCycle().on("dead",async ()=>{
             if(++ref == 2){
-                
                 await socket.close();
                 done();
             }
         });
+
     });
 })

@@ -2,21 +2,15 @@ import QueryDomainRequest from "../../request/QueryDomainRequest";
 import AddressInfo from "../AddressInfo";
 import IDomainClient from "./IDomainClient";
 import DomainUpdatePacket from "../../protocol/packet/DomainUpdatePacket";
-import { TypedEmitter } from "tiny-typed-emitter";
 import util from "util";
 import LimitedMap from "../../../utils/LimitedMap";
 import Defer from "../../../utils/Defer";
 import IRouter from "../../router/IRouter";
 import NetRoute from "../../router/route/NetRoute";
+import LifeCycle from "../../../utils/LifeCycle";
 
 const debug = require("debug")("DomainClient");
 const sleep = util.promisify(setTimeout);
-
-
-interface DomainClientEvent{
-	ready: () => void;
-	close: () => void;	
-}
 
 
 class CacheExpiredError extends Error{};
@@ -40,7 +34,6 @@ class DomainClient implements IDomainClient{
     private address : AddressInfo;
     private router : IRouter;
     private request_seq : number = 0;
-    private state : string = "close";
     private client_name : string;
     private entry_address : string ;
     private entry_port : number ;
@@ -49,8 +42,8 @@ class DomainClient implements IDomainClient{
     private closing_defer = new Defer<void>();
     private resolving : number = 0;
     private max_resolving : number = 300;
-    private eventEmitter = new TypedEmitter<DomainClientEvent>();
 
+    private lifeCycle = new LifeCycle();
 
     constructor(client_name:string,entry_address:string,entry_port:number,server_address:AddressInfo,router:IRouter){
         this.address = server_address;
@@ -58,29 +51,21 @@ class DomainClient implements IDomainClient{
         this.client_name = client_name;
         this.entry_address = entry_address;
         this.entry_port = entry_port;
-
-        if(this.router.getState() == "ready"){
-            this.init();
-        }else
-            this.router.getEventEmitter().on("ready",()=>{
-                this.init();
-            });
         
-        this.router.getEventEmitter().on("close",()=>{
+        this.router.getLifeCycle().when("ready").then(this.init.bind(this));
+        
+        this.router.getLifeCycle().on("closed",()=>{
             this.close();
         });
 
     }
-    public getEventEmitter(){
-        return this.eventEmitter;
-    }
-    public getState(){
-        return this.state;
+    public getLifeCycle(){
+        return this.lifeCycle;
     }
     private init(){
+        
         this.start_updating_loop();
-        this.state = "ready";
-        this.eventEmitter.emit("ready");
+        this.lifeCycle.setState("ready");
     }
 	public async start_updating_loop(){
         
@@ -104,16 +89,16 @@ class DomainClient implements IDomainClient{
              tick++;
         }
         this.closing_defer.resolve();
-        this.state = "close";
-        this.eventEmitter.emit("close");
+        this.lifeCycle.setState("closed");
+
     }
     async close(){
-        if(this.state == "closing" || this.state =="close")
+        if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() =="closed")
             return;
-        if(this.state != "ready")
+        if(this.lifeCycle.getState() != "ready")
             throw new Error("at this state, instance can not close");
 
-        this.state = "closing";
+        this.lifeCycle.setState("closing");
         this.loop = false;
         await this.closing_defer.promise;
      }
@@ -136,8 +121,7 @@ class DomainClient implements IDomainClient{
         }catch(err){
 
         }
-
-        
+    
 
         let addrinfo = await this.doResolve(jgname,timeout);
         debug("real resolve",jgname,addrinfo);
@@ -153,6 +137,7 @@ class DomainClient implements IDomainClient{
         
         let loops = Math.floor(max_time / loop_interval);
 
+        
         for(let i=0;i<loops;i++){
             
             try{
@@ -186,7 +171,7 @@ class DomainClient implements IDomainClient{
     private async realResolve(jgname:string){
         
         let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
-        await req.whenBuild();
+        await req.getLifeCycle().when("ready");
         await req.run();
         
         return req.getResult();

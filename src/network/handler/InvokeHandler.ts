@@ -1,19 +1,10 @@
-import AbstractHandler from "./AbstractHandler";
-import Packet from "../protocol/Packet";
-import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
-import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
-import DomainStorage from "../domain/server/DomainStorage";
-import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
+import IHandler from "./IHandler";
+import IPacket from "../protocol/IPacket";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
-import SimplePacketRouter from "../router/packetrouter/SimplePacketRouter";
-import { TypedEmitter } from "tiny-typed-emitter";
 import InvokePacket from "../protocol/packet/InvokePacket";
 import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
 import Path from "../request/Path";
-import InvokeRequest from "../request/InvokeRequest";
-import SlicePacket from "../protocol/packet/SlicePacket";
 import AddressInfo from "../domain/AddressInfo";
-import PacketBuilder from "../protocol/builder/PacketBuilder";
 import PacketSlicer from "../request/PacketSlicer";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import LimitedMap from "../../utils/LimitedMap";
@@ -71,7 +62,7 @@ class Invoker{
 
 }
 
-class InvokeHandler extends AbstractHandler{
+class InvokeHandler implements IHandler{
     public router : IRouter;
     public handler : Handler;
     public state : string = "starting";
@@ -81,16 +72,15 @@ class InvokeHandler extends AbstractHandler{
         invokers:0
     }));
     constructor(router:IRouter,handler:Handler){
-        super(router);
         this.router = router;
         this.handler = handler;
 
         this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
-        this.router.getEventEmitter().on("ready",()=>{
+        this.router.getLifeCycle().on("ready",()=>{
             this.state = "ready";
         });
-        this.router.getEventEmitter().on("close",()=>{
+        this.router.getLifeCycle().on("closed",()=>{
             this.close();
         });
 
@@ -161,7 +151,7 @@ class InvokeHandler extends AbstractHandler{
         this.setRef("reply",-1);
     }
 
-    private async getReplyPacket(invoke_packet:Packet):Promise<Packet>{
+    private async getReplyPacket(invoke_packet:IPacket):Promise<IPacket>{
         let pk = invoke_packet as InvokePacket;
 
         try{
@@ -180,24 +170,24 @@ class InvokeHandler extends AbstractHandler{
             return err_pk;
         }
     }
-    private async addNewInvoker(invoke_pk:Packet) : Promise<Invoker>{
+    private async addNewInvoker(invoke_pk:IPacket) : Promise<Invoker>{
         this.setRef("invokers",+1);
 
         let build_req =Math.random() + "-build";
 
 
         let invoker = new Invoker();
-        this.invokers.set(invoke_pk.request_id,invoker);
+        this.invokers.set(invoke_pk.getRequestId(),invoker);
 
         invoker.build_req = build_req;
 
         let result = await this.getReplyPacket(invoke_pk);
-        let slicer = new PacketSlicer(result as Packet,build_req);        
+        let slicer = new PacketSlicer(result as IPacket,build_req);        
 
         invoker.setSlicer(slicer);
 
 
-        let refid=this.router.plug(invoker.build_req,(p:Packet)=>{
+        let refid=this.router.plug(invoker.build_req,(p:IPacket)=>{
             let ack = p as SliceAckPacket;
             slicer.ackSlicePacket(ack.partid);
         });
@@ -210,34 +200,33 @@ class InvokeHandler extends AbstractHandler{
             invoker.close();
             result.release();
             this.router.unplug(invoker.build_req,refid);
-            debug("alldone","requestid:",invoke_pk.request_id,"build_req",invoker.build_req);
+            debug("alldone","requestid:",invoke_pk.getRequestId(),"build_req",invoker.build_req);
         });
         
 
 
         invoker.setState("invoked");
 
-        debug("invoked, start to reply","requestid:",invoke_pk.request_id,"build_req",invoker.build_req);
+        debug("invoked, start to reply","requestid:",invoke_pk.getRequestId(),"build_req",invoker.build_req);
 
         return invoker;
     }    
-    protected async handlePacket(p:Packet){
+    public async handlePacket(p:IPacket){
         if(this.state != "ready")
             return;
 
-        if(this.hasInvoker(p.request_id)){
-            let invoker = this.getInvoker(p.request_id);
+        if(this.hasInvoker(p.getRequestId())){
+            let invoker = this.getInvoker(p.getRequestId());
             
-
             if(invoker.getState() == "invoked")
-                this.sendInvokeResult(invoker, p.reply_info);
+                this.sendInvokeResult(invoker, p.getReplyInfo());
 
             return;
         }
         
         let invoker = await this.addNewInvoker(p);        
 
-        this.sendInvokeResult(invoker,p.reply_info);
+        this.sendInvokeResult(invoker,p.getReplyInfo());
     }
     private setRef(ref_type:string,offset:number){
         let ref = this.refs.get(ref_type) as number;

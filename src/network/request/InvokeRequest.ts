@@ -37,7 +37,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
             
         this.packet_slicer = new PacketSlicer(this.buildPacket(),this.getRequestId());
 
-        this.once("done",()=>{
+        this.getLifeCycle().on("closed",()=>{
             this.packet_slicer.close();
         });
 
@@ -61,9 +61,9 @@ class InvokeRequest extends BaseRequest<Buffer> {
         try{
             
             await this.route.preload();
-            this.setState(RequestState.BUILT);
+            this.getLifeCycle().setState("ready");
         }catch(err){
-            this.setFailedState(err);
+            this.getLifeCycle().setDead(err);
         }
         
     }
@@ -91,7 +91,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
         throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
     }
     protected handlePacket(p : Packet){
-        if(this.state!=RequestState.PENDING)
+        if(this.getLifeCycle().getState()!="closing")
             return;
             
         if(p.getName() == "InvokeReplyPacket"){
