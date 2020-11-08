@@ -1,6 +1,6 @@
 import QueryDomainRequest from "../../request/QueryDomainRequest";
 import AddressInfo from "../AddressInfo";
-import IDomainClient from "./IDomainClient";
+import IRegistryClient from "./IRegistryClient";
 import DomainUpdatePacket from "../../protocol/packet/DomainUpdatePacket";
 import util from "util";
 import LimitedMap from "../../../utils/LimitedMap";
@@ -30,7 +30,7 @@ class DomainCache{
     }
 }
 
-class DomainClient implements IDomainClient{
+class RegistryClient implements IRegistryClient{
     private address : AddressInfo;
     private router : IRouter;
     private request_seq : number = 0;
@@ -187,4 +187,4 @@ class DomainClient implements IDomainClient{
 
 }
 
-export default DomainClient;
+export default RegistryClient;

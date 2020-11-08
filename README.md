@@ -22,7 +22,7 @@ npm install jigsaw-rpc --save
 serv.js
 ```
 const RPC = require("jigsaw-rpc");
-new RPC.domain.Server();
+new RPC.registry.Server();
 
 let jg = RPC.GetJigsaw({ name :"calculator" });
 
@@ -79,7 +79,7 @@ jigsaw will listen on the port number like '1234' you provided, if you don't wan
 
 You can create a registry like this:
 ```
-new RPC.domain.Server(3793)
+new RPC.registry.Server(3793)
 ```
 
 So GetJigsaw() 's calling format is like:

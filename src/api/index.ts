@@ -1,34 +1,33 @@
-import AddressInfo from "../network/domain/AddressInfo";
-import Jigsaw from "../jigsaw/SimpleJigsaw";
-import DomainServer from "../network/domain/server/DomainServer";
-import Url from "url";
+import RegistryServer from "../network/domain/server/RegistryServer";
+import VariableOption from "../jigsaw/option/VariableOption";
+import IJigsaw from "../jigsaw/IJigsaw";
+import SimpleJigsaw from "../jigsaw/SimpleJigsaw";
 
-const DomainApi = {
-    Server : DomainServer,
+type JigsawClass = new(...args:any[]) => IJigsaw;
+
+const LibContext :{
+    jigsawClass : JigsawClass
+} = {
+    jigsawClass : SimpleJigsaw
 }
+
+const RegistryApi = {
+    Server : RegistryServer,
+}
+const PluginApi = {
+
+};
+
 const RpcApi = {
-    domain : DomainApi,
-    Jigsaw : Jigsaw,
+    pluginApi : PluginApi,
+    registry : RegistryApi,
+    use : (cls : JigsawClass)=>{ LibContext.jigsawClass = cls },
     GetJigsaw : GetJigsaw
 }
 
-type JigsawOption = {
-    name? : string ,
-    entry? : string ,
-    registry? : string
-}
-
-function GetJigsaw(option : JigsawOption={}) : Jigsaw{
-    
-    let jgname = option.name || Jigsaw.getRandomName();
-
-    let parsed_entry = AddressInfo.parse(option.entry || "127.0.0.1");
-    let entry_address = parsed_entry.address;
-    let entry_port : number | undefined = parsed_entry.port > 0 ? parsed_entry.port : undefined;
-
-    let registry_url = Url.parse(option.registry || "jigsaw://127.0.0.1:3793/") as Url.Url;
-
-    return new Jigsaw(jgname,entry_address,entry_port,registry_url);
+function GetJigsaw(option : object) : IJigsaw{
+    let opt = VariableOption.from(option);
+    return new LibContext.jigsawClass(opt);
 };
 
 export default RpcApi;

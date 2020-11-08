@@ -12,7 +12,7 @@ function waitForEvent(obj:any,event_name:string){
 describe("Instance Test",()=>{
     let app : any={};
     before(()=>{
-        app.registry = new RPC.domain.Server();
+        app.registry = new RPC.registry.Server();
     });
 
     it("should throw error when closing instance immediately to a new jigsaw",async ()=>{

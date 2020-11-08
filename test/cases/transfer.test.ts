@@ -15,7 +15,7 @@ function waitForEvent(obj:any,event_name:string){
 describe("Base Transfer Test",()=>{
     let app : any={};
     before(()=>{
-        app.registry = new RPC.domain.Server();
+        app.registry = new RPC.registry.Server();
     });
     
     it("should succeed when transfer a simple object",async ()=>{

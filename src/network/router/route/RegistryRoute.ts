@@ -1,11 +1,11 @@
 import AddressInfo from "../../domain/AddressInfo";
-import IDomainClient from "../../domain/client/IDomainClient";
+import IRegistryClient from "../../domain/client/IRegistryClient";
 import IRoute from "./IRoute";
 
 class RegistryRoute implements IRoute{
-    private registryClient : IDomainClient;
+    private registryClient : IRegistryClient;
     private jgname : string;
-    constructor(jgname:string,registryClient : IDomainClient){
+    constructor(jgname:string,registryClient : IRegistryClient){
         this.registryClient = registryClient;
         this.jgname = jgname;
     }

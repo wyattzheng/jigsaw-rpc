@@ -2,21 +2,22 @@ import IHandler from "./IHandler";
 import IPacket from "../protocol/IPacket";
 import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
-import DomainStorage from "../domain/server/DomainStorage";
 import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
+
+import RegistryStorage from "../domain/server/RegistryStorage";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
 
 class DomainHandler implements IHandler{
-    public storage : DomainStorage;
+    public storage : RegistryStorage;
     public router : IRouter;
 
     constructor(router:IRouter){
         this.router = router;
 
-        this.storage = new DomainStorage();
+        this.storage = new RegistryStorage();
         this.router.plug("DomainQueryPacket",this.handlePacket.bind(this));
         this.router.plug("DomainUpdatePacket",this.handlePacket.bind(this));
         

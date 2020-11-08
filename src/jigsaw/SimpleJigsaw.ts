@@ -1,4 +1,4 @@
-import DomainClient from "../network/domain/client/DomainClient";
+import DomainClient from "../network/domain/client/RegistryClient";
 import IJigsaw from "./IJigsaw";
 import PacketFactory from "../network/protocol/factory/PacketFactory";
 import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
@@ -16,9 +16,10 @@ import DataValidator from "./DataValidator";
 import Url from "url";
 import { TypedEmitter } from "tiny-typed-emitter";
 
-import IDomainClient from "src/network/domain/client/IDomainClient";
+import IRegistryClient from "src/network/domain/client/IRegistryClient";
 import assert from "assert";
 import LifeCycle from "../utils/LifeCycle";
+import VariableOption from "./option/VariableOption";
 
 
 interface JigsawEvent{
@@ -27,15 +28,15 @@ interface JigsawEvent{
 }
 
 type HandlerRet = Promise<object> | Promise<void>  | object | void;
-type Handler = (data : object) => HandlerRet;
-type FinalHandler = (port_name:string,data:object)=> object | void;
+type Handler = (data:object,reply_info:VariableOption)=> HandlerRet
+type FinalHandler = (port_name:string,data:object,reply_info:VariableOption)=> HandlerRet
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private lifeCycle = new LifeCycle();
 
     public jgname : string;
-    private domclient? : IDomainClient;
+    private domclient? : IRegistryClient;
     
     private entry_address : string;
     private entry_port? : number;
@@ -47,23 +48,35 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private request_seq : number = 0;
     private port_handlers : Map<string,Handler> = new Map();
     private invoke_handler? : InvokeHandler;
+
     private final_handler : FinalHandler = ()=>{};
     private module_ref = new Set<string>();
     private socket : UDPSocket;
 
-    constructor(jgname:string,entry_address:string,entry_port:number | undefined,registry_path:Url.Url){
+    constructor(option : VariableOption){
         super();
+        let jgname = option.has("name") ? option.get("name") : SimpleJigsaw.getRandomName();
 
-        if(!registry_path.hostname)
+        let entry_option = option.has("entry") ? option.get("entry") : "127.0.0.1";
+        let parsed_entry = AddressInfo.parse(entry_option);
+    
+        let entry_address = parsed_entry.address;
+        let entry_port : number | undefined = parsed_entry.port > 0 ? parsed_entry.port : undefined;
+    
+        let registry_option = option.has("registry") ? option.get("registry") : "jigsaw://127.0.0.1:3793/";
+        let registry_url = Url.parse(registry_option) as Url.Url;
+    
+
+        if(!registry_url.hostname)
             throw new Error("regsitry_path.hostname must be specified");
-        if(!registry_path.port)
+        if(!registry_url.port)
             throw new Error("regsitry_path.port must be specified");
 
         this.jgname = jgname;
         this.entry_address = entry_address;
         this.entry_port = entry_port;
 
-        this.registry_path = registry_path;
+        this.registry_path = registry_url;
 
         let socket = new UDPSocket(this.entry_port,"0.0.0.0");
         this.socket = socket;
@@ -139,14 +152,14 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     private async handleInvoke(path:Path,data : Buffer) : Promise<Buffer>{
         let req_data = JSON.parse(data.toString());
-
+        
         let port_handler = this.port_handlers.get(path.method) as Handler;
         
         let ret_data;
         if(!this.port_handlers.has(path.method)){
-            ret_data = await this.final_handler(path.method,req_data);
+            ret_data = await this.final_handler(path.method,req_data,VariableOption.from({}));
         }else{
-            ret_data = await port_handler(req_data);
+            ret_data = await port_handler(req_data,VariableOption.from({}));
         }
 
         if(!ret_data)
@@ -171,27 +184,25 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.lifeCycle.setState("closing");
         
         //this.router.close();
-        await (this.domclient as IDomainClient).close();   
+        await (this.domclient as IRegistryClient).close();   
 
         this.socket.close();
 
     }
     
-    send(path_str:string,data:object) : Promise<object>{
+    async send(path_str:string,data:any,option = VariableOption.from({})) : Promise<object>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
-        
+        assert(typeof(data) == "object","data must be an object");
+
         let validator = new DataValidator(data);
         validator.validate();
 
         let path = Path.fromString(path_str);
-        return this.doSend(path,data);
-    }
-    private async doSend(path:Path,data:object){
-
+        
         let req_seq = this.request_seq++;
         
         let buffer = Buffer.from(JSON.stringify(data));
-        let request = new InvokeRequest(this.jgname,path,buffer,this.domclient as IDomainClient,this.router as IRouter,req_seq);
+        let request = new InvokeRequest(this.jgname,path,buffer,this.domclient as IRegistryClient,this.router as IRouter,req_seq);
         
         await request.getLifeCycle().when("ready");
         await request.run();

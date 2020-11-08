@@ -1,5 +1,4 @@
-import IDomainStorage from "./IDomainStorage";
-import DomainOption from "./DomainOption";
+import IDomainStorage from "./IRegistryStorage";
 import AddressInfo from "../AddressInfo";
 
 class DomainStorage implements IDomainStorage{
@@ -15,9 +14,6 @@ class DomainStorage implements IDomainStorage{
             throw new Error("doesn't have this address");
         
         return this.map.get(jgname) as AddressInfo;
-    }
-    setOption(jgname:string,option:DomainOption){
-
     }
 
 }

@@ -10,7 +10,7 @@ import InvokeTimeoutError from "../../error/request/InvokeTimeoutError";
 import InvokeRemoteError from "../../error/request/InvokeRemoteError";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
-import IDomainClient from "../domain/client/IDomainClient";
+import IRegistryClient from "../domain/client/IRegistryClient";
 import RegistryRoute from "../router/route/RegistryRoute";
 
 
@@ -19,12 +19,12 @@ class InvokeRequest extends BaseRequest<Buffer> {
     private data : Buffer;
     private src_jgname : string;
     private packet_slicer : PacketSlicer;
-    private registryClient : IDomainClient;
+    private registryClient : IRegistryClient;
     private route : RegistryRoute;
 
     protected router : IRouter;
     
-    constructor(src_jgname: string,path : Path,data : Buffer,registryClient:IDomainClient,router : IRouter,seq:number){
+    constructor(src_jgname: string,path : Path,data : Buffer,registryClient:IRegistryClient,router : IRouter,seq:number){
         super(router,seq,10*1000); // 10s timeout
 
         this.router = router;
