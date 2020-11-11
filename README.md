@@ -1,5 +1,13 @@
 # Jigsaw-RPC
 
+<div>
+
+[English](https://github.com/ZhyMc/jigsaw-rpc/blob/master/README.md) | [中文](https://github.com/ZhyMc/jigsaw-rpc/blob/master/README-zh.md)
+
+</div>
+
+<br/>
+
 
 [![Build Status](https://www.travis-ci.org/ZhyMC/jigsaw-rpc.svg?branch=master)](https://www.travis-ci.org/ZhyMC/jigsaw-rpc)
 [![codecov](https://codecov.io/gh/ZhyMC/jigsaw-rpc/branch/master/graph/badge.svg?token=MEXBYVKXAW)](https://app.codecov.io/gh/ZhyMC/jigsaw-rpc)
@@ -275,6 +283,8 @@ Your contribution is welcome, follow this steps
 ```
 1. Fork this repository
 2. Modify the codes, or write a mocha test case
-3. Commit using 'cz-convention-changelog'
+3. Commit using 'cz-conventional-changelog'
 4. Start a Pull Request
 ```
+
+Or just create an issue.
