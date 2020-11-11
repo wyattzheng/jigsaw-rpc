@@ -55,6 +55,65 @@ You will get this output
 }
 ```
 
+## Advanced Sample
+
+```
+const RPC = require("jigsaw-rpc");
+new RPC.registry.Server();
+
+let jg = RPC.GetJigsaw({ name : "calculator" });
+
+jg.use(async (ctx,next)=>{
+
+    if(ctx.method == "add"){
+        ctx.calc = ( x , y )=>( x + y );
+    }else if(ctx.method == "mul"){
+        ctx.calc = ( x , y )=>( x * y );
+    }else if(ctx.method == "sub"){
+        ctx.calc = ( x , y )=>( x - y );
+    }else if(ctx.method == "div"){
+        ctx.calc = ( x , y )=>( x / y );
+    }else 
+        throw new Error("the calculator don't support this method");
+
+    await next();
+});
+
+jg.use(async (ctx,next)=>{
+
+    let { x , y } = ctx.data;
+    ctx.result = ctx.calc( x , y );
+
+    await next();
+})
+
+
+/* 
+    ↓ following codes can be run on another computer 
+
+    or they can be togther as one script file.
+*/
+
+let invoker = RPC.GetJigsaw();
+invoker.on("ready",async ()=>{
+
+    console.log(await invoker.send("calculator:add",{x:100,y:500}));
+    //this will output 600;
+
+    console.log(await invoker.send("calculator:mul",{x:100,y:500}));
+    //this will output 50000;
+
+    console.log(await invoker.send("calculator:sub",{x:100,y:500}));
+    //this will output -400;
+
+    console.log(await invoker.send("calculator:div",{x:100,y:500}));
+    //this will output 0.2;
+
+});
+
+
+```
+
 ## High Performance
 
 Jigsaw implemented through Node.js Socket API completely.
@@ -146,21 +205,41 @@ jgB.send("A:call",{}).then(console.log);
 
 > this **data** object can be 1MB or even bigger.
 
-### 2.4 Jigsaw.prototype.handle(handler : (port_name:string,data:object)=>Promise(object))
+### 2.4 Jigsaw.prototype.use(handler : (context:Object,next:Function) => Promise(object) )
 
-if a invoke request doesn't match any **Jigsaw Port**, it can be caught through this method.
+this method create a middle-ware of a jigsaw. to handle all requests one by one.
+
+
+a context contains these base properties:
 
 ```
-...
+{
+    result: object, 
+    /* if all middle-ware passed, the 'result' will send back to the invoker,
+        'result' will be {} as the default value.
+    */
 
-jg.port("call_1",()=>{});
+    method: string , // the method name sender want to call
+    data: object | Buffer, // the data from sender
+    sender: string, // sender's jigsaw name
+    isJSON: boolean, // if the 'data' is JSON-object or Buffer
+    rawdata: Buffer, // the raw buffer of data
+    jigsaw: Jigsaw // the jigsaw instance
+}
+```
 
-jg.handle((port_name,data)=>{
-    console.log(port_name,data);
-    //output: call_2 {abc:123}
-});
+the usage of this method is like:
+```
 
-jg.send("call_2",{abc:123});
+let jg = RPC.GetJigsaw({ name:"serv" })
+
+jg.use(async (ctx,next)=>{
+    /*
+        middle-ware codes here
+    */
+
+    await next();
+})
 
 ```
 
