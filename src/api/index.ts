@@ -13,19 +13,14 @@ const LibContext :{
 const RegistryApi = {
     Server : RegistryServer,
 }
-const PluginApi = {
-
-};
 
 const RpcApi = {
-    pluginApi : PluginApi,
     registry : RegistryApi,
-    use : (cls : JigsawClass)=>{ LibContext.jigsawClass = cls },
     GetJigsaw : GetJigsaw
 }
 
-function GetJigsaw(option : object) : IJigsaw{
-    return new LibContext.jigsawClass(option);
+function GetJigsaw(option : any) : IJigsaw{
+    return new LibContext.jigsawClass(option || {});
 };
 
 export default RpcApi;

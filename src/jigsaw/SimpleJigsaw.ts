@@ -20,7 +20,6 @@ import IRegistryClient from "../network/domain/client/IRegistryClient";
 import assert from "assert";
 import LifeCycle from "../utils/LifeCycle";
 import WorkFlow from "./WorkFlow";
-import NoMethodError from "../error/jigsaw/NoMethodError";
 
 
 interface JigsawEvent{
@@ -52,11 +51,11 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private module_ref = new Set<string>();
     private socket : UDPSocket;
 
-    private workflow = new Map<string,WorkFlow>();
+    private workflow = new WorkFlow();
 
     constructor(option : any){
         super();
-        let jgname = option.name || SimpleJigsaw.getRandomName();
+        let jgname = option.name || "";
 
         let entry_option = option.entry || "127.0.0.1";
         let parsed_entry = AddressInfo.parse(entry_option);
@@ -100,6 +99,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
 
         this.socket.getLifeCycle().on("ready",async ()=>{
+            
             this.domclient = new DomainClient(this.jgname,this.entry_address,this.socket.getAddress().port,
                 new AddressInfo(registry_addr,registry_port)
             ,this.router as IRouter);
@@ -153,10 +153,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string) : Promise<Buffer | object>{
 
-        if(!this.hasWorkFlow(path.method))
-            throw new NoMethodError();
-
-        let workflow = this.getWorkFlow(path.method);
+        let workflow = this.workflow;
         let parsed = data;
         if(isJSON)
             parsed = JSON.parse(data.toString());
@@ -165,7 +162,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let context = {
             result:{},
 
+            method:path.method,
             sender,
+            isJSON,
             data: parsed,
             rawdata:data,
             jigsaw:this
@@ -174,11 +173,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let ctx = await workflow.call(context);
         return ctx.result;
     }
-    static getRandomName(){
-        let hash = Crypto.createHash("md5");
-        hash.update(Math.random()+"");
-        return `rand-${hash.digest("hex").substr(0,8)}`;
-    }
+    
     getName(){
         return this.jgname;
     }
@@ -231,22 +226,17 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             return request.getResult();
         }
     }
-    private hasWorkFlow(port_name : string){
-        return this.workflow.has(port_name);
-    }
-    private getWorkFlow(port_name : string){
-        if(!this.hasWorkFlow(port_name))
-            this.workflow.set(port_name,new WorkFlow());
-        let workflow = this.workflow.get(port_name) as WorkFlow;
-        return workflow;
-    }
-    use(port_name : string,handler : WorkFunction) : void{
-        let workflow = this.getWorkFlow(port_name);
-        workflow.pushWork(handler);
+    
+    use(handler : WorkFunction) : void{
+        assert(typeof(handler) == "function","handler must be a function");
+
+        this.workflow.pushWork(handler);
     }
     port(port_name : string , handler:(data:object,ctx:any)=>Promise<object | Buffer>) : void{
-        this.use(port_name,async (ctx,next)=>{
-            ctx.result = await handler(ctx.data,ctx);
+        this.use(async (ctx,next)=>{
+            if(ctx.method == port_name)
+               ctx.result = await handler(ctx.data,ctx);
+
             await next();
         });
     }

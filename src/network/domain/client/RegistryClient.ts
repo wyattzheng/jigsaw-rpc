@@ -42,29 +42,39 @@ class RegistryClient implements IRegistryClient{
     private closing_defer = new Defer<void>();
     private resolving : number = 0;
     private max_resolving : number = 300;
+    private update_loop = true;
 
     private lifeCycle = new LifeCycle();
 
-    constructor(client_name:string,entry_address:string,entry_port:number,server_address:AddressInfo,router:IRouter){
+    constructor(
+        client_name:string,
+        entry_address:string,
+        entry_port:number,
+        server_address:AddressInfo,
+        router:IRouter){
         this.address = server_address;
         this.router = router;
         this.client_name = client_name;
         this.entry_address = entry_address;
         this.entry_port = entry_port;
-        
+        if(this.client_name.length == 0)
+           this.update_loop = false;
+
         this.router.getLifeCycle().when("ready").then(this.init.bind(this));
         
         this.router.getLifeCycle().on("closed",()=>{
             this.close();
         });
 
+
     }
     public getLifeCycle(){
         return this.lifeCycle;
     }
     private init(){
-        
-        this.start_updating_loop();
+
+        if(this.update_loop)
+            this.start_updating_loop();
         this.lifeCycle.setState("ready");
     }
 	public async start_updating_loop(){
@@ -85,18 +95,27 @@ class RegistryClient implements IRegistryClient{
                     console.error("updating address error",err);
                 }
             }
+
              await sleep(loop_interval);
              tick++;
         }
+
+        this.setClosed();
+    }
+    private setClosed(){
         this.closing_defer.resolve();
         this.lifeCycle.setState("closed");
-
     }
     async close(){
         if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() =="closed")
             return;
         if(this.lifeCycle.getState() != "ready")
             throw new Error("at this state, instance can not close");
+        if(!this.update_loop){
+            this.lifeCycle.setState("closing");
+            this.lifeCycle.setState("closed");
+            return;
+        }
 
         this.lifeCycle.setState("closing");
         this.loop = false;

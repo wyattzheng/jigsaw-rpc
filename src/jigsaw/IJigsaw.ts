@@ -7,7 +7,7 @@ interface IJigsaw{
 
     send(path_str:string,data:object | Buffer) : Promise<object | Buffer>;
     
-    use(port_name:string,handler:WorkFunction) : void;
+    use(handler:WorkFunction) : void;
     port(port_name:string,handler:(data:object | Buffer,ctx:any)=>Promise<object | Buffer> | object | Buffer) : void;
     close() : Promise<void>;
 }
