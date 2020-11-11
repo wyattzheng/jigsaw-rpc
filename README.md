@@ -152,15 +152,19 @@ All the params has default value, if you just want this jigsaw work on Local Net
 let jg = RPC.GetJigsaw()
 ```
 
-### 2. Jigsaw
+### 2. Registry.Server.prototype.constructor(bind_port:number,bind_address?:address)
 
-### 2.1 Jigsaw.prototype.constructor( name :string , entry_address :string , entry_port :number , registry_path : URL) : Jigsaw
+Create a Jigsaw Registry Server, in a domain of a group of jigsaw-es , create one Server at least.
 
-This is the original Jigsaw constructor, build an instance without the factory method 'GetJigsaw()'.
+```
+new RPC.registry.Server(3793)
+```
 
-Notice that registry_path must use require("url").parse() to get the url object
 
-### 2.2 Jigsaw.prototype.send( path :string , data :object) : Promise(object)
+### 3. Jigsaw
+
+
+### 3.1 Jigsaw.prototype.send( path :string , data :object) : Promise(object)
 
 call this method to invoke a remote jigsaw's method.
 
@@ -173,7 +177,7 @@ JigsawName:port_name
 the **data** must be a **JSON-Serializable JavaScript Object** which doesn't contain any 'undefined' of a 'Function' and some other properties.
 
 
-### 2.3 Jigsaw.prototype.port( port_name :string , handler:(data:object)=>Promise(object)) : void
+### 3.2 Jigsaw.prototype.port( port_name :string , handler:(data:object)=>Promise(object)) : void
 
 register a **Jigsaw Port** that will handle all invoking requests to this Port.
 
@@ -205,7 +209,7 @@ jgB.send("A:call",{}).then(console.log);
 
 > this **data** object can be 1MB or even bigger.
 
-### 2.4 Jigsaw.prototype.use(handler : (context:Object,next:Function) => Promise(object) )
+### 3.3 Jigsaw.prototype.use(handler : (context:Object,next:Function) => Promise(object) )
 
 this method create a middle-ware of a jigsaw. to handle all requests one by one.
 
