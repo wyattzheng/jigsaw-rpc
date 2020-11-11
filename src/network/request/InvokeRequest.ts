@@ -21,10 +21,12 @@ class InvokeRequest extends BaseRequest<Buffer> {
     private packet_slicer : PacketSlicer;
     private registryClient : IRegistryClient;
     private route : RegistryRoute;
+    private isJson : boolean = false;
+    private isResultJson : boolean = false;
 
     protected router : IRouter;
     
-    constructor(src_jgname: string,path : Path,data : Buffer,registryClient:IRegistryClient,router : IRouter,seq:number){
+    constructor(src_jgname: string,path : Path,data : Buffer,isJSON:boolean,registryClient:IRegistryClient,router : IRouter,seq:number){
         super(router,seq,10*1000); // 10s timeout
 
         this.router = router;
@@ -34,7 +36,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
         this.src_jgname = src_jgname;
         this.registryClient = registryClient;
         this.route = new RegistryRoute(this.path.jgname,this.registryClient);
-            
+
+        this.isJson = isJSON;
         this.packet_slicer = new PacketSlicer(this.buildPacket(),this.getRequestId());
 
         this.getLifeCycle().on("closed",()=>{
@@ -44,6 +47,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
         
         this.preloadDomain();
     }
+    
     private buildPacket(){
         let pk=new InvokePacket();
         pk.request_id = this.getRequestId();
@@ -51,7 +55,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
         pk.data=this.data;
         pk.dst_path=this.path;
         pk.src_jgname = this.src_jgname;
-
+        pk.isJSON = this.isJson;
+        
         pk.encode();
 
         return pk;
@@ -90,6 +95,9 @@ class InvokeRequest extends BaseRequest<Buffer> {
         let pk = p as ErrorPacket;
         throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
     }
+    public isResultJSON(){
+        return this.isResultJson;
+    }
     protected handlePacket(p : Packet){
         if(this.getLifeCycle().getState()!="closing")
             return;
@@ -97,8 +105,9 @@ class InvokeRequest extends BaseRequest<Buffer> {
         if(p.getName() == "InvokeReplyPacket"){
             let pk = p as InvokeReplyPacket;
             let data = pk.data;
+            this.isResultJson = pk.isJSON;
+            
             p.release();
-
             this.setResult(data);
         }else if(p.getName() == "SliceAckPacket"){
             let pk = p as SliceAckPacket;

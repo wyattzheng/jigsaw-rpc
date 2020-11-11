@@ -1,5 +1,4 @@
 import RegistryServer from "../network/domain/server/RegistryServer";
-import VariableOption from "../jigsaw/option/VariableOption";
 import IJigsaw from "../jigsaw/IJigsaw";
 import SimpleJigsaw from "../jigsaw/SimpleJigsaw";
 
@@ -26,8 +25,7 @@ const RpcApi = {
 }
 
 function GetJigsaw(option : object) : IJigsaw{
-    let opt = VariableOption.from(option);
-    return new LibContext.jigsawClass(opt);
+    return new LibContext.jigsawClass(option);
 };
 
 export default RpcApi;

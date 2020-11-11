@@ -1,5 +1,3 @@
-import LimitedMap from "./LimitedMap";
-
 class HandlerRef<T>{
     public refid: number;
     public data : T;

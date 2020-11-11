@@ -1,11 +1,11 @@
-import Packet from "../Packet";
+import IPacket from "../IPacket";
 import BasePacket from "../BasePacket";
 import IFactory from "./IFactory";
 
-type PacketCls = {new():Packet};
+type PacketCls = new (...args:any[]) => IPacket;
 
-class PacketFactory implements IFactory<Buffer,Packet>{
-	public classes = new Map<number,{ new():Packet }>();
+class PacketFactory implements IFactory<Buffer,IPacket>{
+	public classes = new Map<number,{ new():IPacket }>();
 
 	constructor(){
 		this.register(require("../packet/TestPacket").default);
@@ -40,7 +40,7 @@ class PacketFactory implements IFactory<Buffer,Packet>{
 		return pid;
 
 	}
-	public getProduct(buf : Buffer) : Packet{
+	public getProduct(buf : Buffer) : IPacket{
 
 		let pid = this.getPacketId(buf);
 		let Cls : PacketCls = this.getProductCls(pid);

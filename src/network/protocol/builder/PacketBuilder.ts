@@ -1,13 +1,12 @@
 import AbstractBuilder from "./AbstractBuilder";
 import SlicePacket from "../packet/SlicePacket";
-import Packet from "../Packet";
-import IBuilder from "./IBuilder";
+import IPacket from "../IPacket";
 import IFactory from "../factory/IFactory";
 
-class PacketBuilder extends AbstractBuilder<SlicePacket,Packet>{
+class PacketBuilder extends AbstractBuilder<SlicePacket,IPacket>{
 
-	private factory : IFactory<Buffer,Packet>;
-	constructor(partmax : number,factory : IFactory<Buffer,Packet>){
+	private factory : IFactory<Buffer,IPacket>;
+	constructor(partmax : number,factory : IFactory<Buffer,IPacket>){
 		super(partmax);
 		this.factory = factory;
 	}

@@ -5,6 +5,7 @@ class InvokeReplyPacket extends BasePacket{
     public jgname:string="";
     public path:string="";
     public data:Buffer;
+    public isJSON : boolean = true;
     
     constructor(){
         super();
@@ -25,12 +26,17 @@ class InvokeReplyPacket extends BasePacket{
 
         this.writeString(this.jgname);
         this.writeString(this.path);
+        this.writeUInt16(this.isJSON ? 1 : 0)
+    
         this.writeLargeBuffer(this.data);
+
     }
     decode(){
         super.decode.call(this);
         this.jgname = this.readString();
         this.path = this.readString();
+        this.isJSON = this.readUInt16() == 1;
+        
         this.data = this.readLargeBuffer();
     }
 }

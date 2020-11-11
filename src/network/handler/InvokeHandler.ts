@@ -16,7 +16,7 @@ import util from "util";
 const sleep = util.promisify(setTimeout)
 const debug = require("debug")("InvokeHandler");
 
-type Handler = (path:Path,buf:Buffer)=>Promise<Buffer>;
+type Handler = (path:Path,buf:Buffer,isJSON:boolean,sender:string)=>Promise<Buffer|object>;
 
 class Invoker{
     public slicer? : PacketSlicer;
@@ -157,10 +157,17 @@ class InvokeHandler implements IHandler{
         try{
             let r_pk = new InvokeReplyPacket();
 
-            let ret_data = await this.handler(pk.dst_path,pk.data);
-    
+            let ret_data = await this.handler(pk.dst_path,pk.data,pk.isJSON,pk.src_jgname);
+
+            if(ret_data instanceof Buffer){
+                r_pk.isJSON = false;
+                r_pk.data = ret_data;
+            }else{
+                r_pk.isJSON = true;
+                r_pk.data = Buffer.from(JSON.stringify(ret_data as object));
+            }
+                    
             r_pk.request_id = pk.request_id;
-            r_pk.data = ret_data;
             return r_pk;
         }catch(err){
             let err_pk = new ErrorPacket();

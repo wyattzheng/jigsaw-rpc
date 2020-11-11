@@ -6,6 +6,7 @@ class InvokePacket extends BasePacket{
 	
 	public dst_path : Path = new Path("default","default");
 	public src_jgname : string = "";
+	public isJSON : boolean = true;
 	public data : Buffer = Buffer.allocUnsafe(0);
 
 	getName(){
@@ -29,6 +30,7 @@ class InvokePacket extends BasePacket{
 		this.writeString(this.request_id);
 		this.writeString(this.dst_path.toString());
 		this.writeString(this.src_jgname);
+		this.writeUInt16(this.isJSON ? 1 : 0);
 		
 		this.writeLargeBuffer(this.data);
 
@@ -39,6 +41,7 @@ class InvokePacket extends BasePacket{
 		this.request_id = this.readString();
 		this.dst_path = Path.fromString(this.readString());
 		this.src_jgname = this.readString();
+		this.isJSON = this.readUInt16() == 1;
 		
 		/*let buflen = this.readUInt32();
 		this.offset -=4;
