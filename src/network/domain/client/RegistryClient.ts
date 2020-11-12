@@ -40,6 +40,7 @@ class DomainCache{
         }) != -1;
         if(!exists)
             this.addrinfos.push(addrinfo);
+        
     }
     getRandomOne(){
 
@@ -186,29 +187,30 @@ class RegistryClient implements IRegistryClient{
         if(this.cache.has(jgname)){
             let cache = this.cache.get(jgname) as DomainCache;
             
-            if(!cache.isExpired()) // meet cache
-                return cache.getRandomOne();
-            else
-                throw new CacheExpiredError("domain has expired");
-
+            return cache.getRandomOne();
         }else
             throw new CacheNoExistsError("doesn't have domain cache")
+    }
+    private isCacheExpired(jgname:string){
+        if(!this.cache.has(jgname))
+            return true;
+
+        return this.cache.get(jgname).isExpired();
+    }
+    private clearCached(jgname:string){
+        if(!this.cache.has(jgname))
+             return;
+
+        this.cache.delete(jgname)
     }
     async resolve(jgname:string,timeout:number = 5000) : Promise<AddressInfo>{
         assert.strictEqual(this.lifeCycle.getState(),"ready");
 
-        try{
-            let cached = this.getCachedOne(jgname);
-            return cached
-        }catch(err){
-    
-        }
-    
+        if(!this.isCacheExpired(jgname))
+            return this.getCachedOne(jgname);
    
-        /*this.resolving++;
-        if(this.resolving > this.max_resolving)
-            throw new Error("reach max resolving limit")
-        */
+        this.clearCached(jgname);
+
         let promise;
         let addrinfos;
         if(!this.queryings.has(jgname)){
@@ -262,9 +264,6 @@ class RegistryClient implements IRegistryClient{
             return this.getCachedOne(jgname);
         }else{
             await Promise.race(tests);
-
-
-            //this.resolving--;
 
             return this.getCachedOne(jgname);
         }
