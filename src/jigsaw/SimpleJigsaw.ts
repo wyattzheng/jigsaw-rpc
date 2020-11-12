@@ -5,6 +5,7 @@ import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuil
 import UDPSocket from "../network/socket/UDPSocket";
 import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
 import AddressInfo from "../network/domain/AddressInfo";
+import RegistryServerInfo from "../network/domain/RegistryServerInfo";
 import InvokeRequest from "../network/request/InvokeRequest";
 import Path from "../network/request/Path";
 import SimplePacketRouter from "../network/router/packetrouter/SimplePacketRouter";
@@ -42,7 +43,8 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private option_entries : Array<string> ; 
     private listen_port? : number;
     
-    private registry_path : Url.Url;
+    private registry : RegistryServerInfo;
+    private registries : Array<RegistryServerInfo>;
 
     private router? : IRouter;
     
@@ -60,6 +62,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         let jgname = option.name || "";
 
+        // ============ENTRY=============
         let entry_option = [];
         if(typeof(option.entry) == "string"){
             entry_option = [option.entry]
@@ -68,25 +71,27 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         }else{
             entry_option = ["127.0.0.1"];
         }
-
-
-        let listen_port = option.port;
-
-        let registry_option = option.registry || "jigsaw://127.0.0.1:3793/";
-        let registry_url = Url.parse(registry_option) as Url.Url;
-    
-
-        if(!registry_url.hostname)
-            throw new Error("regsitry_path.hostname must be specified");
-        if(!registry_url.port)
-            throw new Error("regsitry_path.port must be specified");
-
-        this.jgname = jgname;
         this.option_entries = entry_option;
 
+        // ===============================
+
+
+        // ============REGSERVER==========
+
+        this.registry = RegistryServerInfo.parse(option.registry || "jigsaw://127.0.0.1:3793/");
+
+        assert(!option.registries || option.registries instanceof Array,"option.registries must be an array");
+        this.registries = option.registries ? option.registries.map(RegistryServerInfo.parse) : [];
+
+        
+        // ============REGSERVER==========
+
+        let listen_port = option.port;
         this.listen_port = listen_port;
 
-        this.registry_path = registry_url;
+    
+
+        this.jgname = jgname;
 
         let socket = new UDPSocket(this.listen_port,"0.0.0.0");
         this.socket = socket;
@@ -102,8 +107,8 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let client=new BuilderNetworkClient(this.socket,factory,builder_manager);
         this.router = new SimplePacketRouter(client);
 
-        let registry_addr = this.registry_path.hostname as string;
-        let registry_port = parseInt(this.registry_path.port as string) || 3793;
+        let registry_addr = this.registry.address;
+        let registry_port = this.registry.port;
 
         this.invoke_handler = new InvokeHandler(this.router,this.handleInvoke.bind(this));
 
@@ -119,7 +124,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
             
             this.domclient = new DomainClient(this.jgid,this.jgname,entries,socket_port,
-                new AddressInfo(registry_addr,registry_port)
+                this.registry,this.registries
             ,this.router as IRouter);
                     
 

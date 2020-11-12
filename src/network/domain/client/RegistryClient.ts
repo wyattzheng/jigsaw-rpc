@@ -15,6 +15,8 @@ import assert from 'assert';
 import PingRequest from "../../request/PingRequest";
 import PingHandler from "../../../network/handler/PingHandler";
 import PurgeDomainRequest from "../../../network/request/PurgeDomainRequest";
+import Url from "url";
+import RegistryServerInfo from "../RegistryServerInfo";
 
 
 
@@ -52,7 +54,7 @@ class DomainCache{
 
 
 class RegistryClient implements IRegistryClient{
-    private address : AddressInfo;
+    private address : RegistryServerInfo;
     private router : IRouter;
     private request_seq : number = 0;
     private client_id : string;
@@ -65,12 +67,11 @@ class RegistryClient implements IRegistryClient{
     
     private cache = new LimitedMap<string,DomainCache>(1000);
     private pingings = new LimitedMap<string,Promise<AddressInfo>>(100);
-
     private queryings = new LimitedMap<string,Promise<Array<AddressInfo>>>(100);
 
+    private regservers : Array<RegistryServerInfo>;
+
     private closing_defer = new Defer<void>();
-    private resolving : number = 0;
-    private max_resolving : number = 300;
     private ref : number = 0;
 
     private update_loop = true;
@@ -83,7 +84,8 @@ class RegistryClient implements IRegistryClient{
         client_name:string,
         entries:Array<AddressInfo>,
         listen_port:number,
-        server_address:AddressInfo,
+        server_address:RegistryServerInfo,
+        regservers:Array<RegistryServerInfo>,
         router:IRouter){
         
         this.address = server_address;
@@ -91,7 +93,7 @@ class RegistryClient implements IRegistryClient{
         this.client_id = client_id;
         this.client_name = client_name;
         this.entries = entries;
-
+        this.regservers = regservers;
 
         this.listen_port = listen_port;
         if(this.client_name.length == 0)
@@ -329,6 +331,10 @@ class RegistryClient implements IRegistryClient{
         pk.addrinfos = addrinfos;
         
         this.router.sendPacket(pk,new NetRoute(this.address.port,this.address.address));
+
+        for(let regserver of this.regservers){
+            this.router.sendPacket(pk,new NetRoute(regserver.port,regserver.address));
+        }
     }
 
 }
