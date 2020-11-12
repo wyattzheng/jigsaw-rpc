@@ -7,6 +7,8 @@ import DomainHandler from "../../handler/DomainHandler";
 import { TypedEmitter } from "tiny-typed-emitter";
 import SimplePacketRouter from "../../router/packetrouter/SimplePacketRouter";
 import IRouter from "../../router/IRouter";
+import IPacket from "src/network/protocol/IPacket";
+import DomainPurgePacket from "src/network/protocol/packet/DomainPurgePacket";
 
 interface DomainServerEvent{
     ready:()=>void;
@@ -37,6 +39,7 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
 
         this.handler = new DomainHandler(this.router);
 
+     
         this.socket.getLifeCycle().on("ready",()=>{
             this.emit("ready");
         })
@@ -46,6 +49,7 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         })
 
     }
+
     getStorage(){
         return this.handler.storage;
     }

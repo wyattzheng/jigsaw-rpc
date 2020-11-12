@@ -4,6 +4,7 @@ import IPacket from "../protocol/IPacket";
 import { TypedEmitter } from "tiny-typed-emitter";
 import AddressInfo from "../domain/AddressInfo";
 import INetworkClient from "./INetworkClient";
+import RandomGen from "../../utils/RandomGen";
 
 interface NetworkClientEvent{
 	packet: (p:IPacket)=> void;
@@ -35,7 +36,7 @@ class BaseNetworkClient implements INetworkClient{
 		return this.socket.getLifeCycle().getState();
 	}
 	private initClientId() : void{
-		this.clientid = "jg#" + Math.random() + "#";
+		this.clientid = "jg#" + RandomGen.GetRandomHash(6) + "#";
 	}
 	public getClientId() : string{
 		return this.clientid;

@@ -64,8 +64,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
 
     private async preloadDomain(){
         try{
-            
             await this.route.preload();
+            
             this.getLifeCycle().setState("ready");
         }catch(err){
             this.getLifeCycle().setDead(err);
@@ -89,11 +89,11 @@ class InvokeRequest extends BaseRequest<Buffer> {
         } 
     }
     protected getTimeoutError(){
-        return new InvokeTimeoutError(this.timeout_duration,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
+        return new InvokeTimeoutError(this.timeout_duration,this.src_jgname,this.path.stringify(),this.data.length,this.req_seq);
     }
     protected handleErrorPacket(p : Packet){
         let pk = p as ErrorPacket;
-        throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.toString(),this.data.length,this.req_seq);
+        throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.stringify(),this.data.length,this.req_seq);
     }
     public isResultJSON(){
         return this.isResultJson;

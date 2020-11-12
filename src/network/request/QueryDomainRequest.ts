@@ -7,7 +7,7 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
-class QueryDomainRequest extends BaseRequest<AddressInfo>{
+class QueryDomainRequest extends BaseRequest<Array<AddressInfo>>{
     private jgname : string = "";
     private dst : AddressInfo ;
     constructor(jgname:string,dst:AddressInfo,router : IRouter,seq_id : number){
@@ -24,6 +24,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
         pk.request_id = this.getRequestId();
         pk.jgname = this.jgname;
 
+    
         this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
     }
     getName(){
@@ -32,7 +33,7 @@ class QueryDomainRequest extends BaseRequest<AddressInfo>{
     handlePacket(p : Packet){
         if(p.getName() == "DomainReplyPacket"){
             let pk = p as DomainReplyPacket;
-            this.setResult(new AddressInfo(pk.address,pk.port));
+            this.setResult(pk.address_set);
         }else
             throw new Error("recv an unknown packet");
     }

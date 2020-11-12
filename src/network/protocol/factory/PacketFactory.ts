@@ -17,6 +17,9 @@ class PacketFactory implements IFactory<Buffer,IPacket>{
 		this.register(require("../packet/ErrorPacket").default);
 		this.register(require("../packet/InvokeReplyPacket").default);
 		this.register(require("../packet/SliceAckPacket").default);
+		this.register(require("../packet/PingPacket").default);
+		this.register(require("../packet/PongPacket").default);
+		this.register(require("../packet/DomainPurgePacket").default);
 		
 		
 	}

@@ -107,7 +107,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
         while(this.resender_loop){
             if(tick++ % 50 == 0){
                 await this.dosend();
-
+            
             }
             await sleep(1);
         }
@@ -146,9 +146,9 @@ abstract class BaseRequest<T> implements IRequest<T>{
 
         if(this.lifeCycle.getState() == "closing")
             throw new Error("right now this request is pending")
+        
 		if(this.lifeCycle.getState() != "ready")
             throw new Error("this request can not run because of it hasn't been built.");
-
         
 
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));

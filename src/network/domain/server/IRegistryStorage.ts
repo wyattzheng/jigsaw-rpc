@@ -1,8 +1,8 @@
 import AddressInfo from "../AddressInfo";
 
 interface IRegistryStorage{
-    setAddress(jgname:string,addrinfo:AddressInfo) : void;
-    getAddress(jgname:string):AddressInfo;
+    setAddress(jgid:string,jgname:string,addrinfo:AddressInfo) : void;
+    getAddress(jgname:string):Array<AddressInfo>;
  
 }
 

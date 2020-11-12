@@ -71,11 +71,14 @@ class InvokeHandler implements IHandler{
         reply:0,
         invokers:0
     }));
+
+    private invokeplug : number;
+
     constructor(router:IRouter,handler:Handler){
         this.router = router;
         this.handler = handler;
 
-        this.router.plug("InvokePacket",this.handlePacket.bind(this));
+        this.invokeplug = this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
         this.router.getLifeCycle().on("ready",()=>{
             this.state = "ready";
@@ -90,7 +93,7 @@ class InvokeHandler implements IHandler{
         })
 
     }
-    close(){
+    async close(){
         if(this.state == "close")
             return;
         if(this.state == "starting")
@@ -98,6 +101,8 @@ class InvokeHandler implements IHandler{
         
         this.closeAllInvokers();
         
+        this.router.unplug("InvokePacket",this.invokeplug);
+
         this.state = "closing";
         this.setRef("reply",0);
         
@@ -140,7 +145,7 @@ class InvokeHandler implements IHandler{
             for(let id of sliceids){
                 if(this.state != "ready")
                     break;
-    
+                    
                 this.router.sendPacket(slicer.getSlicePacket(id),new NetRoute(target.port,target.address));
                 await sleep(0);
             }    

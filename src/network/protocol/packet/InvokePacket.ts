@@ -28,7 +28,7 @@ class InvokePacket extends BasePacket{
 		this.enlarge(this.data.length+1400);
 
 		this.writeString(this.request_id);
-		this.writeString(this.dst_path.toString());
+		this.writeString(this.dst_path.stringify());
 		this.writeString(this.src_jgname);
 		this.writeUInt16(this.isJSON ? 1 : 0);
 		

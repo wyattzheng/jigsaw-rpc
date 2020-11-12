@@ -1,11 +1,11 @@
+import AddressInfo from "../../domain/AddressInfo";
 import BasePacket from "../BasePacket";
 
 class DomainReplyPacket extends BasePacket{
 	public static packet_id : number = 4;
 
     public jgname:string="";
-    public address:string="";
-    public port:number=-1;
+    public address_set:Array<AddressInfo>=[];
     constructor(){
         super();
     }
@@ -15,15 +15,20 @@ class DomainReplyPacket extends BasePacket{
     encode(){
         super.encode.call(this);
         this.writeString(this.jgname);
-        this.writeString(this.address);
-        this.writeUInt16(this.port);
+        this.writeUInt16(this.address_set.length);
+        for(let addr of this.address_set){
+            this.writeString(addr.stringify());
+        }
         
     }
     decode(){
         super.decode.call(this);
         this.jgname = this.readString();
-        this.address = this.readString();
-        this.port = this.readUInt16();
+        let setlen = this.readUInt16();
+        for(let i=0;i<setlen;i++){
+            let str = this.readString();
+            this.address_set.push(AddressInfo.parse(str));           
+        }
     }
 }
 

@@ -38,7 +38,7 @@ class LifeCycle{
 
 
         return new Promise((resolve,reject)=>this.eventEmitter.once("state_changed",(to,from)=>{
-            if(to == "dead"){
+            if(to == "closed"){
                 reject(this.error)
             }else{
                 resolve();
@@ -76,8 +76,9 @@ class LifeCycle{
     setDead(err? : Error){
         assert(this.curr_state != "dead",new AlreadyDeadError());
         
-        this.setState("closed");
         this.error = err;
+
+        this.setState("closed");
         this.setState("dead");
     }
     on(event:State,callback:(former_state : State)=>void){

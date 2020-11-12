@@ -12,12 +12,12 @@ class SliceHandler implements IHandler{
 	protected builder_manager : IBuilderManager<SlicePacket,IPacket>;
     protected packet_handler : Handler = ()=>{};
     protected router : IRouter;
-
+    private sliceplug : number;
     constructor(router : IRouter,builder_manager : IBuilderManager<SlicePacket,IPacket>){
         this.router = router;
 
         this.builder_manager = builder_manager;
-        this.router.plug("SlicePacket",this.handlePacket.bind(this));
+        this.sliceplug = this.router.plug("SlicePacket",this.handlePacket.bind(this));
         
     }
     setHandler(handler : Handler){
@@ -48,6 +48,9 @@ class SliceHandler implements IHandler{
         ack.partid = spk.partid;
 
         this.router.sendPacket(ack,new NetRoute(spk.reply_info.port,spk.reply_info.address));    
+    }
+    async close(){
+        this.router.unplug("SlicePacket",this.sliceplug);
     }
 
 

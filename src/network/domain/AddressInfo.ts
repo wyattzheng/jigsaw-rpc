@@ -5,6 +5,9 @@ class AddressInfo{
         this.address=address;
         this.port=port;
     }
+    stringify(){
+        return `${this.address}:${this.port}`;
+    }
     static parse(path:string){
         if(path.indexOf(":") == -1)
             return new AddressInfo(path,-1);

@@ -19,7 +19,7 @@ class Path{
 		let path = new Path(jgname,method);
 		return path;
 	}
-	toString() : string{
+	stringify() : string{
 		return `${this.jgname}:${this.method}`;
 	}
 

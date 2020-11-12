@@ -36,7 +36,9 @@ describe("Base Transfer Test",()=>{
         await A.close();
         await B.close();
     });
-    it("should succeed when send itself a simple object",async()=>{
+    it("should succeed when send itself a simple object",async function(){
+        this.timeout(5000);
+
         let A = RPC.GetJigsaw({name:"A"});
         await waitForEvent(A,"ready"),
 

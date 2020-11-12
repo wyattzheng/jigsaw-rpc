@@ -5,6 +5,7 @@ import IRoute from "./route/IRoute";
 import HandlerMap from "../../utils/HandlerMap";
 import { TypedEmitter } from "tiny-typed-emitter";
 import LifeCycle from "../../utils/LifeCycle";
+import RandomGen from "../../utils/RandomGen";
 
 
 type Handler = (pk:IPacket)=>void;
@@ -14,7 +15,7 @@ abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
     private routerId: string;
     constructor(){
         super();
-        this.routerId = Math.random()+"";
+        this.routerId =  RandomGen.GetRandomHash(6);
     }
     public getLifeCycle(){
         return this.lifeCycle;

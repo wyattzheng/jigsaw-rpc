@@ -42,6 +42,7 @@ abstract class AbstractPacketRouter extends AbstractRouter{
         
     }
     public handlePacket(pk : IPacket){ // not a good design here, to do: Filter Class
+
         for(let router of this.routers){
             router.handlePacket(pk);
         }

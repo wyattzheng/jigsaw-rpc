@@ -11,6 +11,8 @@ class SimplePacketRouter extends AbstractPacketRouter{
     
     async sendPacket(pk : Packet,route:IRoute){
         let addrinfo = await route.getAddressInfo();
+        
+        
         this.client.sendPacket(pk,addrinfo.port,addrinfo.address);
     }
 

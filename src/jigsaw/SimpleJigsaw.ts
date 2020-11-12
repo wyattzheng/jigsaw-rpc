@@ -20,7 +20,7 @@ import IRegistryClient from "../network/domain/client/IRegistryClient";
 import assert from "assert";
 import LifeCycle from "../utils/LifeCycle";
 import WorkFlow from "./WorkFlow";
-
+import RandomGen from "../utils/RandomGen";
 
 interface JigsawEvent{
     ready:()=>void;
@@ -35,11 +35,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private lifeCycle = new LifeCycle();
 
+    private jgid : string;
     private jgname : string;
     private domclient? : IRegistryClient;
-    
-    private entry_address : string;
-    private entry_port? : number;
+
+    private option_entries : Array<string> ; 
+    private listen_port? : number;
     
     private registry_path : Url.Url;
 
@@ -55,14 +56,22 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     constructor(option : any){
         super();
+        this.jgid = RandomGen.GetRandomHash(8);
+
         let jgname = option.name || "";
 
-        let entry_option = option.entry || "127.0.0.1";
-        let parsed_entry = AddressInfo.parse(entry_option);
-    
-        let entry_address = parsed_entry.address;
-        let entry_port : number | undefined = parsed_entry.port > 0 ? parsed_entry.port : undefined;
-    
+        let entry_option = [];
+        if(typeof(option.entry) == "string"){
+            entry_option = [option.entry]
+        }else if(option.entry instanceof Array){           
+            entry_option = option.entry;
+        }else{
+            entry_option = ["127.0.0.1"];
+        }
+
+
+        let listen_port = option.port;
+
         let registry_option = option.registry || "jigsaw://127.0.0.1:3793/";
         let registry_url = Url.parse(registry_option) as Url.Url;
     
@@ -73,12 +82,13 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             throw new Error("regsitry_path.port must be specified");
 
         this.jgname = jgname;
-        this.entry_address = entry_address;
-        this.entry_port = entry_port;
+        this.option_entries = entry_option;
+
+        this.listen_port = listen_port;
 
         this.registry_path = registry_url;
 
-        let socket = new UDPSocket(this.entry_port,"0.0.0.0");
+        let socket = new UDPSocket(this.listen_port,"0.0.0.0");
         this.socket = socket;
 
         this.lifeCycle.when("ready").then(()=>this.emit("ready"));
@@ -99,8 +109,16 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
 
         this.socket.getLifeCycle().on("ready",async ()=>{
+            let socket_port = this.socket.getAddress().port;
+            let entries = this.option_entries.map((x)=>{
+                let parsed = AddressInfo.parse(x);
+                if(parsed.port <= 0)
+                    parsed.port = socket_port;
+                return parsed;
+            });
+
             
-            this.domclient = new DomainClient(this.jgname,this.entry_address,this.socket.getAddress().port,
+            this.domclient = new DomainClient(this.jgid,this.jgname,entries,socket_port,
                 new AddressInfo(registry_addr,registry_port)
             ,this.router as IRouter);
                     
