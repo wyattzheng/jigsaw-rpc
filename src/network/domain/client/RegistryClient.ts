@@ -156,6 +156,7 @@ class RegistryClient implements IRegistryClient{
 
         await this.purgeDomain();
         await this.ping_handler.close();
+    
         await this.closing_defer.promise;
 
         this.lifeCycle.setState("closed");
@@ -201,7 +202,6 @@ class RegistryClient implements IRegistryClient{
     
         }
     
-        this.setRef(+1);
    
         /*this.resolving++;
         if(this.resolving > this.max_resolving)
@@ -234,9 +234,12 @@ class RegistryClient implements IRegistryClient{
             if(this.pingings.has(key))
                 promise = this.pingings.get(key)
             else{
-                promise = this.doPing(addrinfos[index]);
+                this.setRef(+1);
+                promise = this.doPing(addrinfos[index]).finally(()=>{
+                    this.setRef(-1);
+                });
             }
-            this.setRef(1);
+            
             this.pingings.set(key,promise);
 
             promise.then((ret)=>{
@@ -245,7 +248,6 @@ class RegistryClient implements IRegistryClient{
             }).catch((err)=>{
                 //ping is timeout, ignore
             }).finally(()=>{
-                this.setRef(-1);
             });
 
             
@@ -255,12 +257,11 @@ class RegistryClient implements IRegistryClient{
     
 
         if(tests.length == 0){
-            this.setRef(-1);
             return this.getCachedOne(jgname);
         }else{
             await Promise.race(tests);
 
-            this.setRef(-1);
+
             //this.resolving--;
 
             return this.getCachedOne(jgname);
