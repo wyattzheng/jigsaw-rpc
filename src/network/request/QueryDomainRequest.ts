@@ -7,7 +7,9 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
-class QueryDomainRequest extends BaseRequest<Array<AddressInfo>>{
+type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+
+class QueryDomainRequest extends BaseRequest<QueryResult>{
     private jgname : string = "";
     private dst : AddressInfo ;
     constructor(jgname:string,dst:AddressInfo,router : IRouter,seq_id : number){

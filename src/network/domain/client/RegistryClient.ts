@@ -13,46 +13,17 @@ import LifeCycle from "../../../utils/LifeCycle";
 import assert from 'assert';
 
 import PingRequest from "../../request/PingRequest";
-import PingHandler from "../../../network/handler/PingHandler";
+import DomainClientHandler from "../../../network/handler/DomainClientHandler";
 import PurgeDomainRequest from "../../../network/request/PurgeDomainRequest";
 import Url from "url";
 import RegistryServerInfo from "../RegistryServerInfo";
+import DomainCacheStorage from "./DomainCacheStorage";
 
 
+type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
 
 const debug = require("debug")("DomainClient");
 const sleep = util.promisify(setTimeout);
-
-
-class CacheExpiredError extends Error{};
-class CacheNoExistsError extends Error{};
-
-class DomainCache{
-    public addrinfos : Array<AddressInfo> = [];
-    public createTime : number = new Date().getTime();
-    public expired : number;
-    constructor(expired : number = 10 * 1000){
-        this.expired = expired;
-    }
-    add(addrinfo : AddressInfo){
-        let exists = this.addrinfos.findIndex((x)=>{
-            return x.address == addrinfo.address && x.port == addrinfo.port;
-        }) != -1;
-        if(!exists)
-            this.addrinfos.push(addrinfo);
-        
-    }
-    getRandomOne(){
-
-        let index = Math.floor(this.addrinfos.length * Math.random());
-        return this.addrinfos[index];
-    }
-    isExpired() : boolean{
-        let alive = this.createTime + this.expired - new Date().getTime();
-        return alive < 0;
-    }
-}
-
 
 class RegistryClient implements IRegistryClient{
     private address : RegistryServerInfo;
@@ -63,19 +34,20 @@ class RegistryClient implements IRegistryClient{
     private entries : Array<AddressInfo> ;
     private listen_port : number ;
     private loop : boolean = false;
-    private ping_handler : PingHandler;
+    private handler : DomainClientHandler;
     private ping_seq = 0;
+
+    private cache = new DomainCacheStorage();
     
-    private cache = new LimitedMap<string,DomainCache>(1000);
     private pingings = new LimitedMap<string,Promise<AddressInfo>>(100);
-    private queryings = new LimitedMap<string,Promise<Array<AddressInfo>>>(100);
+    private queryings = new LimitedMap<string,Promise<QueryResult>>(100);
 
     private regservers : Array<RegistryServerInfo>;
 
     private closing_defer = new Defer<void>();
     private ref : number = 0;
 
-    private update_loop = true;
+    private isAnonymous = false;
 
     private lifeCycle = new LifeCycle();
 
@@ -98,9 +70,11 @@ class RegistryClient implements IRegistryClient{
 
         this.listen_port = listen_port;
         if(this.client_name.length == 0)
-           this.update_loop = false;
+           this.isAnonymous = true;
 
-        this.ping_handler = new PingHandler(this.router);
+        this.handler = new DomainClientHandler(this.router);
+
+        this.handler.getEventEmitter().on("domain_purged",this.handleDomainPurgedEvent.bind(this));
 
         this.router.getLifeCycle().when("ready").then(this.init.bind(this));
         
@@ -112,10 +86,12 @@ class RegistryClient implements IRegistryClient{
     public getLifeCycle(){
         return this.lifeCycle;
     }
+    private handleDomainPurgedEvent(jgid:string){
+        this.cache.clearCached_jgid(jgid);
+    }
     private init(){
 
-        if(this.update_loop)
-            this.start_updating_loop();
+        this.start_updating_loop();
 
 
         this.lifeCycle.setState("ready");
@@ -125,16 +101,20 @@ class RegistryClient implements IRegistryClient{
         
         let tick = 0;
         let loop_interval = 100;
+        let update_per_loops = 100;
 
         this.setRef(+1);
         this.loop = true;
 		while(this.loop == true){
-            let tick_time = Math.floor((tick * loop_interval) / 1000);
-            if(tick_time % 10 == 0){
+            
+            if(tick % update_per_loops == 0){
                 //console.log("update",update_addr);
                 try{
 
-                    this.updateAddress(this.client_name,this.entries);
+                    if(this.isAnonymous)
+                        this.updateAddress(this.client_name)
+                    else
+                        this.updateAddress(this.client_name,this.entries);
 
                 }catch(err){
                     console.error("updating address error",err);
@@ -158,7 +138,7 @@ class RegistryClient implements IRegistryClient{
 
 
         await this.purgeDomain();
-        await this.ping_handler.close();
+        await this.handler.close();
     
         await this.closing_defer.promise;
 
@@ -176,70 +156,46 @@ class RegistryClient implements IRegistryClient{
             this.setRef(-1);
         }
     }
-    private addCached(jgname:string,addrinfo:AddressInfo){
-        if(!this.cache.has(jgname))
-            this.cache.set(jgname,new DomainCache());
 
-        let set = this.cache.get(jgname) as DomainCache;
-        set.add(addrinfo);
-    }
-    private getCachedOne(jgname:string){
-        if(this.cache.has(jgname)){
-            let cache = this.cache.get(jgname) as DomainCache;
-            
-            return cache.getRandomOne();
-        }else
-            throw new CacheNoExistsError("doesn't have domain cache")
-    }
-    private isCacheExpired(jgname:string){
-        if(!this.cache.has(jgname))
-            return true;
-
-        return this.cache.get(jgname).isExpired();
-    }
-    private clearCached(jgname:string){
-        if(!this.cache.has(jgname))
-             return;
-
-        this.cache.delete(jgname)
-    }
     async resolve(jgname:string,timeout:number = 5000) : Promise<AddressInfo>{
         assert.strictEqual(this.lifeCycle.getState(),"ready");
 
-        if(!this.isCacheExpired(jgname))
-            return this.getCachedOne(jgname);
+        if(!this.cache.isCacheExpired(jgname))
+            return this.cache.getCachedOne(jgname);
    
-        this.clearCached(jgname);
+        
+        this.cache.clearCached_jgname(jgname);
 
         let promise;
-        let addrinfos;
+        let queryinfos : QueryResult;
         if(!this.queryings.has(jgname)){
             promise = this.doRealResolve(jgname,timeout);
             this.queryings.set(jgname,promise);
-            addrinfos = await promise;
+            queryinfos = await promise;
             this.queryings.delete(jgname);
 
         }
         else{
             promise = this.queryings.get(jgname);
-            addrinfos = await promise;
+            queryinfos = await promise;
 
         }
 
                     
-        debug("real resolve",jgname,addrinfos);
+        debug("real resolve",jgname,queryinfos);
         let tests : Array<Promise<AddressInfo>> =[];
 
         
-        for(let index in addrinfos){
+        for(let index in queryinfos){
             let promise;
-            
-            let key = addrinfos[index].stringify();
+            let jgid = queryinfos[index].jgid;
+            let addr = queryinfos[index].addr;
+            let key = addr.stringify();
             if(this.pingings.has(key))
                 promise = this.pingings.get(key)
             else{
                 this.setRef(+1);
-                promise = this.doPing(addrinfos[index]).finally(()=>{
+                promise = this.doPing(addr).finally(()=>{
                     this.setRef(-1);
                 });
             }
@@ -247,8 +203,8 @@ class RegistryClient implements IRegistryClient{
             this.pingings.set(key,promise);
 
             promise.then((ret)=>{
-                this.addCached(jgname,ret);
-                
+                this.cache.addCached(jgname,jgid,ret);
+
             }).catch((err)=>{
                 //ping is timeout, ignore
             }).finally(()=>{
@@ -261,11 +217,11 @@ class RegistryClient implements IRegistryClient{
     
 
         if(tests.length == 0){
-            return this.getCachedOne(jgname);
+            return this.cache.getCachedOne(jgname);
         }else{
             await Promise.race(tests);
 
-            return this.getCachedOne(jgname);
+            return this.cache.getCachedOne(jgname);
         }
     }
     private setRef(offset:number){
@@ -284,7 +240,7 @@ class RegistryClient implements IRegistryClient{
     }
 
 
-    private async doRealResolve(jgname:string,timeout:number) : Promise<Array<AddressInfo>>{
+    private async doRealResolve(jgname:string,timeout:number) : Promise<QueryResult>{
         let start_time = new Date().getTime();
         let loop_interval = 200;
         let max_time = 10*1000;
@@ -314,7 +270,7 @@ class RegistryClient implements IRegistryClient{
         throw new Error("resolve reach its max retry time");
         
     }
-    private async realResolveRequest(jgname:string){
+    private async realResolveRequest(jgname:string) : Promise<QueryResult>{
         
         let req=new QueryDomainRequest(jgname,this.address,this.router,this.request_seq++);
         await req.getLifeCycle().when("ready");
@@ -323,11 +279,15 @@ class RegistryClient implements IRegistryClient{
         return req.getResult();
 
     }
-    updateAddress(jgname:string,addrinfos:Array<AddressInfo>):void{
+    updateAddress(jgname:string,addrinfos?:Array<AddressInfo>):void{
         let pk=new DomainUpdatePacket();
         pk.jgid = this.client_id;
         pk.jgname=jgname;
-        pk.addrinfos = addrinfos;
+    
+        if(addrinfos)
+            pk.addrinfos = addrinfos;
+        else
+            pk.can_update = false;
         
         this.router.sendPacket(pk,new NetRoute(this.address.port,this.address.address));
 

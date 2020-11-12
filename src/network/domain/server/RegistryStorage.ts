@@ -1,17 +1,29 @@
-import IDomainStorage from "./IRegistryStorage";
+import IRegistryStorage from "./IRegistryStorage";
 import AddressInfo from "../AddressInfo";
+import { TypedEmitter } from "tiny-typed-emitter";
 
 type AddressSet = Array<{jgname:string,addr:AddressInfo}>;
 
-class DomainStorage implements IDomainStorage{
+interface StorageEvent{
+    DomainPurgeEvent:(jgid:string)=>void;
+}
+
+type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+
+class RegistryStorage implements IRegistryStorage{
     private map = new Map<string,AddressSet>();
+    private eventEmitter = new TypedEmitter<StorageEvent>();
     constructor(){
         
     }
+    
     private getAddressSet(jgid:string) : AddressSet{
         if(!this.map.has(jgid))
             this.map.set(jgid,[]);
         return  this.map.get(jgid) as AddressSet;
+    }
+    getEventEmitter(){
+        return this.eventEmitter;   
     }
     setAddress(jgid:string,jgname:string,addr:AddressInfo){
         let set = this.getAddressSet(jgid);
@@ -29,19 +41,22 @@ class DomainStorage implements IDomainStorage{
       
         if(!this.map.has(jgid))
             throw new Error("this jgid doesn't exist");
+
         this.map.delete(jgid);
+        this.eventEmitter.emit("DomainPurgeEvent", jgid);
     }
-    getAddress(jgname:string) : Array<AddressInfo>{
+    queryAddress(jgname:string) : QueryResult{
 
         let keys = this.map.keys();
-        let ret : Array<AddressInfo> = [];
+        let ret : QueryResult = [];
+
         for(let name of keys){
             let set = this.getAddressSet(name);
             
            
             Array.from(set).map((x)=>{
                 if(x.jgname == jgname)
-                    ret.push(x.addr);
+                    ret.push({jgid:name,addr:x.addr});
             });
         }
 
@@ -53,4 +68,4 @@ class DomainStorage implements IDomainStorage{
 
 }
 
-export default DomainStorage;
+export default RegistryStorage;

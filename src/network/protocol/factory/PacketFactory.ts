@@ -20,6 +20,7 @@ class PacketFactory implements IFactory<Buffer,IPacket>{
 		this.register(require("../packet/PingPacket").default);
 		this.register(require("../packet/PongPacket").default);
 		this.register(require("../packet/DomainPurgePacket").default);
+		this.register(require("../packet/DomainPurgeNotifyPacket").default);
 		
 		
 	}

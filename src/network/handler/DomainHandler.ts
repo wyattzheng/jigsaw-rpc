@@ -9,6 +9,9 @@ import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 import DomainPurgePacket from "../protocol/packet/DomainPurgePacket";
+import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket";
+import LimitedMap from "../../utils/LimitedMap";
+import AddressInfo from "../domain/AddressInfo";
 
 
 class DomainHandler implements IHandler{
@@ -18,6 +21,8 @@ class DomainHandler implements IHandler{
     private queryplug : number;
     private updateplug : number;
     private purgeplug : number;
+
+    private recent_clients = new LimitedMap<string,AddressInfo>(100);
     
     constructor(router:IRouter){
         this.router = router;
@@ -27,6 +32,20 @@ class DomainHandler implements IHandler{
         this.updateplug = this.router.plug("DomainUpdatePacket",this.handlePacket.bind(this));
         this.purgeplug = this.router.plug("DomainPurgePacket",this.handlePacket.bind(this));
         
+        this.storage.getEventEmitter().on("DomainPurgeEvent",this.handlePurgeEvent.bind(this));
+    }
+    private handlePurgeEvent(jgid:string){
+        let pk = new DomainPurgeNotifyPacket();
+        pk.jgid = jgid;
+
+        let keys = this.recent_clients.getMap().keys();
+
+//        console.log(pk,keys)
+        for(let key of keys){
+            let addr = this.recent_clients.get(key);
+            this.router.sendPacket(pk,new NetRoute(addr.port,addr.address));
+        }
+        
     }
     protected onPacket(p:IPacket):void{
 
@@ -35,7 +54,7 @@ class DomainHandler implements IHandler{
 
             let r_pk = new DomainReplyPacket();
 
-            let addr_set = this.storage.getAddress(pk.jgname);
+            let addr_set = this.storage.queryAddress(pk.jgname);
             r_pk.address_set = addr_set;
 
             r_pk.request_id=pk.request_id;
@@ -45,8 +64,11 @@ class DomainHandler implements IHandler{
         }else if(p.getName() == "DomainUpdatePacket"){
             let pk = p as DomainUpdatePacket;
             
-            for(let info of pk.addrinfos){
-                this.storage.setAddress(pk.jgid,pk.jgname,info);
+            this.recent_clients.set(pk.reply_info.stringify(),pk.reply_info);
+
+            if(pk.can_update)
+                for(let info of pk.addrinfos){
+                    this.storage.setAddress(pk.jgid,pk.jgname,info);
             }
 
         }else if(p.getName() == "DomainPurgePacket"){
