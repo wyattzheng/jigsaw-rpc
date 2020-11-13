@@ -7,8 +7,7 @@ import DomainHandler from "../../handler/DomainHandler";
 import { TypedEmitter } from "tiny-typed-emitter";
 import SimplePacketRouter from "../../router/packetrouter/SimplePacketRouter";
 import IRouter from "../../router/IRouter";
-import IPacket from "src/network/protocol/IPacket";
-import DomainPurgePacket from "src/network/protocol/packet/DomainPurgePacket";
+import assert from "assert";
 
 interface DomainServerEvent{
     ready:()=>void;
@@ -33,28 +32,37 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         let builder_manager = new PacketBuilderManager(factory);
 
         this.socket = new UDPSocket(this.port,this.address);
+        this.socket.start();
+
         this.client = new BuilderNetworkClient(this.socket,factory,builder_manager);
         
         this.router = new SimplePacketRouter(this.client); 
 
         this.handler = new DomainHandler(this.router);
 
-     
         this.socket.getLifeCycle().on("ready",()=>{
             this.emit("ready");
         })
         
         this.socket.getLifeCycle().on("closed",()=>{
             this.emit("closed");
-        })
+        });
 
     }
-
+    getLifeCycle(){
+        return this.socket.getLifeCycle();
+    }
     getStorage(){
         return this.handler.storage;
     }
     async close(){
+        let state = this.getLifeCycle().getState();
+        assert.strictEqual(state,"ready");
+
+        await this.handler.close();
+        await this.router.close();
         await this.socket.close();
+
     }
 
 }

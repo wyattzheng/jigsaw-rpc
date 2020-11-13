@@ -9,8 +9,6 @@ class DomainCache{
     }
     add(jgid:string , addrinfo : AddressInfo){
         let exists = this.addrinfos.findIndex((v)=>{
-            return 
-
             v.jgid == jgid
             && v.addr.address == addrinfo.address
             && v.addr.port == addrinfo.port;

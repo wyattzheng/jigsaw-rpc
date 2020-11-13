@@ -14,12 +14,14 @@ class UDPSocket implements ISocket{
 	private sock : Dgram.Socket;
 	private lifeCycle : LifeCycle = new LifeCycle();
 	private eventEmitter = new TypedEmitter<SocketEvent>();
+	private port? : number;
+	private address? : string;
 
 	constructor(port? : number,address?:string){
+		this.port = port;
+		this.address = address;
 
 		this.sock = Dgram.createSocket("udp4");
-		
-		this.sock.bind(port,address);
 	
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			
@@ -36,6 +38,11 @@ class UDPSocket implements ISocket{
 			this.lifeCycle.setState("closed"); 
 
 		})
+
+	}
+	public start(){
+		this.sock.bind(this.port,this.address);
+		this.lifeCycle.setState("starting");
 	}
 	public getEventEmitter(){
 		return this.eventEmitter;

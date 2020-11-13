@@ -10,7 +10,6 @@ interface DomainClientEvent{
 interface IDomainClient{
     getLifeCycle():LifeCycle;
     resolve(jgname:string) : Promise<AddressInfo>;    
-    updateAddress(jgname:string,addrs:Array<AddressInfo>) : void;
     close() : void;
 }
 

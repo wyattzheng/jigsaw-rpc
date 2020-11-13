@@ -18,10 +18,9 @@ class NotNextStateError extends Error{
     }
 };
 class AlreadyDeadError extends Error{};
-class NotACorrectUsage extends Error{};
 
 class LifeCycle{
-    private curr_state : State = "starting";
+    private curr_state : State = "closed";
     private eventEmitter = new TypedEmitter<LifeCycleEvent>();
     private error? : Error;
 
@@ -35,7 +34,6 @@ class LifeCycle{
         if(this.curr_state == lifecycle)
             return;
         assert(this.isNextState(lifecycle),new NotNextStateError());
-
 
         return new Promise((resolve,reject)=>this.eventEmitter.once("state_changed",(to,from)=>{
             if(to == "closed"){
@@ -53,6 +51,9 @@ class LifeCycle{
         if(state == "closed")
             return true;
 
+
+        if(this.curr_state == "closed" && state == "starting")
+            return true;
 
         if(
             (this.curr_state == "starting" && state == "ready") ||

@@ -24,6 +24,7 @@ abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
         return this.routerId;
     }
 
+    public abstract close():Promise<void>;
     public abstract sendPacket(pk : IPacket,route : IRoute) : void;
     public abstract handlePacket(pk : IPacket) : void;
 }

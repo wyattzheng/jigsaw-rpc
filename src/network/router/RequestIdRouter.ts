@@ -24,6 +24,9 @@ class RequestIdRouter extends AbstractRouter{
         }
 
     }
+    async close():Promise<void>{
+
+    }
 
 }
 

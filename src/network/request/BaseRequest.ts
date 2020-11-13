@@ -20,6 +20,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
     protected timeout_duration : number;
     protected router : IRouter;
 
+    private ref = 0;
 
     private timeout : NodeJS.Timeout;
     private pending_defer? : Defer<void>;
@@ -46,8 +47,10 @@ abstract class BaseRequest<T> implements IRequest<T>{
             clearTimeout(this.timeout);
         });
 
+        this.lifeCycle.setState("starting");
     }
 
+    
     protected getTimeoutError(){
         return new RequestTimeoutError(this.timeout_duration);
     }
@@ -55,6 +58,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
         let pk = p as ErrorPacket;
         throw new RequestRemoteError(pk.error);
     }
+
     private onErrorPacket(p : IPacket){
         try{
             this.handleErrorPacket(p);
@@ -62,15 +66,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
             this.pending_defer?.reject(err);
         }
     }
-    private checkRequestKey(){
-        if(this.req_seq < 0)
-            throw new Error("request key must be set.")
-    }
     
-    setRequestSeq(seq : number){
-        this.req_seq = seq;
-    }
-
     getRequestId() : string{
         return this.router.getRouterId() + ":" +this.getName() + ":" + this.req_seq;
     }
@@ -81,8 +77,8 @@ abstract class BaseRequest<T> implements IRequest<T>{
 
         if(this.hasResult)
             return;
-//            throw new Error("already has result");
 
+            
         this.result = result;
         this.hasResult = true;
         this.pending_defer?.resolve();
@@ -93,17 +89,19 @@ abstract class BaseRequest<T> implements IRequest<T>{
 
         return this.result as T;
     }
-    private async before_wait(){
+    private async before_waiting(){
         if(this.lifeCycle.getState()!="ready")
             throw new Error("at this state,can not before_run")
         
         this.pending_defer = new Defer();
         this.lifeCycle.setState("closing");
     
-        let tick : number = 0;
         this.resender_loop = true;
         this.resender_defer = new Defer();
 
+    }
+    private async start_waiting(){
+        let tick : number = 0;
         while(this.resender_loop){
             if(tick++ % 50 == 0){
                 await this.dosend();
@@ -113,7 +111,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
         }
         this.resender_defer?.resolve();
     }
-    private async after_wait(refid:number,error_refid:number,err:Error | undefined){
+    private async after_waiting(refid:number,error_refid:number,err:Error | undefined){
         if(this.lifeCycle.getState()!="closing")
             throw new Error("at this state,can not after_end");
 
@@ -142,7 +140,6 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
 	async run(){
 
-        this.checkRequestKey();
 
         if(this.lifeCycle.getState() == "closing")
             throw new Error("right now this request is pending")
@@ -156,17 +153,17 @@ abstract class BaseRequest<T> implements IRequest<T>{
     
         debug("plug",refid);
 
-        this.before_wait();
-	    this.dosend();
-    
+        this.before_waiting();
+        this.start_waiting();
+
         let error : Error | undefined;
         try{
             await (this.pending_defer as Defer<void>).promise;        
         }catch(err){
             error = err;
-        }        
+        }
 
-        this.after_wait(refid,error_refid,error);
+        this.after_waiting(refid,error_refid,error);
 
         if(error)
             throw error;

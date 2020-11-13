@@ -9,6 +9,7 @@ interface SocketEvent{
 interface ISocket{	
 	getEventEmitter() :TypedEmitter<SocketEvent>;
 	getLifeCycle() : LifeCycle;
+	start() : void;
 	close() : void;
 	send(data : Buffer, port : number, address : string) : void;
 	getAddress() : AddressInfo;

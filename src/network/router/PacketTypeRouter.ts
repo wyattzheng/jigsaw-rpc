@@ -24,6 +24,9 @@ class PacketTypeRouter extends AbstractRouter{
         }
 
     }
+    async close():Promise<void>{
+
+    }
 
 }
 

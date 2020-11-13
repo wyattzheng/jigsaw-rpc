@@ -40,18 +40,18 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private jgname : string;
     private domclient? : IRegistryClient;
 
-    private option_entries : Array<string> ; 
+    private entry : AddressInfo ; 
     private listen_port? : number;
     
     private registry : RegistryServerInfo;
-    private registries : Array<RegistryServerInfo>;
 
     private router? : IRouter;
     
     private request_seq : number = 0;
     private invoke_handler? : InvokeHandler;
 
-    private module_ref = new Set<string>();
+    private ref = 0;
+
     private socket : UDPSocket;
 
     private workflow = new WorkFlow();
@@ -63,15 +63,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let jgname = option.name || "";
 
         // ============ENTRY=============
-        let entry_option = [];
-        if(typeof(option.entry) == "string"){
-            entry_option = [option.entry]
-        }else if(option.entry instanceof Array){           
-            entry_option = option.entry;
-        }else{
-            entry_option = ["127.0.0.1"];
-        }
-        this.option_entries = entry_option;
+
+        let entry_str : string = option.entry || "127.0.0.1";
+        this.entry = AddressInfo.parse(entry_str);
 
         // ===============================
 
@@ -79,10 +73,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         // ============REGSERVER==========
 
         this.registry = RegistryServerInfo.parse(option.registry || "jigsaw://127.0.0.1:3793/");
-
-        assert(!option.registries || option.registries instanceof Array,"option.registries must be an array");
-        this.registries = option.registries ? option.registries.map(RegistryServerInfo.parse) : [];
-
         
         // ============REGSERVER==========
 
@@ -94,7 +84,11 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.jgname = jgname;
 
         let socket = new UDPSocket(this.listen_port,"0.0.0.0");
+        socket.start();
+
         this.socket = socket;
+
+        this.lifeCycle.setState("starting");
 
         this.lifeCycle.when("ready").then(()=>this.emit("ready"));
         this.lifeCycle.on("closed",()=>this.emit("closed"));
@@ -107,72 +101,55 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let client=new BuilderNetworkClient(this.socket,factory,builder_manager);
         this.router = new SimplePacketRouter(client);
 
-        let registry_addr = this.registry.address;
-        let registry_port = this.registry.port;
 
         this.invoke_handler = new InvokeHandler(this.router,this.handleInvoke.bind(this));
 
 
         this.socket.getLifeCycle().on("ready",async ()=>{
             let socket_port = this.socket.getAddress().port;
-            let entries = this.option_entries.map((x)=>{
-                let parsed = AddressInfo.parse(x);
-                if(parsed.port <= 0)
-                    parsed.port = socket_port;
-                return parsed;
-            });
-
+            let entry = new AddressInfo(this.entry.address,
+                this.entry.port <= 0? socket_port : this.entry.port);
             
-            this.domclient = new DomainClient(this.jgid,this.jgname,entries,socket_port,
-                this.registry,this.registries
+            this.domclient = new DomainClient(this.jgid,this.jgname,entry,
+                this.registry
             ,this.router as IRouter);
                     
 
             this.domclient.getLifeCycle().on("closed",()=>{
-                this.setModuleClose("domclient");
                 this.close();    
             });
 
             this.domclient.getLifeCycle().when("ready").then(()=>{
-                this.setModuleReady("domclient");
-            });  
+                this.setRef(+1);
+            });
     
         })
     
         
         this.router.getLifeCycle().on("closed",()=>{
-            this.setModuleClose("router");
             this.close();
         });
         
         this.router.getLifeCycle().when("ready").then(()=>{
-            this.setModuleReady("router");
+            this.setRef(+1);
         });
        
 
 
     }
-    private setModuleReady(name:string){
-        if(this.lifeCycle.getState() != "starting")
-            throw new Error("not a correct state");
+    private setRef(offset : number){
+        this.ref+=offset;
 
-        this.module_ref.add(name);
-
-        if(this.module_ref.size == 2){
-            this.lifeCycle.setState("ready")
+        if(this.lifeCycle.getState() == "starting"){
+            assert(offset >= 0);
+            if(this.ref == 2){
+                this.lifeCycle.setState("ready");
+            }
+        }else if(this.lifeCycle.getState() == "closing"){
+            assert(offset <= 0);
+            if(this.ref == 0)
+                this.lifeCycle.setState("closed");
         }
-    }
-    private setModuleClose(name:string){
-        if(this.lifeCycle.getState() != "closing")
-            throw new Error("not at closing state, but module closed");
-        
-        this.module_ref.delete(name);
-        
-        if(this.module_ref.size == 0){
-
-            this.lifeCycle.setState("closed");
-        }
-
     }
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string) : Promise<Buffer | object>{
 
@@ -209,11 +186,13 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         if(this.lifeCycle.getState() != "ready")
             throw new Error("at this state, the jigsaw can not be closed");
 
+        
         this.lifeCycle.setState("closing");
         
-        //this.router.close();
+        await this.invoke_handler?.close();
         await (this.domclient as IRegistryClient).close();   
 
+        await this.router?.close();
         this.socket.close();
 
     }
@@ -238,15 +217,21 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let path = Path.fromString(path_str);
         
         let req_seq = this.request_seq++;
+        this.setRef(+1);
+        try{
+            let request = new InvokeRequest(this.jgname,path,data,isJSON,this.domclient as IRegistryClient,this.router as IRouter,req_seq);
         
-        let request = new InvokeRequest(this.jgname,path,data,isJSON,this.domclient as IRegistryClient,this.router as IRouter,req_seq);
-        
-        await request.getLifeCycle().when("ready");
-        await request.run();
-        if(request.isResultJSON()){
-            return JSON.parse(request.getResult().toString());
-        }else{
-            return request.getResult();
+            await request.getLifeCycle().when("ready");
+            await request.run();    
+            if(request.isResultJSON()){
+                return JSON.parse(request.getResult().toString());
+            }else{
+                return request.getResult();
+            }    
+        }catch(err){
+            throw err
+        }finally{
+            this.setRef(-1);
         }
     }
     
