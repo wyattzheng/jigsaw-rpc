@@ -7,7 +7,8 @@ import INetworkClient from "./INetworkClient";
 import RandomGen from "../../utils/RandomGen";
 
 interface NetworkClientEvent{
-	packet: (p:IPacket)=> void;
+	packet: (p:IPacket) => void;
+	error: (err:Error) => void;
 }
 
 class BaseNetworkClient implements INetworkClient{
@@ -22,7 +23,7 @@ class BaseNetworkClient implements INetworkClient{
 		this.socket = socket;
 
 		this.socket.getEventEmitter().on("message",this.onSocketMessage.bind(this));
-
+		
 		this.eventEmitter = new TypedEmitter<NetworkClientEvent>();
 		this.initClientId();
 	}
@@ -48,11 +49,19 @@ class BaseNetworkClient implements INetworkClient{
 		return this.socket.getLifeCycle();
 	}
 	private onSocketMessage(message : Buffer,rinfo:AddressInfo){
-		let product = this.factory.getProduct(message);
-		product.setReplyInfo(rinfo);
-		product.setBuffer(message);
-		product.decode();
-		this.handlePacket(product);
+		let product;
+		try{
+			product = this.factory.getProduct(message);
+			product.setReplyInfo(rinfo);
+			product.setBuffer(message);	
+			product.decode();			
+		}catch(err){
+			this.eventEmitter.emit("error",err);
+		}
+
+		if(product)
+			this.handlePacket(product);
+	
 	}
 	protected handlePacket(pk : IPacket){
 		this.eventEmitter.emit("packet",pk);
@@ -61,7 +70,7 @@ class BaseNetworkClient implements INetworkClient{
 	public sendPacket(packet : IPacket,dst_port:number , dst_address:string){
 		if(!packet.isBuilt())
 			packet.encode();
-
+	
 		let buffer = packet.getSlicedData();
 		this.socket.send(buffer, dst_port, dst_address);
 	}

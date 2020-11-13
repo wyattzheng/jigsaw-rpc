@@ -15,6 +15,10 @@ class BuilderNetworkClient extends BaseNetworkClient{
        
         this.slice_handler = new SliceHandler(new SimplePacketRouter(this),builder_manager);
 
+        this.slice_handler.getEventEmitter().on("error",(err:Error)=>{
+            this.getEventEmitter().emit("error",err);
+        });
+
         this.slice_handler.setHandler(this.handlePacket.bind(this));
     }
     protected handlePacket(pk : IPacket){

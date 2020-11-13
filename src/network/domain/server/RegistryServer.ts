@@ -12,6 +12,7 @@ import assert from "assert";
 interface DomainServerEvent{
     ready:()=>void;
     closed:()=>void;
+    error:(err:Error)=>void;
 }
 
 class DomainServer extends TypedEmitter<DomainServerEvent>{
@@ -35,7 +36,11 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         this.socket.start();
 
         this.client = new BuilderNetworkClient(this.socket,factory,builder_manager);
+        this.client.getEventEmitter().on("error",(err:Error)=>{
+            this.emit("error",err);
+        });
         
+
         this.router = new SimplePacketRouter(this.client); 
 
         this.handler = new DomainHandler(this.router);
@@ -53,7 +58,7 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         return this.socket.getLifeCycle();
     }
     getStorage(){
-        return this.handler.storage;
+        return this.handler.getStorage();
     }
     async close(){
         let state = this.getLifeCycle().getState();

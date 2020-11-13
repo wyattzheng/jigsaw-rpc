@@ -9,6 +9,7 @@ import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket"
 import { TypedEmitter } from "tiny-typed-emitter";
 
 interface HandlerEvent{
+    error:(err:Error)=>void;
     domain_purged:(jgid:string)=>void
 }
 class DomainClientHandler implements IHandler{

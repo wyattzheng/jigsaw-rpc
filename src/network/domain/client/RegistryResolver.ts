@@ -62,6 +62,10 @@ class RegistryResolver{
         let queryinfos : QueryResult;
         if(!this.queryings.has(jgname)){
             promise = this.doRetryResolve(jgname,timeout);
+            this.setRef(+1);
+            promise.then(()=>{
+                this.setRef(-1);
+            })
 
             this.queryings.set(jgname,promise);
             queryinfos = await promise;
@@ -81,8 +85,8 @@ class RegistryResolver{
         
         let loops = Math.floor(max_time / loop_interval);
         
+        
         for(let i=0;i<loops;i++){
-            this.setRef(+1)
             try{
      
                 let res = await this.doResolveRequest(jgname);
@@ -91,7 +95,7 @@ class RegistryResolver{
             }catch(err){   
                 //console.log(err);
             }finally{
-                this.setRef(-1)
+
             }
             let time=new Date().getTime();
 
@@ -100,12 +104,17 @@ class RegistryResolver{
             
             await sleep(loop_interval);
         }
+
         throw new Error("resolve reach its max retry time");
         
     }
     private async doResolveRequest(jgname:string) : Promise<QueryResult>{
-        
+        this.setRef(+1)
+   
         let req=new QueryDomainRequest(jgname,this.server_address,this.router,this.request_seq++);
+        req.getLifeCycle().on("closed",()=>{
+            this.setRef(-1);
+        })
         await req.getLifeCycle().when("ready");
         await req.run();
     

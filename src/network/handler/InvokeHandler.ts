@@ -10,7 +10,9 @@ import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import LimitedMap from "../../utils/LimitedMap";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
+import LifeCycle from "../../utils/LifeCycle";
 import util from "util";
+import { TypedEmitter } from "tiny-typed-emitter";
 
 
 const sleep = util.promisify(setTimeout)
@@ -62,10 +64,17 @@ class Invoker{
 
 }
 
+
+interface HandlerEvent{
+    error: (err:Error)=>void;
+}
+
 class InvokeHandler implements IHandler{
     public router : IRouter;
     public handler : Handler;
-    public state : string = "starting";
+    public lifeCycle = new LifeCycle();
+
+    private eventEmitter = new TypedEmitter<HandlerEvent>();
     private invokers = new LimitedMap<string,Invoker>(500);
     private refs : Map<string,number> = new Map(Object.entries({
         reply:0,
@@ -81,29 +90,31 @@ class InvokeHandler implements IHandler{
         this.invokeplug = this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
         this.router.getLifeCycle().on("ready",()=>{
-            this.state = "ready";
-        });
-        this.router.getLifeCycle().on("closed",()=>{
-            this.close();
+            this.lifeCycle.setState("ready");
         });
 
         this.invokers.on("deleted",(item : Invoker)=>{
-            item.close();
-            
-        })
+            item.close();            
+        });
+
+        this.lifeCycle.setState("starting");
+
 
     }
+    getEventEmitter(){
+        return this.eventEmitter;
+    }
     async close(){
-        if(this.state == "close")
+        if(this.lifeCycle.getState() == "closed")
             return;
-        if(this.state == "starting")
+        if(this.lifeCycle.getState()  == "starting")
             throw new Error("right now starting")
         
         this.closeAllInvokers();
         
         this.router.unplug("InvokePacket",this.invokeplug);
 
-        this.state = "closing";
+        this.lifeCycle.setState("closing");
         this.setRef("reply",0);
         
     }
@@ -134,7 +145,7 @@ class InvokeHandler implements IHandler{
         if(invoker.getState()!="invoked")
             return;
 
-        if(this.state == "closing")
+        if(this.lifeCycle.getState() == "closing")
             return;
             
         this.setRef("reply",+1);
@@ -143,7 +154,7 @@ class InvokeHandler implements IHandler{
 
         try{
             for(let id of sliceids){
-                if(this.state != "ready")
+                if(this.lifeCycle.getState() != "ready")
                     break;
                     
                 this.router.sendPacket(slicer.getSlicePacket(id),new NetRoute(target.port,target.address));
@@ -224,8 +235,8 @@ class InvokeHandler implements IHandler{
         return invoker;
     }    
     public async handlePacket(p:IPacket){
-        if(this.state != "ready")
-            return;
+        if(this.lifeCycle.getState() != "ready")
+            throw new Error("isn't ready");
 
         if(this.hasInvoker(p.getRequestId())){
             let invoker = this.getInvoker(p.getRequestId());
@@ -245,17 +256,17 @@ class InvokeHandler implements IHandler{
         this.refs.set(ref_type,ref+offset);
         //console.log(this.refs);
 
-        if(this.state == "closing"){
+        if(this.lifeCycle.getState() == "closing"){
             let alldone = true;
             for(let key of this.refs.keys()){
                 let r = this.refs.get(key) as number;
                 if(r > 0)
                     alldone = false;
             }
-            if(alldone){
-                this.state = "close";
+            if(alldone)
+                this.lifeCycle.setState("closed");
 
-            }
+            
         }
     }    
 

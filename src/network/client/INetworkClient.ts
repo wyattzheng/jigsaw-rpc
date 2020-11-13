@@ -6,7 +6,8 @@ import IPacket from "../protocol/IPacket"
 import ISocket from "../socket/ISocket";
 
 interface NetworkClientEvent{
-	packet: (p:IPacket)=> void;
+	packet: (p:IPacket) => void;
+	error: (err:Error) => void;
 }
 
 interface INetworkClient {

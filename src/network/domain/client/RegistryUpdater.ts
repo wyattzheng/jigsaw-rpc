@@ -50,12 +50,16 @@ class RegistryUpdater{
         try{
             this.setRef(+1)
             let req = new PurgeDomainRequest(this.client_id,this.server_address,this.router,0);
+            req.getLifeCycle().on("closed",()=>{
+                this.setRef(-1);
+            });
+
             await req.getLifeCycle().when("ready");
             await req.run();
         }catch(err){
 
         }finally{
-            this.setRef(-1);
+
         }
     }
     private async start_updating_loop(){

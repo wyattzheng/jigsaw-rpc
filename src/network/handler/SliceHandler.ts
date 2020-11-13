@@ -1,3 +1,4 @@
+import { TypedEmitter } from "tiny-typed-emitter";
 import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
 import IPacket from "../protocol/IPacket";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
@@ -8,17 +9,32 @@ import IHandler from "./IHandler";
 
 type Handler = (p : IPacket) => void;
 
+interface HandlerEvent{
+    error: (err:Error)=>void;
+}
 class SliceHandler implements IHandler{
+    private eventEmitter = new TypedEmitter<HandlerEvent>();
 	protected builder_manager : IBuilderManager<SlicePacket,IPacket>;
     protected packet_handler : Handler = ()=>{};
     protected router : IRouter;
     private sliceplug : number;
+ 
     constructor(router : IRouter,builder_manager : IBuilderManager<SlicePacket,IPacket>){
         this.router = router;
 
         this.builder_manager = builder_manager;
-        this.sliceplug = this.router.plug("SlicePacket",this.handlePacket.bind(this));
+        this.sliceplug = this.router.plug("SlicePacket",(p : IPacket)=>{
+            try{
+                this.handlePacket(p);
+            }catch(err){
+                this.eventEmitter.emit("error",err);
+            }
+
+        });
         
+    }
+    getEventEmitter(){
+        return this.eventEmitter;
     }
     setHandler(handler : Handler){
         this.packet_handler = handler;
@@ -37,6 +53,7 @@ class SliceHandler implements IHandler{
             let built=manager.getBuilt(spk.buildkey);
             if(!built.isBuilt())
                 built.decode();
+
             built.setReplyInfo(spk.reply_info);
             
             

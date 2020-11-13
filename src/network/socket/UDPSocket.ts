@@ -7,6 +7,7 @@ import { TypedEmitter } from "tiny-typed-emitter";
 
 interface SocketEvent{
 	message: (body:Buffer,rinfo:AddressInfo) => void;
+	error : (err : Error) => void;
 } ;
 
 class UDPSocket implements ISocket{
@@ -36,11 +37,13 @@ class UDPSocket implements ISocket{
 		});
 		this.sock.on("close",()=>{ 
 			this.lifeCycle.setState("closed"); 
-
-		})
-
+		});
+		this.sock.on("error",(err:Error)=>{
+			this.eventEmitter.emit("error",err);
+		});
+		
 	}
-	public start(){
+	public async start(){
 		this.sock.bind(this.port,this.address);
 		this.lifeCycle.setState("starting");
 	}
@@ -61,7 +64,7 @@ class UDPSocket implements ISocket{
 		this.sock.send(data,port,address);
 
 	}
-	public close(){
+	public async close() : Promise<void>{
 		return new Promise((resolve)=>{
 			this.sock.close(resolve);
 		})

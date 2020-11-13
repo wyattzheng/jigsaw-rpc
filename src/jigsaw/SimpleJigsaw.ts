@@ -24,6 +24,7 @@ import WorkFlow from "./WorkFlow";
 import RandomGen from "../utils/RandomGen";
 
 interface JigsawEvent{
+    error:(err : Error)=>void;
     ready:()=>void;
     closed:()=>void;
 }
@@ -99,6 +100,10 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let factory = new PacketFactory();
         let builder_manager = new PacketBuilderManager(factory);
         let client=new BuilderNetworkClient(this.socket,factory,builder_manager);
+        client.getEventEmitter().on("error",(err:Error)=>{
+            this.emit("error",err);
+        });
+
         this.router = new SimplePacketRouter(client);
 
 
@@ -220,7 +225,10 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.setRef(+1);
         try{
             let request = new InvokeRequest(this.jgname,path,data,isJSON,this.domclient as IRegistryClient,this.router as IRouter,req_seq);
-        
+            request.getLifeCycle().on("closed",()=>{
+                this.setRef(-1);
+            })
+
             await request.getLifeCycle().when("ready");
             await request.run();    
             if(request.isResultJSON()){
@@ -231,7 +239,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         }catch(err){
             throw err
         }finally{
-            this.setRef(-1);
+
         }
     }
     

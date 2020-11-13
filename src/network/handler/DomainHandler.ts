@@ -12,12 +12,17 @@ import DomainPurgePacket from "../protocol/packet/DomainPurgePacket";
 import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket";
 import LimitedMap from "../../utils/LimitedMap";
 import AddressInfo from "../domain/AddressInfo";
+import { TypedEmitter } from "tiny-typed-emitter";
 
 
+interface HandlerEvent{
+    error: (err:Error)=>void;
+}
 class DomainHandler implements IHandler{
-    public storage : RegistryStorage;
-    public router : IRouter;
+    private storage : RegistryStorage;
+    private router : IRouter;
 
+    private eventEmitter = new TypedEmitter<HandlerEvent>();
     private queryplug : number;
     private updateplug : number;
     private purgeplug : number;
@@ -33,6 +38,12 @@ class DomainHandler implements IHandler{
         this.purgeplug = this.router.plug("DomainPurgePacket",this.handlePacket.bind(this));
         
         this.storage.getEventEmitter().on("DomainPurgeEvent",this.handlePurgeEvent.bind(this));
+    }
+    getEventEmitter(){
+        return this.eventEmitter;
+    }
+    getStorage(){
+        return this.storage;
     }
     private handlePurgeEvent(jgid:string){
         let pk = new DomainPurgeNotifyPacket();
