@@ -44,8 +44,11 @@ class RegistryClient implements IRegistryClient{
         this.router.getLifeCycle().when("ready").then(this.start.bind(this));
         
     }
-    public resolve(jgname : string,timeout:number = 5000){
-        return this.resolver.resolve(jgname,timeout);
+    public resolveAny(regpath : string,timeout:number = 5000){
+        return this.resolver.resolveAny(regpath,timeout);
+    }
+    public resolve(regpath : string,timeout:number = 5000){
+        return this.resolver.resolve(regpath,timeout);
     }
     public getLifeCycle(){
         return this.lifeCycle;

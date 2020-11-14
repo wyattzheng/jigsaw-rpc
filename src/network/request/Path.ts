@@ -2,25 +2,25 @@ import assert=require("assert");
 import Packet from "../protocol/Packet";
 
 class Path{
-	public jgname : string = "";
+	public regpath : string = "";
 	public method : string = "";
-	constructor(jgname:string,method:string){
-		assert(jgname.length<=64 && jgname.length>0, "jgname.length is incorrect");
+	constructor(regpath:string,method:string){
+		assert(regpath.length<=64 && regpath.length>0, "regpath.length is incorrect");
 		assert(method.length<=16 && method.length>0, "method.length is incorrect");
 
-		this.jgname = jgname;
+		this.regpath = regpath;
 		this.method = method;
 	}
 	static fromString(path_str:string) : Path{
 
 		let parts = path_str.split(":");
 		assert(parts.length == 2,"path syntax error");
-		let [jgname,method] = parts;
-		let path = new Path(jgname,method);
+		let [regpath,method] = parts;
+		let path = new Path(regpath,method);
 		return path;
 	}
 	stringify() : string{
-		return `${this.jgname}:${this.method}`;
+		return `${this.regpath}:${this.method}`;
 	}
 
 

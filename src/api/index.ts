@@ -14,14 +14,17 @@ const RegistryApi = {
     Server : RegistryServer,
 }
 
-const RpcApi = {
+
+const RPCApi = {
     registry : RegistryApi,
     GetJigsaw : GetJigsaw
 }
+
 
 function GetJigsaw(option : any) : IJigsaw{
     return new LibContext.jigsawClass(option || {});
 };
 
-export default RpcApi;
+export default RPCApi;
+
 

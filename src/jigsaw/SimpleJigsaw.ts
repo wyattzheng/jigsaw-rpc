@@ -22,6 +22,9 @@ import assert from "assert";
 import LifeCycle from "../utils/LifeCycle";
 import WorkFlow from "./WorkFlow";
 import RandomGen from "../utils/RandomGen";
+import NetRoute from "../network/router/route/NetRoute";
+import IRoute from "../network/router/route/IRoute";
+import RegistryRoute from "../network/router/route/RegistryRoute";
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -55,7 +58,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private socket : UDPSocket;
 
-    private workflow = new WorkFlow();
+    private recv_workflow = new WorkFlow();
+    private send_workflow = new WorkFlow();
+
 
     constructor(option : any){
         super();
@@ -158,7 +163,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string) : Promise<Buffer | object>{
 
-        let workflow = this.workflow;
+        let workflow = this.recv_workflow;
         let parsed = data;
         if(isJSON)
             parsed = JSON.parse(data.toString());
@@ -202,28 +207,57 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     
     async send(path_str:string,data:object | Buffer) : Promise<object | Buffer>{
-        if(data instanceof Buffer)
-            return this.call(path_str,data,false);
+        
+        let path = Path.fromString(path_str);
+        let route = new RegistryRoute(path.regpath,this.getRegistryClient());
+
+        let context = {
+            raw:{
+                data : data,
+                pathstr : path_str,
+                route : route
+            },
+
+            data:data,
+            pathstr:path_str,
+            route:route,
+        };
+
+        let ctx = await this.send_workflow.call(context);
+        return this.call(Path.fromString(ctx.pathstr),ctx.route,ctx.data);
+
+    }
+    public getRegistryClient(){
+        assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
+
+        return this.domclient as IRegistryClient;
+    }
+    public async call(path:Path,route:IRoute,data:object | Buffer) : Promise<object | Buffer>{
+        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
+
+        let isJSON = false;
+        let buf = Buffer.allocUnsafe(0);
+        if(data instanceof Buffer){
+            isJSON = false;
+            buf = data;
+
+        }
         else{
             let validator = new DataValidator(data);
             validator.validate();
-            let buf = Buffer.from(JSON.stringify(data));
-            let res = await this.call(path_str,buf,true);
-            return res;
-        }
-    }
-    
-    private async call(path_str:string,data:Buffer,isJSON:boolean) : Promise<object | Buffer>{
-        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
-        assert(typeof(data) == "object","data must be an object");
 
-
-        let path = Path.fromString(path_str);
+            isJSON = true;
+            buf = Buffer.from(JSON.stringify(data));            
+        }        
         
+
         let req_seq = this.request_seq++;
         this.setRef(+1);
         try{
-            let request = new InvokeRequest(this.jgname,path,data,isJSON,this.domclient as IRegistryClient,this.router as IRouter,req_seq);
+
+
+            let request = new InvokeRequest(this.jgname,path,buf,isJSON,route,this.router as IRouter,req_seq);
+
             request.getLifeCycle().on("closed",()=>{
                 this.setRef(-1);
             })
@@ -245,7 +279,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     use(handler : WorkFunction) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
-        this.workflow.pushWork(handler);
+        this.recv_workflow.pushWork(handler);
+    }
+    pre(handler : WorkFunction) : void{
+        assert(typeof(handler) == "function","handler must be a function");
+
+        this.send_workflow.pushWork(handler);
     }
     port(port_name : string , handler:(data:object,ctx:any)=>Promise<object | Buffer>) : void{
         this.use(async (ctx,next)=>{

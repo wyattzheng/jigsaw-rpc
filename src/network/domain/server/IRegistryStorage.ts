@@ -5,7 +5,7 @@ interface StorageEvent{
     DomainPurgeEvent:(jgid:string)=>void;
 }
 
-type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
 
 interface IRegistryStorage{
 

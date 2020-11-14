@@ -1,7 +1,7 @@
 import LimitedMap from "../../../utils/LimitedMap";
 import IRouter from "../../../network/router/IRouter";
 import AddressInfo from "../AddressInfo";
-import DomainCacheStorage from "./DomainCacheStorage";
+import DomainCacheStorage from "./QueryCacheStorage";
 import assert from 'assert';
 import LifeCycle from "../../../utils/LifeCycle";
 import RegistryServerInfo from "../RegistryServerInfo";
@@ -13,7 +13,8 @@ import Util = require("util");
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
 
-type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+type QuerySingleResult = {jgname:string,jgid:string,addr:AddressInfo};
+type QueryResult = Array<QuerySingleResult>;
 
 class RegistryResolver{
     private ref : number = 0;
@@ -35,54 +36,58 @@ class RegistryResolver{
         this.lifeCycle.setState("ready");
     }
 
-    async resolve(jgname:string,timeout:number = 5000) : Promise<AddressInfo>{
+    async resolveAny(regpath:string,timeout:number = 5000) : Promise<QueryResult>{
+        if(!this.cache.isCacheExpired(regpath))
+            return this.cache.getCached(regpath);
+        
+        this.cache.clearCached_regpath(regpath);
+        
+        let queryinfos = await this.doOnceQuery(regpath,timeout);
+        this.cache.addCached(regpath,queryinfos);
+        
+        return queryinfos;
+    }
+    async resolve(regpath:string,timeout:number = 5000) : Promise<QuerySingleResult>{
 //        assert.strictEqual(this.lifeCycle.getState(),"ready");
 
-        if(!this.cache.isCacheExpired(jgname))
-            return this.cache.getCachedOne(jgname);
-   
-        
-        this.cache.clearCached_jgname(jgname);
-
-        
-        let queryinfos = await this.doOnceQuery(jgname,timeout);
 
 //        console.log(queryinfos);
-        debug("real resolve",jgname,queryinfos);
         
-        let picked = this.pickFromQuery(queryinfos);
+        let resolved = await this.resolveAny(regpath,timeout);
+        
+        debug("real resolve",regpath,resolved);
+        
+        let picked = this.pickFromQuery(resolved);
 
-        this.cache.addCached(jgname,picked.jgid,picked.addr);
-        
-        return picked.addr;
+        return picked;
     }
     private pickFromQuery(result : QueryResult){
         let picked = Math.floor(Math.random() * result.length);
         return result[picked];
     }
 
-    private async doOnceQuery(jgname:string,timeout:number = 5000){
+    private async doOnceQuery(regpath:string,timeout:number = 5000){
         let promise;
         let queryinfos : QueryResult;
-        if(!this.queryings.has(jgname)){
-            promise = this.doRetryResolve(jgname,timeout);
+        if(!this.queryings.has(regpath)){
+            promise = this.doRetryResolve(regpath,timeout);
             this.setRef(+1);
             promise.then(()=>{
                 this.setRef(-1);
             })
 
-            this.queryings.set(jgname,promise);
+            this.queryings.set(regpath,promise);
             queryinfos = await promise;
-            this.queryings.delete(jgname);
+            this.queryings.delete(regpath);
 
         }
         else{
-            promise = this.queryings.get(jgname);
+            promise = this.queryings.get(regpath);
             queryinfos = await promise;
         }
         return queryinfos;
     }
-    private async doRetryResolve(jgname:string,timeout:number) : Promise<QueryResult>{
+    private async doRetryResolve(regpath:string,timeout:number) : Promise<QueryResult>{
         let start_time = new Date().getTime();
         let loop_interval = 200;
         let max_time = 10*1000;
@@ -93,7 +98,7 @@ class RegistryResolver{
         for(let i=0;i<loops;i++){
             try{
      
-                let res = await this.doResolveRequest(jgname);
+                let res = await this.doResolveRequest(regpath);
                 if(res.length == 0)
                     throw new Error("result is empty");
                 return res;
@@ -114,10 +119,10 @@ class RegistryResolver{
         throw new Error("resolve reach its max retry time");
         
     }
-    private async doResolveRequest(jgname:string) : Promise<QueryResult>{
+    private async doResolveRequest(regpath:string) : Promise<QueryResult>{
         this.setRef(+1)
    
-        let req=new QueryDomainRequest(jgname,this.server_address,this.router,this.request_seq++);
+        let req=new QueryDomainRequest(regpath,this.server_address,this.router,this.request_seq++);
         req.getLifeCycle().on("closed",()=>{
             this.setRef(-1);
         })

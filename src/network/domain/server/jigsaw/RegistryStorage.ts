@@ -12,7 +12,7 @@ interface StorageEvent{
 
 
 type RegNode = {jgid:string,jgname:string,address:AddressInfo,updateTime:number};
-type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
 
 class RegistryStorage implements IRegistryStorage{
     private eventEmitter = new TypedEmitter<StorageEvent>();
@@ -85,7 +85,7 @@ class RegistryStorage implements IRegistryStorage{
             throw new Error("this node type isn't correct");
 
         return dataset.map((x)=>{
-            return {jgid:x.jgid,addr:x.address};
+            return {jgid:x.jgid,jgname:x.jgname,addr:x.address};
         });
     }
 

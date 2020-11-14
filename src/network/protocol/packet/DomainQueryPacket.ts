@@ -2,7 +2,7 @@ import BasePacket from "../BasePacket";
 class DomainQueryPacket extends BasePacket{
 	public static packet_id : number = 5;
 
-    public jgname : string = "";
+    public regpath : string = "";
     getName(){
         return "DomainQueryPacket";
     }
@@ -12,12 +12,12 @@ class DomainQueryPacket extends BasePacket{
     }
     encode(){
         super.encode.call(this);
-        this.writeString(this.jgname);
+        this.writeString(this.regpath);
         
     }
     decode(){
         super.decode.call(this);
-        this.jgname = this.readString();
+        this.regpath = this.readString();
 
     }
 

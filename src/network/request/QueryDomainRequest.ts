@@ -7,15 +7,15 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
-type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
+type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
 
 class QueryDomainRequest extends BaseRequest<QueryResult>{
-    private jgname : string = "";
+    private regpath : string = "";
     private dst : AddressInfo ;
-    constructor(jgname:string,dst:AddressInfo,router : IRouter,seq_id : number){
+    constructor(regpath:string,dst:AddressInfo,router : IRouter,seq_id : number){
         super(router,seq_id,1*1000); //1s timeout
 
-        this.jgname = jgname;
+        this.regpath = regpath;
         this.dst = dst;
         
         this.getLifeCycle().setState("ready");
@@ -24,8 +24,7 @@ class QueryDomainRequest extends BaseRequest<QueryResult>{
         let pk=new DomainQueryPacket();
 
         pk.request_id = this.getRequestId();
-        pk.jgname = this.jgname;
-
+        pk.regpath = this.regpath;
     
         this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
     }

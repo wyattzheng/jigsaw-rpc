@@ -36,8 +36,9 @@ describe("Domain Module Test",()=>{
         await server.close();
         await client.close();
         await socket.close();
+        
 
-        assert(addr.port == 1234,"resolved port is error");        
+        assert(addr.addr.port == 1234,"resolved port is error");        
     });
 
 })

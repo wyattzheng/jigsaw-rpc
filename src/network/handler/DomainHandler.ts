@@ -71,7 +71,7 @@ class DomainHandler implements IHandler{
 
             let r_pk = new DomainReplyPacket();
 
-            let addr_set = this.storage.queryNode(pk.jgname);
+            let addr_set = this.storage.queryNode(pk.regpath);
             r_pk.address_set = addr_set;
 
             r_pk.request_id=pk.request_id;

@@ -1,6 +1,5 @@
 import Packet from "../protocol/Packet";
 import Path from "./Path";
-import RequestState from "./RequestState";
 import BaseRequest from "./BaseRequest"
 import InvokePacket from "../protocol/packet/InvokePacket";
 import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
@@ -10,8 +9,7 @@ import InvokeTimeoutError from "../../error/request/InvokeTimeoutError";
 import InvokeRemoteError from "../../error/request/InvokeRemoteError";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
-import IRegistryClient from "../domain/client/IRegistryClient";
-import RegistryRoute from "../router/route/RegistryRoute";
+import IRoute from "../router/route/IRoute";
 
 
 class InvokeRequest extends BaseRequest<Buffer> {
@@ -19,14 +17,13 @@ class InvokeRequest extends BaseRequest<Buffer> {
     private data : Buffer;
     private src_jgname : string;
     private packet_slicer : PacketSlicer;
-    private registryClient : IRegistryClient;
-    private route : RegistryRoute;
+    private route : IRoute;
     private isJson : boolean = false;
     private isResultJson : boolean = false;
 
     protected router : IRouter;
     
-    constructor(src_jgname: string,path : Path,data : Buffer,isJSON:boolean,registryClient:IRegistryClient,router : IRouter,seq:number){
+    constructor(src_jgname: string,path : Path,data : Buffer,isJSON:boolean,route:IRoute,router : IRouter,seq:number){
         super(router,seq,10*1000); // 10s timeout
 
         this.router = router;
@@ -34,8 +31,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
         this.path = path;
         this.data = data;
         this.src_jgname = src_jgname;
-        this.registryClient = registryClient;
-        this.route = new RegistryRoute(this.path.jgname,this.registryClient);
+        this.route = route;
 
         this.isJson = isJSON;
         this.packet_slicer = new PacketSlicer(this.buildPacket(),this.getRequestId());

@@ -4,18 +4,18 @@ import IRoute from "./IRoute";
 
 class RegistryRoute implements IRoute{
     private registryClient : IRegistryClient;
-    private jgname : string;
-    constructor(jgname:string,registryClient : IRegistryClient){
+    private regpath : string;
+    constructor(regpath:string,registryClient : IRegistryClient){
         this.registryClient = registryClient;
-        this.jgname = jgname;
+        this.regpath = regpath;
     }
     async preload(){
-        await this.registryClient.resolve(this.jgname);
+        await this.registryClient.resolve(this.regpath);
     }
     async getAddressInfo() : Promise<AddressInfo>{
-        let resolved = await this.registryClient.resolve(this.jgname);
+        let resolved = await this.registryClient.resolve(this.regpath);
         
-        return new AddressInfo(resolved.address,resolved.port);
+        return new AddressInfo(resolved.addr.address,resolved.addr.port);
     }
 
 }
