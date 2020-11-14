@@ -4,7 +4,7 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
 import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
 
-import RegistryStorage from "../domain/server/RegistryStorage";
+import RegistryStorage from "../domain/server/jigsaw/RegistryStorage";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
@@ -13,20 +13,22 @@ import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket"
 import LimitedMap from "../../utils/LimitedMap";
 import AddressInfo from "../domain/AddressInfo";
 import { TypedEmitter } from "tiny-typed-emitter";
+import PongPacket from "../protocol/packet/PongPacket";
+import IRegistryStorage from "../domain/server/IRegistryStorage";
 
 
 interface HandlerEvent{
     error: (err:Error)=>void;
 }
 class DomainHandler implements IHandler{
-    private storage : RegistryStorage;
+    private storage : IRegistryStorage;
     private router : IRouter;
 
     private eventEmitter = new TypedEmitter<HandlerEvent>();
     private queryplug : number;
     private updateplug : number;
     private purgeplug : number;
-
+    private clear_node_loop : NodeJS.Timeout;
     private recent_clients = new LimitedMap<string,AddressInfo>(100);
     
     constructor(router:IRouter){
@@ -38,6 +40,10 @@ class DomainHandler implements IHandler{
         this.purgeplug = this.router.plug("DomainPurgePacket",this.handlePacket.bind(this));
         
         this.storage.getEventEmitter().on("DomainPurgeEvent",this.handlePurgeEvent.bind(this));
+
+        this.clear_node_loop = setInterval(()=>{
+            this.storage.clearExpiredNodes();
+        },5*1000);
     }
     getEventEmitter(){
         return this.eventEmitter;
@@ -65,7 +71,7 @@ class DomainHandler implements IHandler{
 
             let r_pk = new DomainReplyPacket();
 
-            let addr_set = this.storage.queryAddress(pk.jgname);
+            let addr_set = this.storage.queryNode(pk.jgname);
             r_pk.address_set = addr_set;
 
             r_pk.request_id=pk.request_id;
@@ -78,19 +84,20 @@ class DomainHandler implements IHandler{
             this.recent_clients.set(pk.reply_info.stringify(),pk.reply_info);
 
             if(pk.can_update)
-                for(let info of pk.addrinfos){
-                    this.storage.setAddress(pk.jgid,pk.jgname,info);
-            }
+                    this.storage.setNode(pk.jgid,pk.jgname,pk.addrinfo);
+            
 
         }else if(p.getName() == "DomainPurgePacket"){
 
             let pk = p as DomainPurgePacket;
 
-            let r_pk = new DomainReplyPacket();
-            r_pk.request_id = pk.request_id;
-            this.storage.removeAddress(pk.jgid);
-
+            this.storage.removeNode(pk.jgid,pk.jgname);
+            
+            let r_pk = new PongPacket();
+            r_pk.request_id=pk.request_id;
             this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
+
+
         }else
             throw new Error("recv an unknown packet");
 
@@ -111,6 +118,7 @@ class DomainHandler implements IHandler{
         this.router.unplug("DomainUpdatePacket",this.updateplug);
         this.router.unplug("DomainPurgePacket",this.purgeplug);
         
+        clearInterval(this.clear_node_loop);
     }
 
 }

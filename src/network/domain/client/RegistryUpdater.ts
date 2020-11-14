@@ -47,9 +47,12 @@ class RegistryUpdater{
     }
     
     public async purgeDomain(){
+        if(this.isAnonymous)
+            return;
+            
         try{
             this.setRef(+1)
-            let req = new PurgeDomainRequest(this.client_id,this.server_address,this.router,0);
+            let req = new PurgeDomainRequest(this.client_id,this.client_name,this.server_address,this.router,0);
             req.getLifeCycle().on("closed",()=>{
                 this.setRef(-1);
             });
@@ -73,7 +76,6 @@ class RegistryUpdater{
 		while(this.loop == true){
             
             if(tick % update_per_loops == 0){
-                //console.log("update",update_addr);
                 try{
                     this.updateAddress(this.client_name,this.isAnonymous? undefined : this.entry);
 
@@ -95,7 +97,7 @@ class RegistryUpdater{
         pk.jgname=jgname;
     
         if(addrinfo)
-            pk.addrinfos = [addrinfo];
+            pk.addrinfo = addrinfo;
         else
             pk.can_update = false;
         

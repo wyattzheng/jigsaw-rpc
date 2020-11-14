@@ -254,7 +254,6 @@ class InvokeHandler implements IHandler{
     private setRef(ref_type:string,offset:number){
         let ref = this.refs.get(ref_type) as number;
         this.refs.set(ref_type,ref+offset);
-        //console.log(this.refs);
 
         if(this.lifeCycle.getState() == "closing"){
             let alldone = true;

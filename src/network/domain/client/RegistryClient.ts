@@ -52,6 +52,7 @@ class RegistryClient implements IRegistryClient{
     }
     private handlePurgedEvent(jgid:string){
         this.resolver.getCache().clearCached_jgid(jgid);
+        
     }
     private start(){
         this.updater.start();
@@ -70,6 +71,7 @@ class RegistryClient implements IRegistryClient{
         await this.handler.close();
 
         await this.updater.close();
+
         await this.resolver.close();
 
         this.lifeCycle.setState("closed");

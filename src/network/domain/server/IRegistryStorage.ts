@@ -10,9 +10,11 @@ type QueryResult = Array<{jgid:string,addr:AddressInfo}>;
 interface IRegistryStorage{
 
     getEventEmitter() : TypedEmitter<StorageEvent>
-    setAddress(jgid:string,jgname:string,addrinfo:AddressInfo) : void;
-    queryAddress(jgname:string):QueryResult;
- 
+    setNode(jgid:string,jgname:string,addrinfo:AddressInfo) : void;
+    removeNode(jgid:string,jgname:string):void;
+    queryNode(statement:string):QueryResult;
+    clearExpiredNodes() : void;
+
 }
 
 

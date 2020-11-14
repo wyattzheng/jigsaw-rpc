@@ -1,4 +1,4 @@
-import RegistryServer from "../network/domain/server/RegistryServer";
+import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
 import IJigsaw from "../jigsaw/IJigsaw";
 import SimpleJigsaw from "../jigsaw/SimpleJigsaw";
 

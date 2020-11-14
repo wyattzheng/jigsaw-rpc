@@ -39,8 +39,9 @@ class DomainClientHandler implements IHandler{
             this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
         }else if(p.getName() == "DomainPurgeNotifyPacket"){
             let pk = p as DomainPurgeNotifyPacket;
-    
+            
             this.eventEmitter.emit("domain_purged",pk.jgid);
+
 
         }else
             throw new Error("recv an unknown packet");

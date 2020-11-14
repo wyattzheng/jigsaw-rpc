@@ -44,18 +44,22 @@ class RegistryResolver{
         
         this.cache.clearCached_jgname(jgname);
 
-                    
+        
         let queryinfos = await this.doOnceQuery(jgname,timeout);
 
+//        console.log(queryinfos);
         debug("real resolve",jgname,queryinfos);
         
-        this.cache.addCached(jgname,queryinfos[0].jgid,queryinfos[0].addr);
+        let picked = this.pickFromQuery(queryinfos);
 
-        return queryinfos[0].addr;
-
+        this.cache.addCached(jgname,picked.jgid,picked.addr);
+        
+        return picked.addr;
     }
-    
-
+    private pickFromQuery(result : QueryResult){
+        let picked = Math.floor(Math.random() * result.length);
+        return result[picked];
+    }
 
     private async doOnceQuery(jgname:string,timeout:number = 5000){
         let promise;
@@ -90,10 +94,12 @@ class RegistryResolver{
             try{
      
                 let res = await this.doResolveRequest(jgname);
+                if(res.length == 0)
+                    throw new Error("result is empty");
                 return res;
                 
             }catch(err){   
-                //console.log(err);
+
             }finally{
 
             }
@@ -115,6 +121,7 @@ class RegistryResolver{
         req.getLifeCycle().on("closed",()=>{
             this.setRef(-1);
         })
+
         await req.getLifeCycle().when("ready");
         await req.run();
     
@@ -134,9 +141,10 @@ class RegistryResolver{
 
         this.lifeCycle.setState("closing");
         this.setRef(0);
+
         await this.closing_defer.promise;
         this.lifeCycle.setState("closed");
-
+     
     }
 
     private setRef(offset:number){

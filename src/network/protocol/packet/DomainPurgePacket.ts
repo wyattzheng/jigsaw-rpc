@@ -3,6 +3,8 @@ class DomainPurgePacket extends BasePacket{
 	public static packet_id : number = 12;
 
     public jgid : string = "";
+    public jgname : string = "";
+
     getName(){
         return "DomainPurgePacket";
     }
@@ -13,11 +15,13 @@ class DomainPurgePacket extends BasePacket{
     encode(){
         super.encode.call(this);
         this.writeString(this.jgid);
+        this.writeString(this.jgname);
         
     }
     decode(){
         super.decode.call(this);
         this.jgid = this.readString();
+        this.jgname = this.readString();
 
     }
 

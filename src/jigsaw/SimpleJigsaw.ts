@@ -196,7 +196,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         await this.invoke_handler?.close();
         await (this.domclient as IRegistryClient).close();   
-
         await this.router?.close();
         this.socket.close();
 

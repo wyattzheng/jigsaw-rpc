@@ -6,7 +6,7 @@ class DomainUpdatePacket extends BasePacket{
     public jgid : string = "";
     public jgname : string = "";
     public can_update : boolean = true;
-    public addrinfos : Array<AddressInfo> = [];
+    public addrinfo : AddressInfo = new AddressInfo("",-1);
     constructor(){
         super();
 
@@ -19,25 +19,16 @@ class DomainUpdatePacket extends BasePacket{
         this.writeString(this.jgid);
         this.writeString(this.jgname);
         this.writeUInt16(this.can_update ? 1 : 0);
-        this.writeUInt16(this.addrinfos.length);
-        for(let info of this.addrinfos){
-
-            this.writeString(info.stringify());
-        }
+        this.writeString(this.addrinfo.stringify());
     }
+    
     decode(){
         super.decode.call(this);
         this.jgid = this.readString();
         this.jgname = this.readString();
         this.can_update = this.readUInt16() == 1;
 
-        let len = this.readUInt16();
-        let array : Array<AddressInfo> = [];
-        for(let i=0;i<len;i++){
-            array.push(AddressInfo.parse(this.readString()));
-        }
-
-        this.addrinfos = array;
+        this.addrinfo = AddressInfo.parse(this.readString());
     }
 
 }

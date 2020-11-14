@@ -43,14 +43,6 @@ class InvokePacket extends BasePacket{
 		this.src_jgname = this.readString();
 		this.isJSON = this.readUInt16() == 1;
 		
-		/*let buflen = this.readUInt32();
-		this.offset -=4;
-		if(buflen > 1024){
-			let newbuf = Buffer.allocUnsafe(buflen+500);
-			this.buffer.copy(newbuf,0);
-			console.log(newbuf,this.buffer,buflen,this.offset)
-			this.buffer = newbuf;	
-		}*/
 
 		this.data = this.readLargeBuffer();
 		
