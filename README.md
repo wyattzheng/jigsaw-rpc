@@ -340,19 +340,19 @@ jg.on("ready",async ()=>{
 
 ```
 
-## 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+### 3.5 Jigsaw.prototype.getAddress() : AddressInfo
 
 this method will return a address info contains IP-Address and Port that jigsaw's socket binded to.
 
-## 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+### 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
 
 this method will return a registry client inside of the jigsaw instance, read the detail API document.
 
-## 3.7 Jigsaw.prototype.getName() : string
+### 3.7 Jigsaw.prototype.getName() : string
 
 return the jigsaw name.
 
-## 3.8 Jigsaw.prototype.getOption() : any
+### 3.8 Jigsaw.prototype.getOption() : any
 
 return the option passed to jigsaw constructor.
 

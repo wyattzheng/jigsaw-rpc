@@ -342,19 +342,19 @@ jg.on("ready",async ()=>{
 ```
 
 
-## 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+### 3.5 Jigsaw.prototype.getAddress() : AddressInfo
 
 这个方法会返回 jigsaw 内部套接字 所绑定的地址和端口。
 
-## 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+### 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
 
 这个方法会返回一个 jigsaw实例 内部的registry client（域名客户端），请阅读详细的API文档。
 
-## 3.7 Jigsaw.prototype.getName() : string
+### 3.7 Jigsaw.prototype.getName() : string
 
 返回 jigsaw 的名字。
 
-## 3.8 Jigsaw.prototype.getOption() : any
+### 3.8 Jigsaw.prototype.getOption() : any
 
 返回传递给 jigsaw 构造器的选项对象。
 
