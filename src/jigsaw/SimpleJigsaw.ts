@@ -60,11 +60,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private recv_workflow = new WorkFlow();
     private send_workflow = new WorkFlow();
-
+    private option : any;
 
     constructor(option : any){
         super();
         this.jgid = RandomGen.GetRandomHash(8);
+        this.option = option;
 
         let jgname = option.name || "";
 
@@ -184,29 +185,21 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let ctx = await workflow.call(context);
         return ctx.result;
     }
-    
+    getOption(){
+        return this.option;
+    }
     getName(){
         return this.jgname;
+    }    
+    getAddress(){
+        return this.socket.getAddress();
     }
-    async close(){
-        if(this.lifeCycle.getState() == "starting")
-            throw new Error("this instance is starting.");
+    public getRegistryClient(){
+        assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
 
-        if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() == "closed")
-            return;
-        if(this.lifeCycle.getState() != "ready")
-            throw new Error("at this state, the jigsaw can not be closed");
-
-        
-        this.lifeCycle.setState("closing");
-        
-        await this.invoke_handler?.close();
-        await (this.domclient as IRegistryClient).close();   
-        await this.router?.close();
-        this.socket.close();
-
+        return this.domclient as IRegistryClient;
     }
-    
+
     async send(path_str:string,data:object | Buffer) : Promise<object | Buffer>{
         
         let path = Path.fromString(path_str);
@@ -227,11 +220,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let ctx = await this.send_workflow.call(context);
         return this.call(Path.fromString(ctx.pathstr),ctx.route,ctx.data);
 
-    }
-    public getRegistryClient(){
-        assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
-
-        return this.domclient as IRegistryClient;
     }
     public async call(path:Path,route:IRoute,data:object | Buffer) : Promise<object | Buffer>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
@@ -295,7 +283,24 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             await next();
         });
     }
+    async close(){
+        if(this.lifeCycle.getState() == "starting")
+            throw new Error("this instance is starting.");
 
+        if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() == "closed")
+            return;
+        if(this.lifeCycle.getState() != "ready")
+            throw new Error("at this state, the jigsaw can not be closed");
+
+        
+        this.lifeCycle.setState("closing");
+        
+        await this.invoke_handler?.close();
+        await (this.domclient as IRegistryClient).close();   
+        await this.router?.close();
+        this.socket.close();
+
+    }
 }
 
 export default SimpleJigsaw;

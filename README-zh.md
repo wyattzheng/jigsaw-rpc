@@ -163,7 +163,7 @@ let jg = RPC.GetJigsaw("iamjigsaw","127.0.0.1","jigsaw://127.0.0.1:3793/")
 let jg = RPC.GetJigsaw()
 ```
 
-### 2. Registry.Server.prototype.constructor(bind_port:number,bind_address?:address)
+### 2. Registry.Server.prototype.constructor( bind_port ,bind_address? )
 
 创建一个 Jigsaw 域名注册中心 服务器，在一群Jigsaw实例中，至少要存在一个域名注册中心服务器以供它们注册并共享自己的网络地址。
 
@@ -174,7 +174,7 @@ new RPC.registry.Server(3793)
 ### 3. Jigsaw
 
 
-### 3.1 Jigsaw.prototype.send( path :string , data :object) : Promise(object)
+### 3.1 Jigsaw.prototype.send( path , data ) : Promise(object)
 
 调用这个方法，会直接进行RPC远程调用，来调用一个远程的Jigsaw实例的某个方法。
 
@@ -186,7 +186,7 @@ Jigsaw名:方法名
 
 **data** 必须是一个 **可JSON序列化的JavaScript对象**，没有一个属性是undefined，或者一个函数的，或者其他特殊的类型的对象。
 
-### 3.2 Jigsaw.prototype.port( method :string , handler:(data:object)=>Promise(object)) : void
+### 3.2 Jigsaw.prototype.port( method , handler )
 
 > 事实上这个方法是 Jigsaw.prototype.use 的语法糖。调用这个方法，实际上是调用了一次use方法。
 
@@ -222,7 +222,7 @@ jgB.send("A:call",{}).then(console.log);
 
 > **data** 参数可以携带很大的数据，甚至可以大于1MB的数据量。
 
-### 3.3 Jigsaw.prototype.use(handler : (context:Object,next:Function) => Promise(object) )
+### 3.3 Jigsaw.prototype.use( handler )
 
 这个方法会创建一个Jigsaw实例的中间件，来处理所有的调用请求。
 
@@ -258,7 +258,105 @@ jg.use(async (ctx,next)=>{
 
 ```
 
-**handler** 可以是异步函数，如果你想的话。
+### 3.4 Jigsaw.prototype.pre( handler )
+
+这个方法会创建一个拦截远程调用请求的拦截器。
+
+实际上这是一个 send() 方法的 pre 拦截钩子
+
+这个方法的用法像是：
+
+```
+
+let jg = RPC.GetJigsaw({ name:"serv" })
+
+jg.pre(async (ctx,next)=>{
+    /*
+        hook codes here
+    */
+
+    await next();
+})
+
+```
+
+上下文 ctx 对象包含这些属性：
+
+```
+    raw:{ // raw object contains origin info.
+        data : Buffer,
+        pathstr : string,
+        route : IRoute
+    },
+
+    data : Buffer, //hooked data, can modify this
+    pathstr : string,  //hooked string of path to send, can modify this
+    route : IRoute, //hooked route which implements IRoute interface, can modify this
+```
+
+如果你想自定义一个 route，实现这个接口：
+```
+interface IRoute{
+    preload(): Promise<void>;
+    getAddressInfo() : Promise<AddressInfo>;
+}
+```
+
+这里有一个例子：
+
+```
+const { RPC } = require("../src/index");
+new RPC.registry.Server();
+
+let jg = RPC.GetJigsaw({ name : "user" });
+let serv = RPC.GetJigsaw({ name: "serv" })
+
+serv.port("get",()=>{
+    return "serv you a cake";
+})
+
+
+jg.pre(async (ctx,next)=>{
+    ctx.route = {
+        preload(){
+
+        },
+        getAddressInfo(){
+            let { port } = jg.getAddress();
+            console.log("return a hacked address, all invoke will redirect to the jigsaw itself")
+            return { address:"127.0.0.1", port };
+        }
+    }
+    await next();
+});
+
+jg.port("get",()=>{
+    return "hoo hoo your request are been redirect to here";
+});
+
+
+jg.on("ready",async ()=>{
+    console.log(await jg.send("serv:get",{}));
+})
+
+```
+
+
+## 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+
+这个方法会返回 jigsaw 内部套接字 所绑定的地址和端口。
+
+## 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+
+这个方法会返回一个 jigsaw实例 内部的registry client（域名客户端），请阅读详细的API文档。
+
+## 3.7 Jigsaw.prototype.getName() : string
+
+返回 jigsaw 的名字。
+
+## 3.8 Jigsaw.prototype.getOption() : any
+
+返回传递给 jigsaw 构造器的选项对象。
 
 ## 测试
 

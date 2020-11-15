@@ -132,7 +132,7 @@ Jigsaw implemented through Node.js Socket API completely.
 
 ## Simple API Document
 
-### 1.  GetJigsaw({ name :string, entry :string, registry :string }) : Jigsaw
+### 1.  GetJigsaw({ name , entry , registry }) : Jigsaw
 
 > **jigsaw name** is a path about how to access this jigsaw, network address and jigsaw name will both sync to registry.
 
@@ -161,7 +161,7 @@ All the params has default value, if you just want this jigsaw work on Local Net
 let jg = RPC.GetJigsaw()
 ```
 
-### 2. Registry.Server.prototype.constructor(bind_port:number,bind_address?:address)
+### 2. Registry.Server.prototype.constructor( bind_port , bind_address? )
 
 Create a Jigsaw Registry Server, in a domain of a group of jigsaw-es , create one Server at least.
 
@@ -173,7 +173,7 @@ new RPC.registry.Server(3793)
 ### 3. Jigsaw
 
 
-### 3.1 Jigsaw.prototype.send( path :string , data :object) : Promise(object)
+### 3.1 Jigsaw.prototype.send( path , data ) : Promise(object)
 
 call this method to invoke a remote jigsaw's method.
 
@@ -186,7 +186,7 @@ JigsawName:port_name
 the **data** must be a **JSON-Serializable JavaScript Object** which doesn't contain any 'undefined' of a 'Function' and some other properties.
 
 
-### 3.2 Jigsaw.prototype.port( port_name :string , handler:(data:object)=>Promise(object)) : void
+### 3.2 Jigsaw.prototype.port( port_name )
 
 register a **Jigsaw Port** that will handle all invoking requests to this Port.
 
@@ -218,7 +218,7 @@ jgB.send("A:call",{}).then(console.log);
 
 > this **data** object can be 1MB or even bigger.
 
-### 3.3 Jigsaw.prototype.use(handler : (context:Object,next:Function) => Promise(object) )
+### 3.3 Jigsaw.prototype.use( handler )
 
 this method create a middle-ware of a jigsaw. to handle all requests one by one.
 
@@ -237,6 +237,7 @@ a context contains these base properties:
     sender: string, // sender's jigsaw name
     isJSON: boolean, // if the 'data' is JSON-object or Buffer
     rawdata: Buffer, // the raw buffer of data
+    reply_info : AddressInfo, // sender's address and port
     jigsaw: Jigsaw // the jigsaw instance
 }
 ```
@@ -256,7 +257,105 @@ jg.use(async (ctx,next)=>{
 
 ```
 
-**handler** can be a Async Function if you want to.
+### 3.4 Jigsaw.prototype.pre( handler )
+
+this method create an interceptor before sending an invoking request.
+
+actually, it is the pre hook of calling a remote method.
+
+the usage of this method is like:
+
+```
+
+let jg = RPC.GetJigsaw({ name:"serv" })
+
+jg.pre(async (ctx,next)=>{
+    /*
+        hook codes here
+    */
+
+    await next();
+})
+
+```
+
+the context object contains : 
+
+```
+    raw:{ // raw object contains origin info.
+        data : Buffer,
+        pathstr : string,
+        route : IRoute
+    },
+
+    data : Buffer, //hooked data, can modify this
+    pathstr : string,  //hooked string of path to send, can modify this
+    route : IRoute, //hooked route which implements IRoute interface, can modify this
+```
+
+if you want to code a custom route, implements this interface : 
+```
+interface IRoute{
+    preload(): Promise<void>;
+    getAddressInfo() : Promise<AddressInfo>;
+}
+```
+
+here is an example:
+
+```
+const { RPC } = require("../src/index");
+new RPC.registry.Server();
+
+let jg = RPC.GetJigsaw({ name : "user" });
+let serv = RPC.GetJigsaw({ name: "serv" })
+
+serv.port("get",()=>{
+    return "serv you a cake";
+})
+
+
+jg.pre(async (ctx,next)=>{
+    ctx.route = {
+        preload(){
+
+        },
+        getAddressInfo(){
+            let { port } = jg.getAddress();
+            console.log("return a hacked address, all invoke will redirect to the jigsaw itself")
+            return { address:"127.0.0.1", port };
+        }
+    }
+    await next();
+});
+
+jg.port("get",()=>{
+    return "hoo hoo your request are been redirect to here";
+});
+
+
+jg.on("ready",async ()=>{
+    console.log(await jg.send("serv:get",{}));
+})
+
+```
+
+## 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+
+this method will return a address info contains IP-Address and Port that jigsaw's socket binded to.
+
+## 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+
+this method will return a registry client inside of the jigsaw instance, read the detail API document.
+
+## 3.7 Jigsaw.prototype.getName() : string
+
+return the jigsaw name.
+
+## 3.8 Jigsaw.prototype.getOption() : any
+
+return the option passed to jigsaw constructor.
+
 
 ## Test
 
