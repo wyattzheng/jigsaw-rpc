@@ -1,17 +1,21 @@
-# Jigsaw-RPC
+<div align="center">
 
-<div>
+[![Jigsaw-RPC](https://raw.githubusercontent.com/ZhyMC/jigsaw-rpc/master/logo.svg)](https://github.com/ZhyMc/jigsaw-rpc)
 
 [English](https://github.com/ZhyMc/jigsaw-rpc/blob/master/README.md) | [中文](https://github.com/ZhyMc/jigsaw-rpc/blob/master/README-zh.md)
-
-</div>
-
-<br/>
-
 
 [![Build Status](https://www.travis-ci.org/ZhyMC/jigsaw-rpc.svg?branch=master)](https://www.travis-ci.org/ZhyMC/jigsaw-rpc)
 [![codecov](https://codecov.io/gh/ZhyMC/jigsaw-rpc/branch/master/graph/badge.svg?token=MEXBYVKXAW)](https://app.codecov.io/gh/ZhyMC/jigsaw-rpc)
 [![npm version](https://badge.fury.io/js/jigsaw-rpc.svg)](https://npmjs.org/package/jigsaw-rpc)
+
+</div>
+
+---
+
+<br/>
+
+
+## Introduction
 
 jigsaw-rpc is an RPC framework written in TypeScript, it implements RPC used completely Node.js Socket API to ensure the performance of calling a remote method.
 
