@@ -41,6 +41,23 @@ describe("Instance Test",()=>{
 
         await jg.close();
         await invoker.close();
+    });
+    it("should throw error if send to a malformed path",async ()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("get",async ()=>{
+            return 123;
+        });
+        await waitForEvent(jg,"ready");
+
+        let hasError = false;
+        try{
+            await jg.send("malformed,get",{});
+        }catch(err){
+            hasError = true;
+        }
+        assert(hasError,"must throw error");
+        
+        await jg.close();
     })
 
 

@@ -64,7 +64,32 @@ describe("Jigsaw Hooks Test",function(){
         
         await invoker.close();
         await remote.close();
-    })
+    });
+    it("should throw error if pre hook emit an error",async()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("call",async()=>(123));
+
+        await waitForEvent(jg,"ready");
+        let err = new Error("this is an error");
+        jg.pre(async (ctx,next)=>{
+            
+            ctx.data = "123";
+            await next();
+
+        })
+        jg.pre(async (ctx,next)=>{
+            throw err;
+        });
+
+        try{
+            await jg.send("jigsaw:call",{});
+        }catch(err_catched){
+            assert.strictEqual(err_catched,err);
+        }
+
+        await jg.close();
+
+    });
 
     after(async ()=>{
         await app.registry.close();

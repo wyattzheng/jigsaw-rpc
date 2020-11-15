@@ -13,7 +13,9 @@ class WorkFlow{
     async call(context : any) : Promise<any>{
         this.context = context;
         this.current_work = 0;
+        
         await this.callNextWork();
+        
         return this.context;
     }
     private async callNextWork(){

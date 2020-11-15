@@ -29,7 +29,7 @@ class MockNotGoodSocket implements ISocket{
 			if(!this.emitting)
                 return;
                 
-            if(Math.random()<0.8)
+            if(Math.random()<0.9)
                this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
 		});
@@ -70,7 +70,7 @@ class MockNotGoodSocket implements ISocket{
 		assert(this.getLifeCycle().getState() == "ready","socket must be ready state");
 
 
-        if(Math.random()<0.8)
+        if(Math.random()<0.9)
     		this.sock.send(data,port,address);
 
 	}
