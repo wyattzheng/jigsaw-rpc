@@ -1,5 +1,18 @@
 import IRoute from "../network/router/route/IRoute";
+import RegistryRoute from "../network/router/route/RegistryRoute";
 import Path from "../network/request/Path";
 import AddressInfo from "../network/domain/AddressInfo";
 
-export {IRoute,Path,AddressInfo};
+import RegistryServerInfo from "../network/domain/RegistryServerInfo";
+import IRegistryClient from "../network/domain/client/IRegistryClient";
+import RegistryClient from "../network/domain/client/RegistryClient";
+
+export {
+    RegistryRoute,
+    RegistryServerInfo,
+    IRegistryClient,
+    RegistryClient,
+    IRoute,
+    Path,
+    AddressInfo
+};
