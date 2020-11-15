@@ -7,8 +7,8 @@ import IRoute from "./route/IRoute";
 interface IRouter{
     getLifeCycle():LifeCycle;
     getRouterId():string;
-    sendPacket(pk:IPacket,route:IRoute) : void;
-    handlePacket(pk:IPacket):void;
+    sendPacket(pk:IPacket,route:IRoute) : Promise<void>;
+    handlePacket(pk:IPacket):Promise<void>;
     plug(sign:string,handler:(pk:IPacket)=>void):number;
     unplug(sign:string,refid:number):void;
     close():Promise<void>;

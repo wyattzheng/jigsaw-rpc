@@ -26,7 +26,7 @@ class QueryDomainRequest extends BaseRequest<QueryResult>{
         pk.request_id = this.getRequestId();
         pk.regpath = this.regpath;
     
-        this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
+        await this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
     }
     getName(){
         return "QueryDomainRequest";

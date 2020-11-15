@@ -27,7 +27,7 @@ class DomainClientHandler implements IHandler{
     public getEventEmitter(){
         return this.eventEmitter;
     }
-    protected onPacket(p:IPacket):void{
+    protected async onPacket(p:IPacket):Promise<void>{
         
         if(p.getName() == "PingPacket"){
             let pk = p as PingPacket;
@@ -36,7 +36,7 @@ class DomainClientHandler implements IHandler{
             r_pk.request_id=pk.request_id;
             
         
-            this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
+            await this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
         }else if(p.getName() == "DomainPurgeNotifyPacket"){
             let pk = p as DomainPurgeNotifyPacket;
             
@@ -47,15 +47,17 @@ class DomainClientHandler implements IHandler{
             throw new Error("recv an unknown packet");
 
     }
-    public handlePacket(p:IPacket):void{
+    public async handlePacket(p:IPacket):Promise<void>{
         try{
-            this.onPacket(p);
+            await this.onPacket(p);
         }catch(err){
             let pk=new ErrorPacket();
             pk.error = err;
             let reply_info = p.getReplyInfo();
 
-            this.router.sendPacket(pk,new NetRoute(reply_info.port,reply_info.address));
+            await this.router.sendPacket(pk,new NetRoute(reply_info.port,reply_info.address)).catch((err:Error)=>{
+
+            });
         }
 
     }

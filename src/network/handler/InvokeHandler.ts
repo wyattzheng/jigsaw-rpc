@@ -157,8 +157,7 @@ class InvokeHandler implements IHandler{
                 if(this.lifeCycle.getState() != "ready")
                     break;
                     
-                this.router.sendPacket(slicer.getSlicePacket(id),new NetRoute(target.port,target.address));
-                await sleep(0);
+                await this.router.sendPacket(slicer.getSlicePacket(id),new NetRoute(target.port,target.address));
             }    
         }catch(err){
 

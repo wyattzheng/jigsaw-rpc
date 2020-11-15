@@ -18,7 +18,7 @@ function GetMockJigsaw(option:any,mocked_modules:any){
         InvokeHandler:InvokeHandler,
         InvokeRequest:InvokeRequest,
         NetworkClient:BuilderNetworkClient,
-        RegistryClient: RegistryClient,
+        RegistryClient:RegistryClient,
         BuilderManager:PacketBuilderManager
     };
     for(let i in mocked_modules){

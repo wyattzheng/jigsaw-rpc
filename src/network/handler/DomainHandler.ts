@@ -51,7 +51,7 @@ class DomainHandler implements IHandler{
     getStorage(){
         return this.storage;
     }
-    private handlePurgeEvent(jgid:string){
+    private async handlePurgeEvent(jgid:string){
         let pk = new DomainPurgeNotifyPacket();
         pk.jgid = jgid;
 
@@ -60,11 +60,10 @@ class DomainHandler implements IHandler{
 //        console.log(pk,keys)
         for(let key of keys){
             let addr = this.recent_clients.get(key);
-            this.router.sendPacket(pk,new NetRoute(addr.port,addr.address));
+            await this.router.sendPacket(pk,new NetRoute(addr.port,addr.address));
         }
-        
     }
-    protected onPacket(p:IPacket):void{
+    protected async onPacket(p:IPacket):Promise<void>{
 
         if(p.getName() == "DomainQueryPacket"){
             let pk = p as DomainQueryPacket;
@@ -76,7 +75,7 @@ class DomainHandler implements IHandler{
 
             r_pk.request_id=pk.request_id;
             
-            this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
+            await this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
 
         }else if(p.getName() == "DomainUpdatePacket"){
             let pk = p as DomainUpdatePacket;
@@ -84,7 +83,7 @@ class DomainHandler implements IHandler{
             this.recent_clients.set(pk.reply_info.stringify(),pk.reply_info);
 
             if(pk.can_update)
-                    this.storage.setNode(pk.jgid,pk.jgname,pk.addrinfo);
+                this.storage.setNode(pk.jgid,pk.jgname,pk.addrinfo);
             
 
         }else if(p.getName() == "DomainPurgePacket"){
@@ -93,23 +92,25 @@ class DomainHandler implements IHandler{
 
             this.storage.removeNode(pk.jgid,pk.jgname);
             
+            
             let r_pk = new PongPacket();
             r_pk.request_id=pk.request_id;
-            this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
-
+            await this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
 
         }else
             throw new Error("recv an unknown packet");
 
     }
-    public handlePacket(p:IPacket):void{
+    public async handlePacket(p:IPacket):Promise<void>{
         try{
-            this.onPacket(p);
+            await this.onPacket(p);
         }catch(err){
             let pk=new ErrorPacket();
             pk.error = err;
             let reply_info = p.getReplyInfo();
-            this.router.sendPacket(pk,new NetRoute(reply_info.port,reply_info.address));
+            await this.router.sendPacket(pk,new NetRoute(reply_info.port,reply_info.address)).catch((err)=>{
+                
+            });
         }
 
     }

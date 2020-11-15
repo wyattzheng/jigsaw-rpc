@@ -5,6 +5,7 @@ import InvokeRemoteError from "../../src/error/request/InvokeRemoteError";
 import waitForEvent  from "./utils/WaitForEvent";
 import GetMockJigsaw  from "./utils/GetMockJigsaw";
 import MockRandomSocket from "./mocks/MockRandomSocket";
+import MockNotGoodSocket from "./mocks/MockNotGoodSocket";
 
 const sleep = util.promisify(setTimeout);
 
@@ -209,7 +210,50 @@ describe("Base Transfer Test",()=>{
             done();
         });
 
-    })
+    });
+    it("should be successfully if sending a Buffer",async ()=>{
+        let A = RPC.GetJigsaw({name:"A"});
+        let B = RPC.GetJigsaw({name:"B"});
+        await Promise.all([waitForEvent(A,"ready"),waitForEvent(B,"ready")]);
+        B.port("call",async(x)=>(x));
+        let buf = await A.send("B:call",Buffer.allocUnsafe(10240));
+        assert(buf instanceof Buffer);
+        assert.strictEqual(buf.length,10240);
+        await A.close();
+        await B.close();
+    });
+    it("should be success in invoking in a packet-drop network",async function(){
+        this.timeout(20000);
+
+        let A = GetMockJigsaw({name:"A"},{
+            Socket:MockNotGoodSocket
+        });
+        let B = GetMockJigsaw({name:"B"},{
+            Socket:MockNotGoodSocket
+        });
+        B.port("call",async(x)=>(x));
+
+        await Promise.all([waitForEvent(A,"ready"),waitForEvent(B,"ready")]);
+
+        let success = 0;
+        for(let i=0; i<20; i++){
+            try{
+                let rand = Math.random();
+                let ret :any = await A.send("B:call",{ v: rand });
+                if(ret.v == rand)  
+                    success++;    
+            }catch(err){
+
+            }
+        }
+
+        assert(success>=3,"the count of success is not reach the standard");
+
+        await A.close();
+        await B.close();
+        
+    });
+
     after(async ()=>{
         await app.registry.close();
 

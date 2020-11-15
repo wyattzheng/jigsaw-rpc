@@ -26,7 +26,7 @@ class PurgeDomainRequest extends BaseRequest<void>{
         pk.jgid = this.jgid;
         pk.jgname = this.jgname;
     
-        this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
+        await this.router.sendPacket(pk,new NetRoute(this.dst.port,this.dst.address));
     }
     getName(){
         return "PurgeDomainRequest";

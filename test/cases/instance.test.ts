@@ -22,6 +22,27 @@ describe("Instance Test",()=>{
         assert(error, "must throw a error");
     });
 
+    it("should be successful if create same name jigsaw twice",async ()=>{
+        let invoker = RPC.GetJigsaw();
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("get",async ()=>{
+            return 123;
+        });
+        await waitForEvent(jg,"ready");
+        assert.strictEqual(await invoker.send("jigsaw:get",{}),123);
+        await jg.close();
+
+        jg = RPC.GetJigsaw({name:"jigsaw"});
+        await waitForEvent(jg,"ready");
+        jg.port("get",async ()=>{
+            return 456;
+        });
+        assert.strictEqual(await invoker.send("jigsaw:get",{}),456);
+
+        await jg.close();
+        await invoker.close();
+    })
+
 
     after(async ()=>{
         await app.registry.close();

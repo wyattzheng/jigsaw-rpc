@@ -22,7 +22,7 @@ const RPCApi = {
 }
 
 
-function GetJigsaw(option : any) : IJigsaw{
+function GetJigsaw(option? : any) : IJigsaw{
     return new SimpleJigsaw(option || {},{
         DefaultRoute:RegistryRoute,
         Socket:UDPSocket,

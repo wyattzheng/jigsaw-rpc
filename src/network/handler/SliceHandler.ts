@@ -39,7 +39,7 @@ class SliceHandler implements IHandler{
     setHandler(handler : Handler){
         this.packet_handler = handler;
     }
-    public handlePacket(p : IPacket){
+    public async handlePacket(p : IPacket){
         let spk = p as SlicePacket;
         let manager = this.builder_manager;
         
@@ -64,7 +64,7 @@ class SliceHandler implements IHandler{
         ack.request_id = spk.request_id;
         ack.partid = spk.partid;
 
-        this.router.sendPacket(ack,new NetRoute(spk.reply_info.port,spk.reply_info.address));    
+        await this.router.sendPacket(ack,new NetRoute(spk.reply_info.port,spk.reply_info.address));    
     }
     async close(){
         this.router.unplug("SlicePacket",this.sliceplug);
