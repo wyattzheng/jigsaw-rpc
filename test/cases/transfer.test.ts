@@ -2,15 +2,11 @@ import { RPC } from "../../src/index";
 import assert from "assert";
 import util from "util";
 import InvokeRemoteError from "../../src/error/request/InvokeRemoteError";
-const sleep = util.promisify(setTimeout);
+import waitForEvent  from "./utils/WaitForEvent";
+import GetMockJigsaw  from "./utils/GetMockJigsaw";
+import MockRandomSocket from "./mocks/MockRandomSocket";
 
-function waitForEvent(obj:any,event_name:string){
-    return new Promise((resolve)=>{
-        obj.once(event_name,(data:any)=>{
-            resolve(data);
-        });
-    })
-}
+const sleep = util.promisify(setTimeout);
 
 describe("Base Transfer Test",()=>{
     let app : any={};
@@ -195,6 +191,23 @@ describe("Base Transfer Test",()=>{
         
         await A.close();
         await B.close();
+
+    });
+
+    it("should emit error event when a malformed buffer recv from socket",(done)=>{
+        let random_jg = GetMockJigsaw({},{
+            Socket:MockRandomSocket
+        });
+
+        random_jg.use(async (ctx,next)=>{
+            ctx.result = Math.random() + ""
+            await next();
+        });
+
+        random_jg.on("error",async (err)=>{
+            await random_jg.close();
+            done();
+        });
 
     })
     after(async ()=>{

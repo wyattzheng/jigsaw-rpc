@@ -17,6 +17,7 @@ class UDPSocket implements ISocket{
 	private eventEmitter = new TypedEmitter<SocketEvent>();
 	private port? : number;
 	private address? : string;
+	private emitting : boolean = false;
 
 	constructor(port? : number,address?:string){
 		this.port = port;
@@ -25,7 +26,9 @@ class UDPSocket implements ISocket{
 		this.sock = Dgram.createSocket("udp4");
 	
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
-			
+			if(!this.emitting)
+				return;
+
 			this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
 		});
@@ -36,6 +39,7 @@ class UDPSocket implements ISocket{
 			this.lifeCycle.setState("ready");
 		});
 		this.sock.on("close",()=>{ 
+			this.emitting = false;
 			this.lifeCycle.setState("closed"); 
 		});
 		this.sock.on("error",(err:Error)=>{
@@ -43,9 +47,13 @@ class UDPSocket implements ISocket{
 		});
 		
 	}
+
 	public async start(){
 		this.sock.bind(this.port,this.address);
 		this.lifeCycle.setState("starting");
+	}
+	public async setEmitting(emitting : boolean){
+		this.emitting = emitting;
 	}
 	public getEventEmitter(){
 		return this.eventEmitter;
@@ -56,7 +64,6 @@ class UDPSocket implements ISocket{
 	public getAddress() : AddressInfo{
 		let addr=this.sock.address();
 		return new AddressInfo(addr.address,addr.port);
-
 	}
 	public send(data : Buffer, port : number, address : string = "") : void{
 		assert(this.getLifeCycle().getState() == "ready","socket must be ready state");

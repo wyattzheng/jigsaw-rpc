@@ -5,7 +5,9 @@ interface IRequest<T>{
     run() : Promise<T>;
     getRequestId() : string;
     getLifeCycle() : LifeCycle;
-
+    
+    getResultType() : number;
+    getResult() : T;
 }
 
 export default IRequest;

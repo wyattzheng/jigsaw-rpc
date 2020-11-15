@@ -1,13 +1,6 @@
 import { RPC } from "../../src/index";
 import assert from "assert";
-
-function waitForEvent(obj:any,event_name:string){
-    return new Promise((resolve)=>{
-        obj.once(event_name,(data:any)=>{
-            resolve(data);
-        });
-    })
-}
+import waitForEvent from "./utils/WaitForEvent";
 
 describe("Instance Test",()=>{
     let app : any={};

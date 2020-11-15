@@ -7,10 +7,10 @@ class PacketTypeRouter extends AbstractRouter{
         super();
 
     }
-    sendPacket(){
+    async sendPacket(){
         throw new Error("this router can not sendPacket");
     }
-    handlePacket(pk:Packet){
+    async handlePacket(pk:Packet){
 
         if(!this.hasHandlers(pk.getName()))
             return;

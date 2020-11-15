@@ -6,6 +6,7 @@ import AddressInfo from "../network/domain/AddressInfo";
 type NextFunction = ()=>Promise<void>;
 type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
 
+
 interface IJigsaw{
     getName() : string;
     getOption() : any;

@@ -32,7 +32,7 @@ abstract class AbstractPacketRouter extends AbstractRouter{
     getLifeCycle(){
         return this.client.getSocket().getLifeCycle();
     }
-    abstract sendPacket(pk:IPacket,route:IRoute) : void;
+    abstract async sendPacket(pk:IPacket,route:IRoute) : Promise<void>;
     public async close(){
         
         assert.strictEqual(this.plug_ref,0);
@@ -48,7 +48,7 @@ abstract class AbstractPacketRouter extends AbstractRouter{
 
         
     }
-    public handlePacket(pk : IPacket){ // not a good design here, to do: Filter Class
+    public async handlePacket(pk : IPacket){ // not a good design here, to do: Filter Class
 
         for(let router of this.routers){
             router.handlePacket(pk);

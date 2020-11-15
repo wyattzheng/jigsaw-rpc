@@ -46,6 +46,7 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
         this.handler = new DomainHandler(this.router);
 
         this.socket.getLifeCycle().on("ready",()=>{
+            this.socket.setEmitting(true);
             this.emit("ready");
         })
         

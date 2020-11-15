@@ -77,7 +77,7 @@ class RegistryUpdater{
             
             if(tick % update_per_loops == 0){
                 try{
-                    this.updateAddress(this.client_name,this.isAnonymous? undefined : this.entry);
+                    await this.updateAddress(this.client_name,this.isAnonymous? undefined : this.entry);
 
                 }catch(err){
                     console.error("updating address error",err);
@@ -90,7 +90,7 @@ class RegistryUpdater{
         this.setRef(-1);        
     }
 
-    private updateAddress(jgname:string,addrinfo?:AddressInfo):void{
+    private async updateAddress(jgname:string,addrinfo?:AddressInfo):Promise<void>{
         let pk=new DomainUpdatePacket();
 
         pk.jgid = this.client_id;
@@ -101,7 +101,8 @@ class RegistryUpdater{
         else
             pk.can_update = false;
         
-        this.router.sendPacket(pk,new NetRoute(this.server_address.port,this.server_address.address));
+
+        await this.router.sendPacket(pk,new NetRoute(this.server_address.port,this.server_address.address));
 
     }
 

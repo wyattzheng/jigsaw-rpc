@@ -91,8 +91,8 @@ class InvokeRequest extends BaseRequest<Buffer> {
         let pk = p as ErrorPacket;
         throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.stringify(),this.data.length,this.req_seq);
     }
-    public isResultJSON(){
-        return this.isResultJson;
+    public getResultType(){
+        return this.isResultJson ? 1 : 0;
     }
     protected handlePacket(p : Packet){
         if(this.getLifeCycle().getState()!="closing")

@@ -51,6 +51,9 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
 
     
+    public getResultType(){
+        return 0;
+    }
     protected getTimeoutError(){
         return new RequestTimeoutError(this.timeout_duration);
     }
@@ -135,7 +138,6 @@ abstract class BaseRequest<T> implements IRequest<T>{
             }catch(err){
                 this.pending_defer?.reject(err);
             };
-        
 
     }
 	async run(){

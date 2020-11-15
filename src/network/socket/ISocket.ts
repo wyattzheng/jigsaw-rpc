@@ -7,10 +7,11 @@ interface SocketEvent{
 	error: (err:Error)=>void;
 } ;
 
-interface ISocket{	
+interface ISocket{
 	getEventEmitter() :TypedEmitter<SocketEvent>;
 	getLifeCycle() : LifeCycle;
 	start() : Promise<void>;
+	setEmitting(emitting:boolean) : Promise<void>;
 	close() : Promise<void>;
 	send(data : Buffer, port : number, address : string) : void;
 	getAddress() : AddressInfo;
