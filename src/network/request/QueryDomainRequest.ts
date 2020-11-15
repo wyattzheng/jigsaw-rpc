@@ -31,7 +31,7 @@ class QueryDomainRequest extends BaseRequest<QueryResult>{
     getName(){
         return "QueryDomainRequest";
     }
-    handlePacket(p : Packet){
+    async handlePacket(p : Packet){
         if(p.getName() == "DomainReplyPacket"){
             let pk = p as DomainReplyPacket;
             this.setResult(pk.address_set);

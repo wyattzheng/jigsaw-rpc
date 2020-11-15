@@ -18,7 +18,7 @@ class PacketTypeRouter extends AbstractRouter{
         let handlers=this.getHandlers(pk.getName());
         try{
             for (let i in handlers)
-                handlers[i].data(pk);
+                await handlers[i].data(pk);
         }catch(err){
             debug(err);
         }

@@ -25,7 +25,7 @@ class PingRequest extends BaseRequest<void>{
     getName(){
         return "PingRequest";
     }
-    handlePacket(p : Packet){
+    async handlePacket(p : Packet){
 
         if(p.getName() == "PongPacket"){
             let pk = p as PongPacket;

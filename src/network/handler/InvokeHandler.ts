@@ -209,7 +209,7 @@ class InvokeHandler implements IHandler{
         invoker.setSlicer(slicer);
 
 
-        let refid=this.router.plug(invoker.build_req,(p:IPacket)=>{
+        let refid=this.router.plug(invoker.build_req,async(p:IPacket)=>{
             let ack = p as SliceAckPacket;
             slicer.ackSlicePacket(ack.partid);
         });

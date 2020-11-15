@@ -94,7 +94,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
     public getResultType(){
         return this.isResultJson ? 1 : 0;
     }
-    protected handlePacket(p : Packet){
+    protected async handlePacket(p : Packet){
         if(this.getLifeCycle().getState()!="closing")
             return;
             

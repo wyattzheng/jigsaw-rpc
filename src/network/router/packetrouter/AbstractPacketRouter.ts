@@ -8,7 +8,7 @@ import HandlerMap from "../../../utils/HandlerMap";
 import IRoute from "../route/IRoute";
 import assert from "assert";
 
-type Handler = (pk:IPacket)=>void;
+type Handler = (pk:IPacket)=>Promise<void>;
 
 
 abstract class AbstractPacketRouter extends AbstractRouter{
@@ -51,7 +51,7 @@ abstract class AbstractPacketRouter extends AbstractRouter{
     public async handlePacket(pk : IPacket){ // not a good design here, to do: Filter Class
 
         for(let router of this.routers){
-            router.handlePacket(pk);
+            await router.handlePacket(pk);
         }
     }
     

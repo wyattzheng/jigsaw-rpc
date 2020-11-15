@@ -13,7 +13,7 @@ class TestRequest extends BaseRequest<void>{
     async send(){
         
     }
-    handlePacket(){
+    async handlePacket(){
 
     }
 

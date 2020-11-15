@@ -31,7 +31,7 @@ class PurgeDomainRequest extends BaseRequest<void>{
     getName(){
         return "PurgeDomainRequest";
     }
-    handlePacket(p : Packet){
+    async handlePacket(p : Packet){
         this.setResult();
     }
 }

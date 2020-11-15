@@ -23,9 +23,9 @@ class SliceHandler implements IHandler{
         this.router = router;
 
         this.builder_manager = builder_manager;
-        this.sliceplug = this.router.plug("SlicePacket",(p : IPacket)=>{
+        this.sliceplug = this.router.plug("SlicePacket",async (p : IPacket)=>{
             try{
-                this.handlePacket(p);
+                await this.handlePacket(p);
             }catch(err){
                 this.eventEmitter.emit("error",err);
             }

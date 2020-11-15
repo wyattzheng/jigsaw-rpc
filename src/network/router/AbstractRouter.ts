@@ -8,7 +8,7 @@ import LifeCycle from "../../utils/LifeCycle";
 import RandomGen from "../../utils/RandomGen";
 
 
-type Handler = (pk:IPacket)=>void;
+type Handler = (pk:IPacket)=>Promise<void>;
 
 abstract class AbstractRouter extends HandlerMap<Handler> implements IRouter{
     private lifeCycle = new LifeCycle();

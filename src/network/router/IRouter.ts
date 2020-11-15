@@ -9,7 +9,7 @@ interface IRouter{
     getRouterId():string;
     sendPacket(pk:IPacket,route:IRoute) : Promise<void>;
     handlePacket(pk:IPacket):Promise<void>;
-    plug(sign:string,handler:(pk:IPacket)=>void):number;
+    plug(sign:string,handler:(pk:IPacket)=>Promise<void>):number;
     unplug(sign:string,refid:number):void;
     close():Promise<void>;
 }

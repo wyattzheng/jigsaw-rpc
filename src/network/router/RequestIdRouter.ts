@@ -18,7 +18,7 @@ class RequestIdRouter extends AbstractRouter{
         
         try{
             for (let i in handlers)
-                handlers[i].data(pk);
+                await handlers[i].data(pk);
         }catch(err){
             debug(err);
         }
