@@ -18,7 +18,7 @@ import { TypedEmitter } from "tiny-typed-emitter";
 const sleep = util.promisify(setTimeout)
 const debug = require("debug")("InvokeHandler");
 
-type Handler = (path:Path,buf:Buffer,isJSON:boolean,sender:string)=>Promise<Buffer|object>;
+type Handler = (path:Path,buf:Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo)=>Promise<Buffer|object>;
 
 class Invoker{
     public slicer? : PacketSlicer;
@@ -173,7 +173,7 @@ class InvokeHandler implements IHandler{
         try{
             let r_pk = new InvokeReplyPacket();
 
-            let ret_data = await this.handler(pk.dst_path,pk.data,pk.isJSON,pk.src_jgname);
+            let ret_data = await this.handler(pk.dst_path,pk.data,pk.isJSON,pk.src_jgname,pk.reply_info);
 
             if(ret_data instanceof Buffer){
                 r_pk.isJSON = false;

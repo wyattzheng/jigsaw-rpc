@@ -1,5 +1,4 @@
-import assert=require("assert");
-import Packet from "../protocol/Packet";
+import assert from "assert";
 
 class Path{
 	public regpath : string = "";

@@ -1,4 +1,4 @@
-import RPC from "../../src/index";
+import { RPC } from "../../src/index";
 import assert from "assert";
 
 function waitForEvent(obj:any,event_name:string){

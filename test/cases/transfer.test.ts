@@ -1,4 +1,4 @@
-import RPC from "../../src/index";
+import { RPC } from "../../src/index";
 import assert from "assert";
 import util from "util";
 import InvokeRemoteError from "../../src/error/request/InvokeRemoteError";

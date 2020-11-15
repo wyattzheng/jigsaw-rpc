@@ -1,5 +1,5 @@
 import assert from "assert";
-import RPC from "../../src/index";
+import { RPC } from "../../src/index";
 import BaseNetworkClient from "../../src/network/client/BaseNetworkClient";
 import AddressInfo from "../../src/network/domain/AddressInfo";
 import RegistryClient from "../../src/network/domain/client/RegistryClient";

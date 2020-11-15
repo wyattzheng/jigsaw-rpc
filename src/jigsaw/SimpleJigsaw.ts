@@ -161,7 +161,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
                 this.lifeCycle.setState("closed");
         }
     }
-    private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string) : Promise<Buffer | object>{
+    private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | object>{
 
         let workflow = this.recv_workflow;
         let parsed = data;
@@ -173,11 +173,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             result:{},
 
             method:path.method,
-            sender,
             isJSON,
             data: parsed,
             rawdata:data,
-            jigsaw:this
+            reply_info,
+            sender,
+            jigsaw:this,
         }
 
         let ctx = await workflow.call(context);

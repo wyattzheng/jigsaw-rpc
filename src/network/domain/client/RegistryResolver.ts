@@ -7,8 +7,7 @@ import LifeCycle from "../../../utils/LifeCycle";
 import RegistryServerInfo from "../RegistryServerInfo";
 import QueryDomainRequest from "../../../network/request/QueryDomainRequest";
 import Defer from "../../../utils/Defer";
-
-import Util = require("util");
+import Util  from "util";
 
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);

@@ -29,7 +29,7 @@ npm install jigsaw-rpc --save
 
 serv.js
 ```
-const RPC = require("jigsaw-rpc");
+const { RPC } = require("jigsaw-rpc");
 new RPC.registry.Server();
 
 let jg = RPC.GetJigsaw({ name :"calculator" });
@@ -45,8 +45,9 @@ jg.port("add",({a,b})=>{
 
 app.js
 ```
-const RPC = require("jigsaw-rpc");
+const { RPC } = require("jigsaw-rpc");
 
+let jg = RPC.GetJigsaw();
 jg.send("calculator:add",{ a:3, b:7 }).then((res)=>{
     console.log(res);
 })
@@ -66,7 +67,7 @@ You will get this output
 ## Advanced Sample
 
 ```
-const RPC = require("jigsaw-rpc");
+const { RPC } = require("jigsaw-rpc");
 new RPC.registry.Server();
 
 let jg = RPC.GetJigsaw({ name : "calculator" });
