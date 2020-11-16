@@ -295,6 +295,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             await next();
         });
     }
+    getSocket(){
+        return this.socket;
+    }
+    setSocket(socket : ISocket){
+        this.socket = socket;
+    }
     async close(){
         if(this.lifeCycle.getState() == "starting"){
             throw new Error("this instance is starting.");
