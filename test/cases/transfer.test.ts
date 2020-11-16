@@ -162,6 +162,8 @@ describe("Base Transfer Test",()=>{
         await B.close();
     });
     it("should throw the same error when remote invoke occur an error",async function(){
+        this.timeout(20000);
+
         let A = RPC.GetJigsaw({name:"A"});
         let B = RPC.GetJigsaw({name:"B"});
         await Promise.all([
@@ -169,26 +171,26 @@ describe("Base Transfer Test",()=>{
             waitForEvent(B,"ready")
         ]);
 
-        let realError = new SyntaxError("testerror");
+        let realError = new SyntaxError("testerrorlonglonglonglonglonglong");
         A.port("callError",(obj)=>{
             throw realError;
             return obj;
         });
+        A.port("call",async (obj)=>{
+            return await A.send("A:callError",{});
+        })
 
 
         let error : InvokeRemoteError | undefined;
 
         try{
-            let res : any = await B.send("A:callError",{test:"abc123"});
+            let res : any = await B.send("A:call",{test:"abc123"});
         }catch(err){
             error = err;
         }
+        
+        
         assert(error instanceof InvokeRemoteError,"error must be InvokeRemoteError");
-        
-
-        assert.strictEqual(error.error.message,realError.message);
-        assert.strictEqual(error.error.name,realError.name);
-        
         
         await A.close();
         await B.close();

@@ -13,13 +13,15 @@ class ErrorPacket extends BasePacket{
     }
     encode(){
         super.encode.call(this);
-        this.writeString(this.error.message);
+
+        this.writeString(this.error.message.slice(0,1024));
         this.writeString(this.error.name);
         this.writeString(this.error.stack || "");
         
         this.writeString(this.src_jgname);
-        this.writeString(this.dst_path);
-        
+        this.writeString(this.dst_path);    
+    
+
     }
     decode(){
         super.decode.call(this);

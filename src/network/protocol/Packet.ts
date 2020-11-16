@@ -5,14 +5,14 @@ abstract class Packet implements IPacket{ // Design Mode : Builder Mode
 	public request_id : string = "";
 	public reply_info : AddressInfo = new AddressInfo("Not a valid target",-1);
 
-	private static min_buffer_size : number = 1400;
+	private static min_buffer_size : number = 3000;
 	protected buffer : Buffer;
 	protected offset : number = 0;
 	protected built : boolean = false;
 	protected buffer_sliced : boolean = false
 
 	constructor(){
-		this.buffer = Buffer.allocUnsafe( 1400 );
+		this.buffer = Buffer.allocUnsafe( Packet.min_buffer_size );
 	}
 	isBuilt(){
 		return this.built;

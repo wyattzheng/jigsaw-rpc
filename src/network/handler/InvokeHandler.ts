@@ -13,6 +13,7 @@ import NetRoute from "../router/route/NetRoute";
 import LifeCycle from "../../utils/LifeCycle";
 import util from "util";
 import { TypedEmitter } from "tiny-typed-emitter";
+import JGError from "../../error/JGError";
 
 
 const sleep = util.promisify(setTimeout)
@@ -187,9 +188,22 @@ class InvokeHandler implements IHandler{
         }catch(err){
             let err_pk = new ErrorPacket();
             err_pk.request_id = pk.request_id;
-            err_pk.error = err;
 
+            if(err instanceof JGError){
+                if(err.hasPayloadError()){
+                    err_pk.error = err.getPayloadError()
+                }else{
+                    let payload = new Error();
+                    payload.message = err.getShortMessage();
+                    payload.name = err.getName();
+                    err_pk.error = payload;                    
+                }
+
+            }else{
+                err_pk.error = err;    
+            }
             return err_pk;
+
         }
     }
     private async addNewInvoker(invoke_pk:IPacket) : Promise<Invoker>{

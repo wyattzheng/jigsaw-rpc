@@ -23,6 +23,12 @@ class InvokeRemoteError extends JGError{
     getError(){
         return this.error;
     }
+    hasPayloadError(){
+        return true;
+    }
+    getPayloadError(){
+        return this.error;
+    }
     
     getDetail(){
         let stack = this.error.stack || "";

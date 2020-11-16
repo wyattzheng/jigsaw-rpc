@@ -12,6 +12,12 @@ abstract class JGError extends Error{
     getShortMessage(){
         return `\n\n[JGError] {${this.code}} : ${this.desc}\n`;
     }
+    hasPayloadError(){
+        return false;
+    }
+    getPayloadError(){
+        return new Error();
+    }
     abstract getName() : string;
     abstract getDetail() : string;
 }
