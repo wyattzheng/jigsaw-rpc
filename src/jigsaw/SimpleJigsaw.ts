@@ -43,6 +43,8 @@ type JigsawModuleOption = {
 
 type NextFunction = ()=>Promise<void>;
 type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
+type InvokeResult = Object | Buffer | number | string | void;
+
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
@@ -173,7 +175,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
                 this.lifeCycle.setState("closed");
         }
     }
-    private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | object>{
+    private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | Object>{
 
         let workflow = this.recv_workflow;
         let parsed = data;
@@ -211,8 +213,8 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return this.domclient as IRegistryClient;
     }
 
-    async send(path_str:string,data:object | Buffer) : Promise<object | Buffer>{
-        
+    async send(path_str:string,data:Object | Buffer = {}) : Promise<Object | Buffer>{
+
         let path = Path.fromString(path_str);
         let route = new this.modules.DefaultRoute(path.regpath,this.getRegistryClient());
 
@@ -232,7 +234,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return this.call(Path.fromString(ctx.pathstr),ctx.route,ctx.data);
 
     }
-    public async call(path:Path,route:IRoute,data:object | Buffer) : Promise<object | Buffer>{
+    public async call(path:Path,route:IRoute,data:Object | Buffer) : Promise<Object | Buffer>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
 
         let isJSON = false;
@@ -287,10 +289,16 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         this.send_workflow.pushWork(handler);
     }
-    port(port_name : string , handler:(data:object,ctx:any)=>Promise<object | Buffer>) : void{
+    port(port_name : string , handler:(data:Object,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void{
         this.use(async (ctx,next)=>{
-            if(ctx.method == port_name)
-               ctx.result = await handler(ctx.data,ctx);
+            if(ctx.method == port_name){
+                let result = await handler(ctx.data,ctx);
+                if(result == undefined)
+                    ctx.result = null;
+                else
+                    ctx.result = result;
+
+            }
 
             await next();
         });

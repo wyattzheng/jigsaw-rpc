@@ -14,12 +14,11 @@ import LifeCycle from "../../utils/LifeCycle";
 import util from "util";
 import { TypedEmitter } from "tiny-typed-emitter";
 import JGError from "../../error/JGError";
+import RandomGen from "../../utils/RandomGen";
 
-
-const sleep = util.promisify(setTimeout)
 const debug = require("debug")("InvokeHandler");
 
-type Handler = (path:Path,buf:Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo)=>Promise<Buffer|object>;
+type Handler = (path:Path,buf:Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo)=>Promise<Buffer|Object>;
 
 class Invoker{
     public slicer? : PacketSlicer;
@@ -180,7 +179,7 @@ class InvokeHandler implements IHandler{
                 r_pk.data = ret_data;
             }else{
                 r_pk.isJSON = true;
-                r_pk.data = Buffer.from(JSON.stringify(ret_data as object));
+                r_pk.data = Buffer.from(JSON.stringify(ret_data as Object));
             }
                     
             r_pk.request_id = pk.request_id;
@@ -209,7 +208,7 @@ class InvokeHandler implements IHandler{
     private async addNewInvoker(invoke_pk:IPacket) : Promise<Invoker>{
         this.setRef("invokers",+1);
 
-        let build_req =Math.random() + "-build";
+        let build_req =RandomGen.GetRandomHash(8) + "-build";
 
 
         let invoker = new Invoker();
