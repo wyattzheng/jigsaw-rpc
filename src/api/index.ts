@@ -11,19 +11,38 @@ import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
 import RegistryClient from "../network/domain/client/RegistryClient";
 import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
 
+type NextFunction = ()=>Promise<void>;
+type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
+
+type DefaultWare = {
+    use:Array<WorkFunction>,
+    pre:Array<WorkFunction>
+};
+
 const RegistryApi = {
     Server : RegistryServer,
 }
 
+const LibContext : {
+    default_ware:DefaultWare
+} = {
+    default_ware:{
+        use:[],
+        pre:[]
+    }
+};
 
-const RPCApi = {
-    registry : RegistryApi,
-    GetJigsaw : GetJigsaw
+
+function use(work:WorkFunction) : void{
+    LibContext.default_ware.use.push(work);
+}
+function pre(work:WorkFunction) : void{
+    LibContext.default_ware.pre.push(work);
+
 }
 
-
 function GetJigsaw(option? : any) : IJigsaw{
-    return new SimpleJigsaw(option || {},{
+    let jigsaw = new SimpleJigsaw(option || {},{
         DefaultRoute:RegistryRoute,
         Socket:UDPSocket,
         PacketRouter:SimplePacketRouter,
@@ -33,8 +52,25 @@ function GetJigsaw(option? : any) : IJigsaw{
         RegistryClient: RegistryClient,
         BuilderManager:PacketBuilderManager
     });
+
+    for(let use_ware of LibContext.default_ware.use){
+        jigsaw.use(use_ware);
+    }
+    for(let pre_ware of LibContext.default_ware.pre){
+        jigsaw.pre(pre_ware);
+    }
+
+    return jigsaw;
 };
 
+
+
+const RPCApi = {
+    pre : pre,
+    use : use,
+    registry : RegistryApi,
+    GetJigsaw : GetJigsaw
+}
 export default RPCApi;
 
 
