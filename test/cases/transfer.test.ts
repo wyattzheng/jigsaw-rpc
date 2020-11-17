@@ -225,7 +225,7 @@ describe("Base Transfer Test",()=>{
         await B.close();
     });
     it("should be success in invoking in a packet-drop network",async function(){
-        this.timeout(20000);
+        this.timeout(60000);
 
         let A = GetMockJigsaw({name:"A"},{
             Socket:MockNotGoodSocket
@@ -238,7 +238,7 @@ describe("Base Transfer Test",()=>{
         await Promise.all([waitForEvent(A,"ready"),waitForEvent(B,"ready")]);
 
         let success = 0;
-        for(let i=0; i<20; i++){
+        for(let i=0; i<5; i++){
             try{
                 let rand = Math.random();
                 let ret :any = await A.send("B:call",{ v: rand });

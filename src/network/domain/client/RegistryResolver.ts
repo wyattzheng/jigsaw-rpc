@@ -70,16 +70,18 @@ class RegistryResolver{
         let queryinfos : QueryResult;
         if(!this.queryings.has(regpath)){
             promise = this.doRetryResolve(regpath,timeout);
+            
             this.setRef(+1);
+            this.queryings.set(regpath,promise);
+
             promise.catch((err)=>{
                 
             }).finally(()=>{
+                this.queryings.delete(regpath);
                 this.setRef(-1);
             });
 
-            this.queryings.set(regpath,promise);
             queryinfos = await promise;
-            this.queryings.delete(regpath);
 
         }
         else{

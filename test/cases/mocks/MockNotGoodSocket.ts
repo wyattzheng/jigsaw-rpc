@@ -18,6 +18,8 @@ class MockNotGoodSocket implements ISocket{
 	private port? : number;
 	private address? : string;
 	private emitting : boolean = false;
+	private send_lock = 0;
+	private recv_lock = 0;
 
 	constructor(port? : number,address?:string){
 		this.port = port;
@@ -29,8 +31,8 @@ class MockNotGoodSocket implements ISocket{
 			if(!this.emitting)
                 return;
                 
-            if(Math.random()<0.95)
-               this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
+			if(this.recv_lock++>=1)
+				this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
 		});
 		this.sock.on("listening",()=>{ 
@@ -70,7 +72,7 @@ class MockNotGoodSocket implements ISocket{
 		assert(this.getLifeCycle().getState() == "ready","socket must be ready state");
 
 
-        if(Math.random()<0.95)
+        if(this.send_lock++>=1)
     		this.sock.send(data,port,address);
 
 	}
