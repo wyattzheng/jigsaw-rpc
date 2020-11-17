@@ -45,6 +45,8 @@ class RegistryStorage implements IRegistryStorage{
         if(this.nameTree.hasEndNode(jgname)){
             let node = this.nameTree.getEndNode(jgname);
             let data = node.getData();
+            data.jgid = jgid;
+            data.address = addr;
             data.updateTime = new Date().getTime();
         }else{
             let node = new DataNode<RegNode>(DataNode.NodeType.ENDPOINT);
