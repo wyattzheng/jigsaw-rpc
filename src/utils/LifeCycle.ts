@@ -75,7 +75,8 @@ class LifeCycle{
         return this.curr_state;
     }
     setDead(err? : Error){
-        assert(this.curr_state != "dead",new AlreadyDeadError());
+        if(this.curr_state == "dead")
+            return;
         
         this.error = err;
 
