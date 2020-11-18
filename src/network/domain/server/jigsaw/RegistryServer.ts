@@ -54,6 +54,10 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
             this.emit("closed");
         });
 
+        this.socket.getEventEmitter().on("error",(err)=>{
+            this.emit("error",err);
+        })
+
     }
     getLifeCycle(){
         return this.socket.getLifeCycle();

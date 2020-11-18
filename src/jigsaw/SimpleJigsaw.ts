@@ -104,6 +104,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         let socket = new this.modules.Socket(this.listen_port,"0.0.0.0");
         socket.start();
+        socket.getEventEmitter().on("error",(err)=>{
+            this.emit("error",err);
+        });
 
         this.socket = socket;
 
