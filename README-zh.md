@@ -137,7 +137,7 @@ Jigsaw-RPC 完全使用Node.js的原生套接字API来实现。
 
 ## 简单的 API文档
 
-### 1.  GetJigsaw({ name :string, entry :string, registry :string }) : Jigsaw
+### 1.1  RPC.GetJigsaw({ name , entry , registry }) : Jigsaw
 
 > **jigsaw name** 是Jigsaw实例的名字，会和Jigsaw实例的网络地址一起同步到注册中心.
 
@@ -167,12 +167,32 @@ let jg = RPC.GetJigsaw("iamjigsaw","127.0.0.1","jigsaw://127.0.0.1:3793/")
 let jg = RPC.GetJigsaw()
 ```
 
-### 2. Registry.Server.prototype.constructor( bind_port ,bind_address? )
+### 1.2 RPC.pre(hook)
+
+设置一个默认的 pre 钩子， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .pre(hook) 来注册该钩子。
+
+### 1.3 RPC.use(middle)
+
+设置一个默认的中间件， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .use(middleware) 来注册该中间件。
+
+### 2.1 RPC.registry.Server.prototype.constructor( bind_port ,bind_address? )
 
 创建一个 Jigsaw 域名注册中心 服务器，在一群Jigsaw实例中，至少要存在一个域名注册中心服务器以供它们注册并共享自己的网络地址。
 
 ```
 new RPC.registry.Server(3793)
+```
+
+### 2.2 RPC.registry.Server.prototype.getStorage() : IRegistryStorage
+
+获取 Jigsaw 域名注册中心 服务器的内部域名存储实例
+
+该 API 的简单用法:
+```
+let server = new RPC.registry.Server();
+console.log(server.getStorage().getFlattedNodes());
+
+//可以获取到当前服务器内记录的所有节点
 ```
 
 ### 3. Jigsaw
@@ -361,6 +381,8 @@ jg.on("ready",async ()=>{
 ### 3.8 Jigsaw.prototype.getOption() : any
 
 返回传递给 jigsaw 构造器的选项对象。
+
+
 
 ## 测试
 

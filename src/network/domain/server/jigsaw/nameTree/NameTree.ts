@@ -148,17 +148,22 @@ class NameTree<T>{
 
         throw new Error("can't get parent node");
     }
-    map(handler : (n : DataNode<T>)=>void){
-        let search=(node:DataNode<T>)=>{
-            if(node.getName() != ".ROOT.")
-                handler(node);
+    map(handler : (n : DataNode<T>,prefix:string,p? : DataNode<T>)=>void){
+
+        let search=(node:DataNode<T>,prefix:string,parent?:DataNode<T>)=>{
+            let isRoot = node.getName() == ".ROOT.";
+            if(!isRoot)
+                handler(node,prefix + node.getName(),parent);
+            
             let children = node.getChildren();
             for(let child of children){
-                search(child);
+                let next_prefix = prefix + node.getName()+".";
+
+                search(child,isRoot?"":next_prefix,node);
             }
         }
         
-        search(this.root);
+        search(this.root,"",undefined);
     }
 
 }

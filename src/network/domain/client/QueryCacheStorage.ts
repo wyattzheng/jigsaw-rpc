@@ -6,7 +6,8 @@ class CacheExpiredError extends Error{};
 class CacheNoExistsError extends Error{};
 
 
-type QueryResult =  Array<{jgid:string,jgname:string,addr:AddressInfo}>;
+type RegNode = {jgname:string,jgid:string,address:AddressInfo,updateTime:number};
+type QueryResult = Array<RegNode>;
 
 class QueryCacheStorage{
     private cache = new LimitedMap<string,DomainCache>(1000);

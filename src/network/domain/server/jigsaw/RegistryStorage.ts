@@ -12,7 +12,9 @@ interface StorageEvent{
 
 
 type RegNode = {jgid:string,jgname:string,address:AddressInfo,updateTime:number};
-type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
+type QueryResult = Array<RegNode>;
+type FlattedNodes = Array<{key:string,parent:string,name:string,type:number,nodedata:RegNode | undefined}>;
+
 
 class RegistryStorage implements IRegistryStorage{
     private eventEmitter = new TypedEmitter<StorageEvent>();
@@ -86,9 +88,18 @@ class RegistryStorage implements IRegistryStorage{
         }else
             throw new Error("this node type isn't correct");
 
-        return dataset.map((x)=>{
-            return {jgid:x.jgid,jgname:x.jgname,addr:x.address};
-        });
+        return dataset;
+    }
+    getFlattedNodes() : FlattedNodes{
+        let nodes : FlattedNodes = [];
+        this.nameTree.map((node,prefix,parent)=>{
+            let parent_name = parent ? parent.getName() : "";
+            let nodedata =node.getType() == 1? node.getData() : undefined;
+
+            nodes.push({key:prefix,parent:parent_name,type:node.getType(),name:node.getName(),nodedata});
+        })
+
+        return nodes;
     }
 
 }

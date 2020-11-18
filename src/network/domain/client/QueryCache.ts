@@ -1,6 +1,7 @@
 import AddressInfo from "../AddressInfo";
 
-type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
+type RegNode = {jgname:string,jgid:string,address:AddressInfo,updateTime:number};
+type QueryResult = Array<RegNode>;
 
 class QueryCache{
     public addrinfos : QueryResult = [];

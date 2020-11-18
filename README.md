@@ -136,7 +136,7 @@ Jigsaw implemented through Node.js Socket API completely.
 
 ## Simple API Document
 
-### 1.  GetJigsaw({ name , entry , registry }) : Jigsaw
+### 1.1  RPC.GetJigsaw({ name , entry , registry }) : Jigsaw
 
 > **jigsaw name** is a path about how to access this jigsaw, network address and jigsaw name will both sync to registry.
 
@@ -165,14 +165,34 @@ All the params has default value, if you just want this jigsaw work on Local Net
 let jg = RPC.GetJigsaw()
 ```
 
-### 2. Registry.Server.prototype.constructor( bind_port , bind_address? )
 
-Create a Jigsaw Registry Server, in a domain of a group of jigsaw-es , create one Server at least.
+### 1.2 RPC.pre(hook)
+
+set a default pre hook, then when RPC.GetJigsaw(), the new instance will call .pre(hook) automatically
+
+### 1.3 RPC.use(middleware)
+
+set a default middle-ware, then when RPC.GetJigsaw(), the new instance will call .pre(middleware) automatically
+
+### 2.1 RPC.registry.Server.prototype.constructor( bind_port , bind_address? )
+
+Create a Jigsaw Registry Server, in a domain of a group of jigsaws , create one Server at least.
 
 ```
 new RPC.registry.Server(3793)
 ```
 
+### 2.2 RPC.registry.Server.prototype.getStorage() : IRegistryStorage
+
+Get registry storage instance inside a registry server.
+
+Simple API Usage:
+```
+let server = new RPC.registry.Server();
+console.log(server.getStorage().getFlattedNodes());
+
+//this will get all nodes in RegistryServer
+```
 
 ### 3. Jigsaw
 

@@ -12,8 +12,8 @@ import Util  from "util";
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
 
-type QuerySingleResult = {jgname:string,jgid:string,addr:AddressInfo};
-type QueryResult = Array<QuerySingleResult>;
+type RegNode = {jgname:string,jgid:string,address:AddressInfo,updateTime:number};
+type QueryResult = Array<RegNode>;
 
 class RegistryResolver{
     private ref : number = 0;
@@ -46,7 +46,7 @@ class RegistryResolver{
         
         return queryinfos;
     }
-    async resolve(regpath:string,timeout:number = 5000) : Promise<QuerySingleResult>{
+    async resolve(regpath:string,timeout:number = 5000) : Promise<RegNode>{
 //        assert.strictEqual(this.lifeCycle.getState(),"ready");
 
 

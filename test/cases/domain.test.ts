@@ -18,12 +18,13 @@ describe("Domain Module Test",()=>{
         let client = GetRegistryClient(socket,"test_client");
         await client.getLifeCycle().when("ready");
         let addr = await client.resolve("test_client",5000);
+
         await server.close();
         await client.close();
         await socket.close();
         
 
-        assert(addr.addr.port == 1234,"resolved port is error");        
+        assert(addr.address.port == 1234,"resolved port is error");        
     });
     it("should caught error when resolve a domain that don't exists",function(done){
         this.timeout(10000);

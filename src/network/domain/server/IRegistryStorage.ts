@@ -5,7 +5,9 @@ interface StorageEvent{
     DomainPurgeEvent:(jgid:string)=>void;
 }
 
-type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
+type RegNode = {jgid:string,jgname:string,address:AddressInfo,updateTime:number};
+type QueryResult = Array<RegNode>;
+type FlattedNodes = Array<{key:string,parent:string,name:string,type:number,nodedata:RegNode | undefined}>;
 
 interface IRegistryStorage{
 
@@ -14,6 +16,7 @@ interface IRegistryStorage{
     removeNode(jgid:string,jgname:string):void;
     queryNode(statement:string):QueryResult;
     clearExpiredNodes() : void;
+    getFlattedNodes() : FlattedNodes;
 
 }
 

@@ -7,7 +7,7 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 
-type QueryResult = Array<{jgid:string,jgname:string,addr:AddressInfo}>;
+type QueryResult = Array<{jgid:string,jgname:string,address:AddressInfo,updateTime:number}>;
 
 class QueryDomainRequest extends BaseRequest<QueryResult>{
     private regpath : string = "";

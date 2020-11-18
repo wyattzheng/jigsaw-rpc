@@ -15,7 +15,7 @@ class RegistryRoute implements IRoute{
     async getAddressInfo() : Promise<AddressInfo>{
         let resolved = await this.registryClient.resolve(this.regpath);
         
-        return new AddressInfo(resolved.addr.address,resolved.addr.port);
+        return new AddressInfo(resolved.address.address,resolved.address.port);
     }
 
 }
