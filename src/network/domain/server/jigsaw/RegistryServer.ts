@@ -9,13 +9,13 @@ import SimplePacketRouter from "../../../router/packetrouter/SimplePacketRouter"
 import IRouter from "../../../router/IRouter";
 import assert from "assert";
 
-interface DomainServerEvent{
+interface RegistryServerEvent{
     ready:()=>void;
     closed:()=>void;
     error:(err:Error)=>void;
 }
 
-class DomainServer extends TypedEmitter<DomainServerEvent>{
+class RegistryServer extends TypedEmitter<RegistryServerEvent>{
     private address:string;
     private port:number;
     private router:IRouter;
@@ -77,4 +77,4 @@ class DomainServer extends TypedEmitter<DomainServerEvent>{
 
 }
 
-export default DomainServer;
+export default RegistryServer;

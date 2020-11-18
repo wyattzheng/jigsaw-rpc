@@ -7,6 +7,8 @@ import RegistryServerInfo from "../network/domain/RegistryServerInfo";
 import IRegistryClient from "../network/domain/client/IRegistryClient";
 import RegistryClient from "../network/domain/client/RegistryClient";
 
+import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
+
 export {
     RegistryRoute,
     RegistryServerInfo,
@@ -14,5 +16,6 @@ export {
     RegistryClient,
     IRoute,
     Path,
-    AddressInfo
+    AddressInfo,
+    RegistryServer
 };
