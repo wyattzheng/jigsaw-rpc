@@ -4,8 +4,8 @@ class Path{
 	public regpath : string = "";
 	public method : string = "";
 	constructor(regpath:string,method:string){
-		assert(regpath.length<=64 && regpath.length>0, "regpath.length is incorrect");
-		assert(method.length<=16 && method.length>0, "method.length is incorrect");
+		assert(regpath.length<=256 && regpath.length>0, "regpath.length is incorrect");
+		assert(method.length<=256 && method.length>0, "method.length is incorrect");
 
 		this.regpath = regpath;
 		this.method = method;
