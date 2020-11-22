@@ -6,7 +6,6 @@ import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import PacketSlicer from "../request/PacketSlicer";
 import InvokeTimeoutError from "../../error/request/InvokeTimeoutError";
-import InvokeRemoteError from "../../error/request/InvokeRemoteError";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import IRoute from "../router/route/IRoute";
@@ -89,7 +88,9 @@ class InvokeRequest extends BaseRequest<Buffer> {
     }
     protected handleErrorPacket(p : Packet){
         let pk = p as ErrorPacket;
-        throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.stringify(),this.data.length,this.req_seq);
+        throw pk.error;
+        
+//        throw new InvokeRemoteError(pk.error,this.src_jgname,this.path.stringify(),this.data.length,this.req_seq);
     }
     public getResultType(){
         return this.isResultJson ? 1 : 0;

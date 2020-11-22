@@ -1,11 +1,11 @@
 import { RPC } from "../../src/index";
 import assert from "assert";
 import util from "util";
-import InvokeRemoteError from "../../src/error/request/InvokeRemoteError";
 import waitForEvent  from "./utils/WaitForEvent";
 import GetMockJigsaw  from "./utils/GetMockJigsaw";
 import MockRandomSocket from "./mocks/MockRandomSocket";
 import MockNotGoodSocket from "./mocks/MockNotGoodSocket";
+import { JGError } from "../../src/spi/error";
 
 const sleep = util.promisify(setTimeout);
 
@@ -181,7 +181,7 @@ describe("Base Transfer Test",()=>{
         })
 
 
-        let error : InvokeRemoteError | undefined;
+        let error : JGError | undefined;
 
         try{
             let res : any = await B.send("A:call",{test:"abc123"});
@@ -190,7 +190,7 @@ describe("Base Transfer Test",()=>{
         }
         
         
-        assert(error instanceof InvokeRemoteError,"error must be InvokeRemoteError");
+        assert(error instanceof JGError,"error must be JGError");
         
         await A.close();
         await B.close();

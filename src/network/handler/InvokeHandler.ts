@@ -185,22 +185,16 @@ class InvokeHandler implements IHandler{
             r_pk.request_id = pk.request_id;
             return r_pk;
         }catch(err){
+            let jerr : JGError;
+            if(err instanceof JGError)
+                jerr = err;
+            else
+                jerr = JGError.fromError(err);
+                
             let err_pk = new ErrorPacket();
             err_pk.request_id = pk.request_id;
-
-            if(err instanceof JGError){
-                if(err.hasPayloadError()){
-                    err_pk.error = err.getPayloadError()
-                }else{
-                    let payload = new Error();
-                    payload.message = err.getShortMessage();
-                    payload.name = err.getName();
-                    err_pk.error = payload;                    
-                }
-
-            }else{
-                err_pk.error = err;    
-            }
+            err_pk.error = jerr;
+            
             return err_pk;
 
         }
