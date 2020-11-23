@@ -1,8 +1,8 @@
 class JGError extends Error{
     public readonly code : number;
     public desc : string;
-    public parsing_str : string;
-    constructor(code : number,desc:string,parsing_str:string = "{}"){
+    public parsing_str? : string;
+    constructor(code : number,desc:string,parsing_str?:string){
         super("");
         this.code = code;
         this.desc = desc;
@@ -20,13 +20,15 @@ class JGError extends Error{
             code:this.code,
             desc:this.desc,
             name:this.name,
-            message:this.message
-        }
+            message:this.message,
+            parsing_str:this.parsing_str
+        };
+
         return JSON.stringify(obj);
     }
     static parse(str:string){
         let parsed = JSON.parse(str);
-        let ret = new JGError(parsed.code,parsed.desc,str);
+        let ret = new JGError(parsed.code,parsed.desc,parsed.parsing_str);
         ret.name = parsed.name;
         ret.message = parsed.message;
 
