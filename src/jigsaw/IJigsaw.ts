@@ -8,7 +8,7 @@ import { TypedEmitter } from "tiny-typed-emitter";
 type NextFunction = ()=>Promise<void>;
 type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
 
-type InvokeResult = Object | Buffer | number | string | void;
+type InvokeResult = any | number | string | void;
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -20,11 +20,12 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getName() : string;
     getOption() : any;
     
-    send(path_str:string,data?:Object | Buffer) : Promise<Object | Buffer>;
-    call(path:Path,route:IRoute,data: Object | Buffer):Promise<Object | Buffer>;
+    send(path_str:string,data?:any) : Promise<any>;
+    call(path:Path,route:IRoute,data: any):Promise<any>;
 
     use(handler:WorkFunction) : void;
     pre(handler:WorkFunction) : void;
+    post(handler:WorkFunction) : void;
 
     getAddress() : AddressInfo;
     
@@ -32,7 +33,7 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getSocket() : ISocket;
     setSocket(socket : ISocket) : void;
 
-    port(port_name:string,handler:(data:Object | Buffer,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void;
+    port(port_name:string,handler:(data:any,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void;
 
     close() : Promise<void>;
 }

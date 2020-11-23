@@ -23,10 +23,11 @@ describe("Jigsaw Hooks Test",function(){
         invoker.pre(async (ctx,next)=>{
             ctx.route = {
                 preload(){
-
+                    
+                    return "test";
                 },
                 getAddressInfo(){
-                    return invoker.getAddress();
+                    return {address:"127.0.0.1",port:invoker.getAddress().port};
                 }
             }
             await next();
@@ -90,6 +91,69 @@ describe("Jigsaw Hooks Test",function(){
         await jg.close();
 
     });
+
+it("should throw error if post hook emit an error",async()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("call",async()=>(123));
+
+        await waitForEvent(jg,"ready");
+        let err = new Error("this is an error");
+        jg.pre(async (ctx,next)=>{
+            
+            ctx.data = "123";
+            await next();
+
+        })
+        jg.post(async (ctx,next)=>{
+            throw err;
+        });
+
+        try{
+            await jg.send("jigsaw:call",{});
+        }catch(err_catched){
+            assert.strictEqual(err_catched,err);
+        }
+
+        await jg.close();
+
+    });
+    it("should throw the hacked error if post result has been modified",async ()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("call",async()=>(123));
+        await waitForEvent(jg,"ready");
+
+        class HackedError extends Error{};
+        let hacked_err = new HackedError();
+        jg.post(async (ctx:any,next:any)=>{
+
+            ctx.result = hacked_err;
+            await next();
+        });
+
+        try{
+            await jg.send("jigsaw:call",{});
+        }catch(err){
+            assert.strictEqual(err,hacked_err);
+        }
+
+        await jg.close();
+    });
+    it("should return the hacked result if post result has been modified",async ()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        jg.port("call",async()=>(123));
+        await waitForEvent(jg,"ready");
+        
+        jg.post(async (ctx:any,next:any)=>{
+            ctx.result = ctx.data;
+            await next();
+        });
+
+        let ret :any = await jg.send("jigsaw:call",{result:"abcdefg"});
+        assert.strictEqual(ret.result,"abcdefg");
+
+        await jg.close();
+    });
+
 
     after(async ()=>{
         await app.registry.close();

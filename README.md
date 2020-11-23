@@ -257,7 +257,7 @@ a context contains these base properties:
     */
 
     method: string , // the method name sender want to call
-    data: object | Buffer, // the data from sender
+    data: any, // the data from sender
     sender: string, // sender's jigsaw name
     isJSON: boolean, // if the 'data' is JSON-object or Buffer
     rawdata: Buffer, // the raw buffer of data

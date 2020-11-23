@@ -43,7 +43,7 @@ type JigsawModuleOption = {
 
 type NextFunction = ()=>Promise<void>;
 type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
-type InvokeResult = Object | Buffer | number | string | void;
+type InvokeResult = any | number | string | void;
 
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
@@ -69,7 +69,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private socket : ISocket;
 
     private recv_workflow = new WorkFlow();
-    private send_workflow = new WorkFlow();
+    private pre_workflow = new WorkFlow();
+    private post_workflow = new WorkFlow();
+
     private option : any;
     private modules : JigsawModuleOption;
 
@@ -216,12 +218,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return this.domclient as IRegistryClient;
     }
 
-    async send(path_str:string,data:Object | Buffer = {}) : Promise<Object | Buffer>{
+    async send(path_str:string,data:any = {}) : Promise<any>{
 
         let path = Path.fromString(path_str);
         let route = new this.modules.DefaultRoute(path.regpath,this.getRegistryClient());
 
-        let context = {
+        let pre_raw_ctx = {
             raw:{
                 data : data,
                 pathstr : path_str,
@@ -233,11 +235,29 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             route:route,
         };
 
-        let ctx = await this.send_workflow.call(context);
-        return this.call(Path.fromString(ctx.pathstr),ctx.route,ctx.data);
+        let pre_ctx = await this.pre_workflow.call(pre_raw_ctx);
+
+        let result : any | Error; 
+        try{
+            result = await this.call(Path.fromString(pre_ctx.pathstr),pre_ctx.route,pre_ctx.data);
+        }catch(err){
+            result = err;
+        }
+
+        let post_raw_ctx = {
+            pathstr : path_str,
+            data : data,
+            result : result,
+        }
+        let post_ctx = await this.post_workflow.call(post_raw_ctx);
+
+        if(post_ctx.result instanceof Error)
+            throw post_ctx.result;
+
+        return post_ctx.result;
 
     }
-    public async call(path:Path,route:IRoute,data:Object | Buffer) : Promise<Object | Buffer>{
+    public async call(path:Path,route:IRoute,data:any) : Promise<any>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
 
         let isJSON = false;
@@ -290,8 +310,15 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     pre(handler : WorkFunction) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
-        this.send_workflow.pushWork(handler);
+        this.pre_workflow.pushWork(handler);
+
     }
+    post(handler : WorkFunction) : void{
+        assert(typeof(handler) == "function","handler must be a function");
+
+        this.post_workflow.pushWork(handler);
+    }
+    
     port(port_name : string , handler:(data:Object,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void{
         this.use(async (ctx,next)=>{
             if(ctx.method == port_name){
