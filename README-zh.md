@@ -171,7 +171,11 @@ let jg = RPC.GetJigsaw()
 
 设置一个默认的 pre 钩子， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .pre(hook) 来注册该钩子。
 
-### 1.3 RPC.use(middle)
+### 1.3 RPC.post(hook)
+
+设置一个默认的 post 钩子， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .post(hook) 来注册该钩子。
+
+### 1.4 RPC.use(middle)
 
 设置一个默认的中间件， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .use(middleware) 来注册该中间件。
 
@@ -365,20 +369,34 @@ jg.on("ready",async ()=>{
 
 ```
 
+### 3.5 Jigsaw.prototype.post( handler )
 
-### 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+这个方法会创建一个在远程调用请求之后的拦截器。
+
+事实上这是一个远程调用的post后钩子。
+
+一个 post 上下文 context 对象包含这些属性：
+```
+{
+    pathstr : string, // 远程调用的目标路径
+    data : any, // 请求的数据 , Buffer 或者是 一个JS对象
+    result : any, // 请求的返回数据, 这是可以被修改的 , Buffer、一个 JS 对象 或者是一个Error
+}
+```
+
+### 3.6 Jigsaw.prototype.getAddress() : AddressInfo
 
 这个方法会返回 jigsaw 内部套接字 所绑定的地址和端口。
 
-### 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+### 3.7 Jigsaw.prototype.getRegistryClient() : IRegistryClient
 
 这个方法会返回一个 jigsaw实例 内部的registry client（域名客户端），请阅读详细的API文档。
 
-### 3.7 Jigsaw.prototype.getName() : string
+### 3.8 Jigsaw.prototype.getName() : string
 
 返回 jigsaw 的名字。
 
-### 3.8 Jigsaw.prototype.getOption() : any
+### 3.9 Jigsaw.prototype.getOption() : any
 
 返回传递给 jigsaw 构造器的选项对象。
 

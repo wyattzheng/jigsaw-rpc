@@ -16,7 +16,8 @@ type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
 
 type DefaultWare = {
     use:Array<WorkFunction>,
-    pre:Array<WorkFunction>
+    pre:Array<WorkFunction>,
+    post:Array<WorkFunction>
 };
 
 const RegistryApi = {
@@ -28,7 +29,8 @@ const LibContext : {
 } = {
     default_ware:{
         use:[],
-        pre:[]
+        pre:[],
+        post:[]
     }
 };
 
@@ -38,7 +40,9 @@ function use(work:WorkFunction) : void{
 }
 function pre(work:WorkFunction) : void{
     LibContext.default_ware.pre.push(work);
-
+}
+function post(work:WorkFunction) : void{
+    LibContext.default_ware.post.push(work);
 }
 
 function GetJigsaw(option? : any) : IJigsaw{
@@ -59,6 +63,9 @@ function GetJigsaw(option? : any) : IJigsaw{
     for(let pre_ware of LibContext.default_ware.pre){
         jigsaw.pre(pre_ware);
     }
+    for(let post_ware of LibContext.default_ware.post){
+        jigsaw.post(post_ware);
+    }
 
     return jigsaw;
 };
@@ -68,6 +75,7 @@ function GetJigsaw(option? : any) : IJigsaw{
 const RPCApi = {
     pre : pre,
     use : use,
+    post : post,
     registry : RegistryApi,
     GetJigsaw : GetJigsaw
 }

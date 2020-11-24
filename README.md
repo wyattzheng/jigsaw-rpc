@@ -170,7 +170,11 @@ let jg = RPC.GetJigsaw()
 
 set a default pre hook, then when RPC.GetJigsaw(), the new instance will call .pre(hook) automatically
 
-### 1.3 RPC.use(middleware)
+### 1.3 RPC.post(hook)
+
+set a default post hook, then when RPC.GetJigsaw(), the new instance will call .post(hook) automatically
+
+### 1.4 RPC.use(middleware)
 
 set a default middle-ware, then when RPC.GetJigsaw(), the new instance will call .pre(middleware) automatically
 
@@ -210,7 +214,7 @@ JigsawName:port_name
 the **data** must be a **JSON-Serializable JavaScript Object** which doesn't contain any 'undefined' of a 'Function' and some other properties.
 
 
-### 3.2 Jigsaw.prototype.port( port_name )
+### 3.2 Jigsaw.prototype.port( port_name , handler )
 
 register a **Jigsaw Port** that will handle all invoking requests to this Port.
 
@@ -364,19 +368,36 @@ jg.on("ready",async ()=>{
 
 ```
 
-### 3.5 Jigsaw.prototype.getAddress() : AddressInfo
+### 3.5 Jigsaw.prototype.post( handler )
+
+this method create an interceptor after sending an invoking request.
+
+actually, it is the post hook of calling a remote method.
+
+a post context contains these properties:
+```
+{
+    pathstr : string, // target path string of invoking
+    data : any, // the request data , Buffer or a JS Object
+    result : any, // the result data, it can be modified , Buffer / a JS Object / Error
+
+}
+```
+
+
+### 3.6 Jigsaw.prototype.getAddress() : AddressInfo
 
 this method will return a address info contains IP-Address and Port that jigsaw's socket binded to.
 
-### 3.6 Jigsaw.prototype.getRegistryClient() : IRegistryClient
+### 3.7 Jigsaw.prototype.getRegistryClient() : IRegistryClient
 
 this method will return a registry client inside of the jigsaw instance, read the detail API document.
 
-### 3.7 Jigsaw.prototype.getName() : string
+### 3.8 Jigsaw.prototype.getName() : string
 
 return the jigsaw name.
 
-### 3.8 Jigsaw.prototype.getOption() : any
+### 3.9 Jigsaw.prototype.getOption() : any
 
 return the option passed to jigsaw constructor.
 
