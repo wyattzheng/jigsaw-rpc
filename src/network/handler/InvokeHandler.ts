@@ -186,7 +186,7 @@ class InvokeHandler implements IHandler{
             return r_pk;
         }catch(err){
             let jerr : JGError;
-            if(err instanceof JGError)
+            if((err as JGError).isJGError)
                 jerr = err;
             else
                 jerr = JGError.fromError(err);

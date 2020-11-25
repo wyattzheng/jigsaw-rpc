@@ -2,6 +2,8 @@ class JGError extends Error{
     public readonly code : number;
     public desc : string;
     public parsing_str? : string;
+    public isJGError = true;
+    
     constructor(code : number,desc:string,parsing_str?:string){
         super("");
         this.code = code;
