@@ -57,7 +57,7 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
         let sent = this.getSliceCount() - this.unsent_packets.size
         let sent_bytes = sent * this.slicelen;
         let nowtime = new Date().getTime();
-        let dura = nowtime - this.start_time;
+        let dura = Math.max(1,nowtime - this.start_time);
         return Math.floor(sent_bytes/dura*1000);
     }
     private recalcSendLimit(){
