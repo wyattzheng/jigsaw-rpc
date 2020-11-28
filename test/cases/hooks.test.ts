@@ -1,5 +1,6 @@
 import assert from "assert";
 import { RPC } from "../../src/index";
+import { AddressInfo } from "../../src/spi/network";
 import waitForEvent from "./utils/WaitForEvent";
 
 describe("Jigsaw Hooks Test",function(){
@@ -22,12 +23,11 @@ describe("Jigsaw Hooks Test",function(){
         
         invoker.pre(async (ctx,next)=>{
             ctx.route = {
-                preload(){
+                async preload(){
                     
-                    return "test";
                 },
-                getAddressInfo(){
-                    return {address:"127.0.0.1",port:invoker.getAddress().port};
+                async getAddressInfo(){
+                    return new AddressInfo("127.0.0.1",invoker.getAddress().port);
                 }
             }
             await next();

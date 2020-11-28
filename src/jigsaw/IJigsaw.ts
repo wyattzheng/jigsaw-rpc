@@ -4,11 +4,10 @@ import IRegistryClient from "../network/domain/client/IRegistryClient";
 import AddressInfo from "../network/domain/AddressInfo";
 import ISocket from "../network/socket/ISocket";
 import { TypedEmitter } from "tiny-typed-emitter";
+import { JigsawOption } from "./JigsawOption";
+import { PostContext, PreContext, UseContext } from "./context/Context";
 
 type NextFunction = ()=>Promise<void>;
-type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
-
-type InvokeResult = any | number | string | void;
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -18,14 +17,14 @@ interface JigsawEvent{
 
 interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getName() : string;
-    getOption() : any;
+    getOption() : JigsawOption;
     
     send(path_str:string,data?:any) : Promise<any>;
     call(path:Path,route:IRoute,data: any):Promise<any>;
 
-    use(handler:WorkFunction) : void;
-    pre(handler:WorkFunction) : void;
-    post(handler:WorkFunction) : void;
+    use(handler:(ctx:UseContext,next:NextFunction)=>Promise<void>) : void;
+    pre(handler:(ctx:PreContext,next:NextFunction)=>Promise<void>) : void;
+    post(handler:(ctx:PostContext,next:NextFunction)=>Promise<void>) : void;
 
     getAddress() : AddressInfo;
     
@@ -33,7 +32,7 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getSocket() : ISocket;
     setSocket(socket : ISocket) : void;
 
-    port(port_name:string,handler:(data:any,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void;
+    port(port_name:string,handler:(data:any,ctx:UseContext)=>any) : void;
 
     close() : Promise<void>;
 }

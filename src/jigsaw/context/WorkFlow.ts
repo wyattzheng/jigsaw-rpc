@@ -1,20 +1,17 @@
 type NextFunction = ()=>Promise<void>;
-type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
-
 
 type Calling = {current_work:number,context:any};
 
-class WorkFlow{
+class WorkFlow<T>{
 
-    private works = new Array<WorkFunction>();
+    private works = new Array<(ctx:T,next:NextFunction)=>Promise<void>>();
     private callings : Map<number,Calling> = new Map();
-    private current_work = 0;
     private callid_count = 0;
 
-    pushWork(work : WorkFunction){
+    pushWork(work : (ctx:T,next:NextFunction)=>Promise<void>){
         this.works.push(work);
     }
-    async call(context : any) : Promise<any>{
+    async call(context : T) : Promise<T>{
         let callid = this.callid_count++;
 
         try{

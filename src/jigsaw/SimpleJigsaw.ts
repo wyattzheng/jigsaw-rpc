@@ -9,7 +9,7 @@ import { TypedEmitter } from "tiny-typed-emitter";
 
 import assert from "assert";
 import LifeCycle from "../utils/LifeCycle";
-import WorkFlow from "./WorkFlow";
+import WorkFlow from "./context/WorkFlow";
 import RandomGen from "../utils/RandomGen";
 
 import IRegistryClient from "../network/domain/client/IRegistryClient";
@@ -17,11 +17,8 @@ import IRoute from "../network/router/route/IRoute";
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import IHandler from "../network/handler/IHandler";
-import IRequest from "../network/request/IRequest";
-import INetworkClient from "../network/client/INetworkClient";
-import IBuilderManager from "../network/protocol/builder/manager/IBuilderManager";
-import SlicePacket from "../network/protocol/packet/SlicePacket";
-import IPacket from "../network/protocol/IPacket";
+import {PreContext,PostContext,UseContext} from "./context/Context";
+import {JigsawOption,JigsawModuleOption} from "./JigsawOption";
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -29,22 +26,9 @@ interface JigsawEvent{
     closed:()=>void;
 }
 
-type JigsawModuleOption = {
-    Socket:new (...args:any[])=> ISocket,
-    PacketRouter:new (...args:any[])=> IRouter,
-    InvokeHandler:new (...args:any[])=> IHandler,
-    InvokeRequest:new (...args:any[])=> IRequest<Buffer>,
-    NetworkClient:new (...args:any[])=> INetworkClient,
-    RegistryClient:new (...args:any[]) => IRegistryClient,
-    BuilderManager:new (...args:any[]) => IBuilderManager<SlicePacket,IPacket>,
-    DefaultRoute:new (...args:any[]) => IRoute,
 
-};
 
 type NextFunction = ()=>Promise<void>;
-type WorkFunction = (ctx:any,next:NextFunction)=>Promise<void>;
-type InvokeResult = any | number | string | void;
-
 
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
@@ -68,14 +52,14 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private socket : ISocket;
 
-    private recv_workflow = new WorkFlow();
-    private pre_workflow = new WorkFlow();
-    private post_workflow = new WorkFlow();
+    private recv_workflow = new WorkFlow<UseContext>();
+    private pre_workflow = new WorkFlow<PreContext>();
+    private post_workflow = new WorkFlow<PostContext>();
 
     private option : any;
     private modules : JigsawModuleOption;
 
-    constructor(option : any,modules : JigsawModuleOption){
+    constructor(option : JigsawOption,modules : JigsawModuleOption){
         super();
         this.jgid = RandomGen.GetRandomHash(8);
         this.option = option;
@@ -182,13 +166,11 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | Object>{
 
-        let workflow = this.recv_workflow;
-        let parsed = data;
+        let parsed : any = data;
         if(isJSON)
             parsed = JSON.parse(data.toString());
         
-
-        let context = {
+        let context : UseContext = {
             result:{},
 
             method:path.method,
@@ -198,9 +180,10 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             reply_info,
             sender,
             jigsaw:this,
-        }
-
-        let ctx = await workflow.call(context);
+        };
+        
+        let ctx = await this.recv_workflow.call(context);
+        
         return ctx.result;
     }
     getOption(){
@@ -223,13 +206,10 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         let path = Path.fromString(path_str);
         let route = new this.modules.DefaultRoute(path.regpath,this.getRegistryClient());
 
-        let pre_raw_ctx = {
-            raw:{
-                data : data,
-                pathstr : path_str,
-                route : route
-            },
-
+        let pre_raw_ctx : PreContext = {
+            rawdata : data,
+            rawpathstr : path_str,
+            rawroute : route,
             data:data,
             pathstr:path_str,
             route:route,
@@ -237,18 +217,19 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         let pre_ctx = await this.pre_workflow.call(pre_raw_ctx);
 
-        let result : any | Error; 
+        let result : any; 
         try{
             result = await this.call(Path.fromString(pre_ctx.pathstr),pre_ctx.route,pre_ctx.data);
         }catch(err){
             result = err;
         }
 
-        let post_raw_ctx = {
+        let post_raw_ctx : PostContext = {
             pathstr : path_str,
             data : data,
             result : result,
         }
+        
         let post_ctx = await this.post_workflow.call(post_raw_ctx);
 
         if(post_ctx.result instanceof Error)
@@ -302,24 +283,24 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         }
     }
     
-    use(handler : WorkFunction) : void{
+    use(handler : (ctx:UseContext,next:NextFunction)=>Promise<void>) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.recv_workflow.pushWork(handler);
     }
-    pre(handler : WorkFunction) : void{
+    pre(handler : (ctx:PreContext,next:NextFunction)=>Promise<void>) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.pre_workflow.pushWork(handler);
 
     }
-    post(handler : WorkFunction) : void{
+    post(handler : (ctx:PostContext,next:NextFunction)=>Promise<void>) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.post_workflow.pushWork(handler);
     }
     
-    port(port_name : string , handler:(data:Object,ctx:any)=>Promise<InvokeResult> | InvokeResult) : void{
+    port(port_name : string , handler:(data:any,ctx:UseContext)=>any) : void{
         this.use(async (ctx,next)=>{
             if(ctx.method == port_name){
                 let result = await handler(ctx.data,ctx);
