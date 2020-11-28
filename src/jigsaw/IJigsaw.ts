@@ -5,9 +5,8 @@ import AddressInfo from "../network/domain/AddressInfo";
 import ISocket from "../network/socket/ISocket";
 import { TypedEmitter } from "tiny-typed-emitter";
 import { JigsawOption } from "./JigsawOption";
-import { PostContext, PreContext, UseContext } from "./context/Context";
-
-type NextFunction = ()=>Promise<void>;
+import { UseContext } from "./context/Context";
+import { PostWare, PreWare, UseWare } from "./JigsawWare"
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -22,9 +21,9 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     send(path_str:string,data?:any) : Promise<any>;
     call(path:Path,route:IRoute,data: any):Promise<any>;
 
-    use(handler:(ctx:UseContext,next:NextFunction)=>Promise<void>) : void;
-    pre(handler:(ctx:PreContext,next:NextFunction)=>Promise<void>) : void;
-    post(handler:(ctx:PostContext,next:NextFunction)=>Promise<void>) : void;
+    use(handler:UseWare) : void;
+    pre(handler:PreWare) : void;
+    post(handler:PostWare) : void;
 
     getAddress() : AddressInfo;
     

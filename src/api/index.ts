@@ -11,14 +11,13 @@ import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
 import RegistryClient from "../network/domain/client/RegistryClient";
 import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
 import {JigsawOption} from "../jigsaw/JigsawOption";
-import { PostContext, PreContext, UseContext } from "../jigsaw/context/Context";
+import { PostWare, PreWare, UseWare } from "../jigsaw/JigsawWare";
 
-type NextFunction = ()=>Promise<void>;
 
 type DefaultWare = {
-    use:Array<(ctx:UseContext,next:NextFunction)=>Promise<void>>,
-    pre:Array<(ctx:PreContext,next:NextFunction)=>Promise<void>>,
-    post:Array<(ctx:PostContext,next:NextFunction)=>Promise<void>>
+    use:Array<UseWare>,
+    pre:Array<PreWare>,
+    post:Array<PostWare>
 };
 
 const RegistryApi = {
@@ -36,13 +35,13 @@ const LibContext : {
 };
 
 
-function use(work:(ctx:UseContext,next:NextFunction)=>Promise<void>) : void{
+function use(work:UseWare) : void{
     LibContext.default_ware.use.push(work);
 }
-function pre(work:(ctx:PreContext,next:NextFunction)=>Promise<void>) : void{
+function pre(work:PreWare) : void{
     LibContext.default_ware.pre.push(work);
 }
-function post(work:(ctx:PostContext,next:NextFunction)=>Promise<void>) : void{
+function post(work:PostWare) : void{
     LibContext.default_ware.post.push(work);
 }
 

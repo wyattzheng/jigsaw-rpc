@@ -17,7 +17,8 @@ import IRoute from "../network/router/route/IRoute";
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import IHandler from "../network/handler/IHandler";
-import {PreContext,PostContext,UseContext} from "./context/Context";
+import {UseContext,PreContext,PostContext} from "./context/Context";
+import {UseWare,PreWare,PostWare} from "./JigsawWare";
 import {JigsawOption,JigsawModuleOption} from "./JigsawOption";
 
 interface JigsawEvent{
@@ -283,18 +284,18 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         }
     }
     
-    use(handler : (ctx:UseContext,next:NextFunction)=>Promise<void>) : void{
+    use(handler : UseWare) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.recv_workflow.pushWork(handler);
     }
-    pre(handler : (ctx:PreContext,next:NextFunction)=>Promise<void>) : void{
+    pre(handler : PreWare) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.pre_workflow.pushWork(handler);
 
     }
-    post(handler : (ctx:PostContext,next:NextFunction)=>Promise<void>) : void{
+    post(handler : PostWare) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
         this.post_workflow.pushWork(handler);
