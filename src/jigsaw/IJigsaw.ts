@@ -21,9 +21,9 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     send(path_str:string,data?:any) : Promise<any>;
     call(path:Path,route:IRoute,data: any):Promise<any>;
 
-    use(handler:UseWare) : void;
-    pre(handler:PreWare) : void;
-    post(handler:PostWare) : void;
+    use(handler:UseWare,hash?:string) : void;
+    pre(handler:PreWare,hash?:string) : void;
+    post(handler:PostWare,hash?:string) : void;
 
     getAddress() : AddressInfo;
     

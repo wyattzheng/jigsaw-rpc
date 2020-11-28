@@ -284,21 +284,21 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         }
     }
     
-    use(handler : UseWare) : void{
+    use(handler : UseWare,hash?:string) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
-        this.recv_workflow.pushWork(handler);
+        this.recv_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
     }
-    pre(handler : PreWare) : void{
+    pre(handler : PreWare,hash?:string) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
-        this.pre_workflow.pushWork(handler);
+        this.pre_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
 
     }
-    post(handler : PostWare) : void{
+    post(handler : PostWare,hash?:string) : void{
         assert(typeof(handler) == "function","handler must be a function");
 
-        this.post_workflow.pushWork(handler);
+        this.post_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
     }
     
     port(port_name : string , handler:(data:any,ctx:UseContext)=>any) : void{

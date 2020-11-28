@@ -7,8 +7,13 @@ class WorkFlow<T>{
     private works = new Array<(ctx:T,next:NextFunction)=>Promise<void>>();
     private callings : Map<number,Calling> = new Map();
     private callid_count = 0;
+    private hashes = new Set<string>();
 
-    pushWork(work : (ctx:T,next:NextFunction)=>Promise<void>){
+    pushWork(work : (ctx:T,next:NextFunction)=>Promise<void>,hash:string){
+        if(this.hashes.has(hash))
+            return;
+
+        this.hashes.add(hash);
         this.works.push(work);
     }
     async call(context : T) : Promise<T>{
