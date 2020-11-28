@@ -9,17 +9,17 @@ import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import IHandler from "../network/handler/IHandler";
 
-type Option = {
+interface Option {
     [key:string]:any;
 }
-type BaseOption = {
+interface BaseOption {
     name?: string,
     entry?: string,
     registry?: string,
     port? : number
 }
 
-type JigsawModuleOption = {
+interface JigsawModuleOption {
     Socket:new (...args:any[])=> ISocket,
     PacketRouter:new (...args:any[])=> IRouter,
     InvokeHandler:new (...args:any[])=> IHandler,

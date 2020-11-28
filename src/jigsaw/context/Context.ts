@@ -1,12 +1,12 @@
-import {PreBaseContext,UseBaseContext,PostBaseContext} from "./BaseContext";
+import * as BaseContext from "./BaseContext";
 
-type Context = {
+interface Context {
     [key:string] : any;
 }
 
-type PreContext = PreBaseContext & Context;
-type UseContext = UseBaseContext & Context;
-type PostContext = PostBaseContext & Context;
+type PreContext = BaseContext.PreBaseContext & Context;
+type UseContext = BaseContext.UseBaseContext & Context;
+type PostContext = BaseContext.PostBaseContext & Context;
 
-export {PreContext,UseContext,PostContext};
+export {PreContext,UseContext,PostContext,BaseContext};
 

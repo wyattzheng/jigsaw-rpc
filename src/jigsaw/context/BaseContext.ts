@@ -2,7 +2,7 @@ import IRoute from "../../network/router/route/IRoute";
 import AddressInfo from "../../network/domain/AddressInfo";
 import IJigsaw from "../IJigsaw";
 
-type PreBaseContext = {
+interface PreBaseContext {
     readonly rawdata : any;
     readonly rawpathstr : string;
     readonly rawroute : IRoute;
@@ -11,7 +11,7 @@ type PreBaseContext = {
     pathstr:string;
     route:IRoute;
 }
-type UseBaseContext = {
+interface UseBaseContext {
     readonly data:any;
     readonly rawdata:Buffer;
     readonly method:string;
@@ -22,7 +22,7 @@ type UseBaseContext = {
 
     result:any
 }
-type PostBaseContext = {
+interface PostBaseContext {
     readonly pathstr:string;
     readonly data:any;
 
