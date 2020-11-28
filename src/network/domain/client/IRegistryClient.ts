@@ -1,4 +1,4 @@
-import LifeCycle from "src/utils/LifeCycle";
+import LifeCycle from "../../../utils/LifeCycle";
 import { TypedEmitter } from "tiny-typed-emitter";
 import AddressInfo from "../AddressInfo";
 
