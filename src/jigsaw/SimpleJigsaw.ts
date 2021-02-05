@@ -21,6 +21,10 @@ import {UseContext,PreContext,PostContext} from "./context/Context";
 import {UseWare,PreWare,PostWare} from "./JigsawWare";
 import {JigsawOption,JigsawModuleOption} from "./JigsawOption";
 
+import { AsyncManager } from "../utils/AsyncManager"
+import Defer from "../utils/Defer";
+
+
 interface JigsawEvent{
     error:(err : Error)=>void;
     ready:()=>void;
@@ -49,7 +53,9 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private request_seq : number = 0;
     private invoke_handler? : IHandler;
 
-    private ref = 0;
+    private module_ref = 0;
+
+    private request_async_manager = new AsyncManager();
 
     private socket : ISocket;
 
@@ -68,24 +74,13 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         let jgname = option.name || "";
 
-        // ============ENTRY=============
 
         let entry_str : string = option.entry || "127.0.0.1";
         this.entry = AddressInfo.parse(entry_str);
-
-        // ===============================
-
-
-        // ============REGSERVER==========
-
         this.registry = RegistryServerInfo.parse(option.registry || "jigsaw://127.0.0.1:3793/");
         
-        // ============REGSERVER==========
-
         let listen_port = option.port;
         this.listen_port = listen_port;
-
-    
 
         this.jgname = jgname;
 
@@ -126,14 +121,14 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             this.domclient = new this.modules.RegistryClient(this.jgid,this.jgname,entry,
                 this.registry
             ,this.router as IRouter);
-                    
+            this.domclient.on("error",(err)=>this.emit("error",err));
 
             this.domclient.getLifeCycle().on("closed",()=>{
                 this.close();    
             });
 
             this.domclient.getLifeCycle().when("ready").then(()=>{
-                this.setRef(+1);
+                this.setModuleRef(+1);
             });
     
         })
@@ -144,25 +139,21 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         });
         
         this.router.getLifeCycle().when("ready").then(()=>{
-            this.setRef(+1);
+            this.setModuleRef(+1);
         });
        
 
 
     }
-    private setRef(offset : number){
-        this.ref+=offset;
+    private setModuleRef(offset : number){
+        this.module_ref += offset;
 
         if(this.lifeCycle.getState() == "starting"){
             assert(offset >= 0);
-            if(this.ref == 2){
+            if(this.module_ref == 2){
                 this.socket.setEmitting(true);
                 this.lifeCycle.setState("ready");
             }
-        }else if(this.lifeCycle.getState() == "closing"){
-            assert(offset <= 0);
-            if(this.ref == 0)
-                this.lifeCycle.setState("closed");
         }
     }
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | Object>{
@@ -259,14 +250,14 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
 
         let req_seq = this.request_seq++;
-        this.setRef(+1);
+        this.request_async_manager.setRef(+1);
         try{
 
 
             let request = new this.modules.InvokeRequest(this.jgname,path,buf,isJSON,route,this.router as IRouter,req_seq);
 
             request.getLifeCycle().on("closed",()=>{
-                this.setRef(-1);
+                this.request_async_manager.setRef(-1);
             })
 
             await request.getLifeCycle().when("ready");
@@ -333,10 +324,18 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         this.lifeCycle.setState("closing");
         
+
+        // waiting for closing all requests
+
+        await this.request_async_manager.waitAllDone();
+
         await this.invoke_handler?.close();
-        await (this.domclient as IRegistryClient).close();   
+        await this.domclient?.close();
         await this.router?.close();
-        this.socket.close();
+        await this.socket.close();
+
+
+        this.lifeCycle.setState("closed");
 
     }
 }

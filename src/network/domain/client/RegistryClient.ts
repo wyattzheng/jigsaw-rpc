@@ -1,16 +1,17 @@
 import AddressInfo from "../AddressInfo";
-import IRegistryClient from "./IRegistryClient";
+import IRegistryClient,{ RegistryClientEvent } from "./IRegistryClient";
 import IRouter from "../../router/IRouter";
 import LifeCycle from "../../../utils/LifeCycle";
 import DomainClientHandler from "../../../network/handler/DomainClientHandler";
 import RegistryServerInfo from "../RegistryServerInfo";
 import RegistryResolver from "./RegistryResolver";
 import RegistryUpdater from "./RegistryUpdater";
+import { TypedEmitter } from "tiny-typed-emitter";
 
 
 
 
-class RegistryClient implements IRegistryClient{
+class RegistryClient extends TypedEmitter<RegistryClientEvent> implements IRegistryClient{
     private router : IRouter;
     private client_id : string;
     private client_name : string;
@@ -26,13 +27,16 @@ class RegistryClient implements IRegistryClient{
         entry:AddressInfo,
         server_address:RegistryServerInfo,
         router:IRouter){
-        
+        super();
+
         this.router = router;
         this.client_id = client_id;
         this.client_name = client_name;
 
 
         this.updater = new RegistryUpdater(this.client_id,this.client_name,entry,server_address,this.router);
+        this.updater.on("error",(err)=>this.emit("error",err));
+
         this.resolver = new RegistryResolver(server_address,this.router);
 
         this.handler = new DomainClientHandler(this.router);

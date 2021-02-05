@@ -1,5 +1,6 @@
 import AddressInfo from "../../domain/AddressInfo";
 import IRoute from "./IRoute";
+import { DnsResolve4 } from "../../../utils/DnsResolver";
 
 class NetRoute implements IRoute{
     private dst_port : number;
@@ -13,7 +14,9 @@ class NetRoute implements IRoute{
         throw new Error("this route can not preload");
     }
     async getAddressInfo() : Promise<AddressInfo>{
-        return new AddressInfo(this.dst_address,this.dst_port);
+        
+        let dst_addr = await DnsResolve4(this.dst_address);
+        return new AddressInfo(dst_addr,this.dst_port);
     }
 }
 

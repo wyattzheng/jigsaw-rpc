@@ -114,9 +114,11 @@ class InvokeHandler implements IHandler{
         
         this.router.unplug("InvokePacket",this.invokeplug);
 
+        
         this.lifeCycle.setState("closing");
         this.setRef("reply",0);
         
+        await this.lifeCycle.when("closed");
     }
     private closeAllInvokers(){
         let keys = Array.from(this.invokers.getMap().keys());

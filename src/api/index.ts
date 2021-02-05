@@ -10,7 +10,9 @@ import InvokeRequest from "../network/request/InvokeRequest";
 import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
 import RegistryClient from "../network/domain/client/RegistryClient";
 import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
-import {JigsawOption} from "../jigsaw/JigsawOption";
+
+import { JigsawCall } from "../tools/JigsawCall";
+import { JigsawOption } from "../jigsaw/JigsawOption";
 import { PostWare, PreWare, UseWare } from "../jigsaw/JigsawWare";
 
 
@@ -74,11 +76,14 @@ function GetJigsaw(option? : JigsawOption) : IJigsaw{
 
 
 const RPCApi = {
+    
+    call : JigsawCall,
+
     pre : pre,
     use : use,
     post : post,
     registry : RegistryApi,
-    GetJigsaw : GetJigsaw
+    GetJigsaw : GetJigsaw,
 }
 export default RPCApi;
 

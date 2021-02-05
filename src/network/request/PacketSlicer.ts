@@ -70,7 +70,6 @@ class PacketSlicer extends TypedEmitter<PacketSlicerEvent>{
             send_limit = 50;
         
         debug("send_speed = ",this.getSpeed(),"send_limit = ",send_limit)
-        //console.log(this.getSpeed(),send_limit)
 
         this.packets_send_limit = send_limit;
     }

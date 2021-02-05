@@ -8,12 +8,15 @@ import NetRoute from "../../../network/router/route/NetRoute";
 
 import Util from "util";
 import assert from 'assert';
+import { TypedEmitter } from "tiny-typed-emitter";
 
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
 
-
-class RegistryUpdater{
+interface UpdaterEvent{
+    error:(err : Error)=>void;
+}
+class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
     private ref : number = 0;
     private closing_defer = new Defer<void>();
     private client_id = "";
@@ -26,6 +29,7 @@ class RegistryUpdater{
     private isAnonymous = false;
 
     constructor(client_id:string,client_name:string,entry:AddressInfo,server_address:AddressInfo,router:IRouter){
+        super();
         this.client_id = client_id;
         this.client_name = client_name;
         this.server_address = server_address;
@@ -80,7 +84,7 @@ class RegistryUpdater{
                     await this.updateAddress(this.client_name,this.isAnonymous? undefined : this.entry);
 
                 }catch(err){
-                    console.error("updating address error",err);
+                    this.emit("error",err);
                 }
             }
 

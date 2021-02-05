@@ -65,7 +65,6 @@ class LimitedMap<T,Z> extends TypedEmitter<LimitedMapEvent<Z>>{
 
 			let v = this.map.get(key) as Value<Z>;
 			if(v.isExpired()){
-				//console.log("gc",key);
 				this.delete(key);
 			}
 		}

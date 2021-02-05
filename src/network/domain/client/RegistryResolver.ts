@@ -47,11 +47,7 @@ class RegistryResolver{
         return queryinfos;
     }
     async resolve(regpath:string,timeout:number = 5000) : Promise<RegNode>{
-//        assert.strictEqual(this.lifeCycle.getState(),"ready");
 
-
-//        console.log(queryinfos);
-        
         let resolved = await this.resolveAny(regpath,timeout);
         
         debug("real resolve",regpath,resolved);

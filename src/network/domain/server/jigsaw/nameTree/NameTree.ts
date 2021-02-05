@@ -168,19 +168,4 @@ class NameTree<T>{
 
 }
 
-/*let tree = new NameTree<string>();
-
-tree.addNode("a.b.c.d",new DataNode<string>(DataNode.NodeType.ENDPOINT));
-tree.addNode("a.e.f.g",new DataNode<string>(DataNode.NodeType.ENDPOINT));
-tree.addNode("a.b.x.y",new DataNode<string>(DataNode.NodeType.ENDPOINT));
-
-tree.removeEndNode("a.b.x.y");
-
-console.log(tree.getRoot().getChild("a"));
-
-tree.map((x)=>{
-    console.log(x.getName(),x.getType());
-})*/
-//console.log(tree.getNode("a.b.c.d"));
-
 export default NameTree;

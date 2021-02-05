@@ -207,7 +207,7 @@ describe("Base Transfer Test",()=>{
             await next();
         });
 
-        random_jg.on("error",async (err)=>{
+        random_jg.once("error",async (err)=>{
             await random_jg.close();
             done();
         });

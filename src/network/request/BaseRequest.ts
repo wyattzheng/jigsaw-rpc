@@ -177,8 +177,8 @@ abstract class BaseRequest<T> implements IRequest<T>{
         return this.lifeCycle;
     }
     abstract getName():string;
-    protected abstract async handlePacket(p:IPacket) : Promise<void>;
-    protected abstract async send() : Promise<void>;
+    protected abstract handlePacket(p:IPacket) : Promise<void>;
+    protected abstract send() : Promise<void>;
 }
 
 export default BaseRequest

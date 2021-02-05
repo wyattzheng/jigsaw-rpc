@@ -1,6 +1,7 @@
 import AddressInfo from "../../domain/AddressInfo";
 import IRegistryClient from "../../domain/client/IRegistryClient";
 import IRoute from "./IRoute";
+import { DnsResolve4 } from "../../../utils/DnsResolver";
 
 class RegistryRoute implements IRoute{
     private registryClient : IRegistryClient;
@@ -13,9 +14,11 @@ class RegistryRoute implements IRoute{
         await this.registryClient.resolve(this.regpath);
     }
     async getAddressInfo() : Promise<AddressInfo>{
+        
         let resolved = await this.registryClient.resolve(this.regpath);
         
-        return new AddressInfo(resolved.address.address,resolved.address.port);
+        let dst_addr = await DnsResolve4(resolved.address.address);
+        return new AddressInfo(dst_addr,resolved.address.port);
     }
 
 }

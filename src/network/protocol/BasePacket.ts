@@ -15,7 +15,6 @@ class BasePacket extends Packet{ // Design Mode : Builder Mode
 	}
 	enlarge(size:number){
 		let newbuffer = Buffer.allocUnsafe(size);
-		//console.log(this.offset);
 		this.buffer.slice(0,this.offset)
 		.copy(newbuffer,0);
 

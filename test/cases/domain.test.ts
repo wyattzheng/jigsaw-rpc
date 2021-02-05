@@ -27,7 +27,7 @@ describe("Domain Module Test",()=>{
         assert(addr.address.port == 1234,"resolved port is error");        
     });
     it("should caught error when resolve a domain that don't exists",function(done){
-        this.timeout(10000);
+        this.timeout(30000);
         let jg = RPC.GetJigsaw({name:"test",registry:"jigsaw://test-testadsdasdsadas.com"});
         let err_times = 0;
 

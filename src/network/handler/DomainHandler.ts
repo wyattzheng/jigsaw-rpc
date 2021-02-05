@@ -57,7 +57,6 @@ class DomainHandler implements IHandler{
 
         let keys = this.recent_clients.getMap().keys();
 
-//        console.log(pk,keys)
         for(let key of keys){
             let addr = this.recent_clients.get(key);
             await this.router.sendPacket(pk,new NetRoute(addr.port,addr.address));
