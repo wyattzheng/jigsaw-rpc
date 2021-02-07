@@ -89,7 +89,7 @@ class InvokeHandler implements IHandler{
 
         this.invokeplug = this.router.plug("InvokePacket",this.handlePacket.bind(this));
         
-        this.router.getLifeCycle().on("ready",()=>{
+        this.router.getLifeCycle().when("ready").then(()=>{
             this.lifeCycle.setState("ready");
         });
 

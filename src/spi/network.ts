@@ -4,16 +4,19 @@ import Path from "../network/request/Path";
 import AddressInfo from "../network/domain/AddressInfo";
 
 import RegistryServerInfo from "../network/domain/RegistryServerInfo";
-import IRegistryClient from "../network/domain/client/IRegistryClient";
-import RegistryClient from "../network/domain/client/RegistryClient";
+import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
 
+import RegistryResolver from "../network/domain/client/RegistryResolver";
 import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
+
+import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
 
 export {
     RegistryRoute,
     RegistryServerInfo,
-    IRegistryClient,
-    RegistryClient,
+    IRegistryResolver,
+    RegistryResolver,
+    DomainCacheStorage,
     IRoute,
     Path,
     AddressInfo,

@@ -1,26 +1,35 @@
 
-import { RPC } from "../index";
+import { GetJigsaw } from "../api/GetJigsaw";
+import IJigsaw from "../jigsaw/IJigsaw";
+import Path from "../network/request/Path";
+import RegistryRoute from "../network/router/route/RegistryRoute";
+import RegistryResolver from "../network/domain/client/RegistryResolver";
+import RegistryServerInfo from "../network/domain/RegistryServerInfo";
+import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
+
 import URL from "url";
 
+const domain_cache = new DomainCacheStorage();
 
 interface JigsawURLObject{
-    registry:string,
+    protocol:string,
+    hostname:string,
+    port:number,
     jgname:string
 }
 function parseJigsawURL(url:string) : JigsawURLObject{
     const url_obj = URL.parse(url);
-    
-    const registry = URL.format({
-        protocol:url_obj.protocol,
-        hostname:url_obj.hostname,
-        port:url_obj.host
-    });
 
     const jgname = (url_obj.pathname || "").replace("/","");
     if(!jgname.length || !url_obj.protocol)
         throw new Error(`can't parse JigsawURL : ${url}`);
     
-    return { registry,jgname };
+    return { 
+        protocol:url_obj.protocol,
+        hostname:url_obj.hostname || "",
+        port:url_obj.port ? parseInt(url_obj.port) : 3793,
+        jgname : jgname
+    };
 }
 
 /**
@@ -30,14 +39,22 @@ function parseJigsawURL(url:string) : JigsawURLObject{
  * @param data 远程调用参数, 必须是一个 Pure JS Object
  */
 export async function JigsawCall(url:string,method:string,data:any = {}){
+
+    const jigsaw = GetJigsaw();
+    jigsaw.on("error",()=>{ });
+
+    await new Promise<void>((resolve)=>(jigsaw as IJigsaw).once("ready",resolve));
+
     const url_obj = parseJigsawURL(url);
 
-    const jigsaw = RPC.GetJigsaw({registry:url_obj.registry});
+    const reg_server_info = new RegistryServerInfo(url_obj.protocol,url_obj.hostname,url_obj.port);
+    const resolver = new RegistryResolver(reg_server_info,jigsaw.getRouter(),domain_cache);
+    const result = await jigsaw.call(
+            new Path(url_obj.jgname,method),
+            new RegistryRoute(url_obj.jgname,resolver),
+            data);
 
-    await new Promise<void>((resolve)=>jigsaw.once("ready",resolve));
-
-    const result = await jigsaw.send(`${url_obj.jgname}:${method}`,data);
-
+    await resolver.close();
     await jigsaw.close();
     return result;
 }

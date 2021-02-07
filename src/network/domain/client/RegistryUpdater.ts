@@ -5,18 +5,17 @@ import AddressInfo from "../AddressInfo";
 import IRouter from "../../router/IRouter";
 import DomainUpdatePacket from "../../../network/protocol/packet/DomainUpdatePacket";
 import NetRoute from "../../../network/router/route/NetRoute";
+import { TypedEmitter } from "tiny-typed-emitter";
+import { IRegistryUpdater, UpdaterEvent } from "./IRegistryUpdater";
 
 import Util from "util";
 import assert from 'assert';
-import { TypedEmitter } from "tiny-typed-emitter";
 
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
 
-interface UpdaterEvent{
-    error:(err : Error)=>void;
-}
-class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
+
+class RegistryUpdater extends TypedEmitter<UpdaterEvent> implements IRegistryUpdater{
     private ref : number = 0;
     private closing_defer = new Defer<void>();
     private client_id = "";
@@ -38,8 +37,10 @@ class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
     
         if(this.client_name.length == 0)
             this.isAnonymous = true;
+
+        this.start();
     }
-    public start(){
+    private async start(){
         assert.strictEqual(this.lifeCycle.getState(),"closed");
 
         this.lifeCycle.setState("starting");
@@ -50,7 +51,7 @@ class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
         this.lifeCycle.setState("ready");
     }
     
-    public async purgeDomain(){
+    private async purgeDomain(){
         if(this.isAnonymous)
             return;
             
@@ -72,8 +73,8 @@ class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
     private async start_updating_loop(){
         
         let tick = 0;
-        let loop_interval = 100;
-        let update_per_loops = 100;
+        let loop_interval = 1;
+        let update_per_loops = 10*1000;
 
         this.setRef(+1);
         this.loop = true;
@@ -119,11 +120,15 @@ class RegistryUpdater extends TypedEmitter<UpdaterEvent>{
         }
     }
 
+    public getLifeCycle(){
+        return this.lifeCycle;
+    }
     public async close(){
         assert.strictEqual(this.lifeCycle.getState(),"ready");
 
         this.loop = false;
         this.lifeCycle.setState("closing");
+        await this.purgeDomain();
         this.setRef(0);
         await this.closing_defer.promise;
         this.lifeCycle.setState("closed");

@@ -33,7 +33,7 @@ class LifeCycle{
     async when(lifecycle : State) : Promise<void>{
         if(this.curr_state == lifecycle)
             return;
-        assert(this.isNextState(lifecycle),new NotNextStateError());
+//        assert(this.isNextState(lifecycle),new NotNextStateError());
 
         return new Promise((resolve,reject)=>this.eventEmitter.once("state_changed",(to,from)=>{
             if(to == "closed"){

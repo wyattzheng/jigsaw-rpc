@@ -11,7 +11,7 @@ class NetRoute implements IRoute{
         this.dst_address = dst_address;
     }
     async preload(){
-        throw new Error("this route can not preload");
+
     }
     async getAddressInfo() : Promise<AddressInfo>{
         

@@ -1,7 +1,7 @@
 import assert from "assert";
 import { RPC } from "../../src/index";
 import UDPSocket from "../../src/network/socket/UDPSocket";
-import GetRegistryClient from "./utils/GetRegistryClient";
+import { getRegistryResolver, getRegistryUpdater} from "./utils/GetRegistryClient";
 
 describe("Domain Module Test",()=>{
     it("should succeed set domain and resolve",async function(){
@@ -15,12 +15,16 @@ describe("Domain Module Test",()=>{
 
         await new Promise((resolve)=>socket.getLifeCycle().on("ready",resolve));
 
-        let client = GetRegistryClient(socket,"test_client");
-        await client.getLifeCycle().when("ready");
-        let addr = await client.resolve("test_client",5000);
+        let updater = getRegistryUpdater(socket,"test_client",1234);
+        await updater.getLifeCycle().when("ready");
+        
+        let resolver = getRegistryResolver(socket);
+        await resolver.getLifeCycle().when("ready");
+        let addr = await resolver.resolve("test_client",5000);
 
         await server.close();
-        await client.close();
+        await updater.close();
+        await resolver.close();
         await socket.close();
         
 

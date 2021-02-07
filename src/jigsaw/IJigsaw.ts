@@ -1,12 +1,13 @@
 import IRoute from "../network/router/route/IRoute";
 import Path from "../network/request/Path";
-import IRegistryClient from "../network/domain/client/IRegistryClient";
 import AddressInfo from "../network/domain/AddressInfo";
 import ISocket from "../network/socket/ISocket";
 import { TypedEmitter } from "tiny-typed-emitter";
 import { JigsawOption } from "./JigsawOption";
 import { UseContext } from "./context/Context";
 import { PostWare, PreWare, UseWare } from "./JigsawWare"
+import { IRegistryResolver } from "network/domain/client/IRegistryResolver";
+import IRouter from "../network/router/IRouter";
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -17,6 +18,7 @@ interface JigsawEvent{
 interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getName() : string;
     getOption() : JigsawOption;
+    getState() : "starting" | "ready" | "closed" | "closing" | "dead";
     
     send(path_str:string,data?:any) : Promise<any>;
     call(path:Path,route:IRoute,data: any):Promise<any>;
@@ -27,7 +29,8 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
 
     getAddress() : AddressInfo;
     
-    getRegistryClient() : IRegistryClient;
+    getResolver() : IRegistryResolver;
+    getRouter() : IRouter;
     getSocket() : ISocket;
     setSocket(socket : ISocket) : void;
 

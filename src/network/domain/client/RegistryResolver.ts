@@ -1,40 +1,46 @@
 import LimitedMap from "../../../utils/LimitedMap";
 import IRouter from "../../../network/router/IRouter";
-import AddressInfo from "../AddressInfo";
 import DomainCacheStorage from "./QueryCacheStorage";
 import assert from 'assert';
 import LifeCycle from "../../../utils/LifeCycle";
 import RegistryServerInfo from "../RegistryServerInfo";
 import QueryDomainRequest from "../../../network/request/QueryDomainRequest";
+import DomainClientHandler from "../../../network/handler/DomainClientHandler";
 import Defer from "../../../utils/Defer";
 import Util  from "util";
+import { IRegistryResolver,RegNode,QueryResult } from "./IRegistryResolver" 
 
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
 
-type RegNode = {jgname:string,jgid:string,address:AddressInfo,updateTime:number};
-type QueryResult = Array<RegNode>;
 
-class RegistryResolver{
+class RegistryResolver implements IRegistryResolver{
     private ref : number = 0;
 
     private router : IRouter;
-    private cache = new DomainCacheStorage();
+    private cache : DomainCacheStorage;
     private queryings = new LimitedMap<string,Promise<QueryResult>>(100);
     private lifeCycle = new LifeCycle();
     private request_seq : number = 0;
     private server_address:RegistryServerInfo;
     private closing_defer = new Defer<void>();
+    private handler : DomainClientHandler;
 
-    constructor(server_address:RegistryServerInfo, router:IRouter){
+    constructor(server_address:RegistryServerInfo, router:IRouter ,cache = new DomainCacheStorage()){
 
+        this.cache = cache;
         this.server_address = server_address;
         this.router = router;
 
         this.lifeCycle.setState("starting");
         this.lifeCycle.setState("ready");
-    }
 
+        this.handler = new DomainClientHandler(router);
+        this.handler.getEventEmitter().on("domain_purged",this.onDomainPurged.bind(this));
+    }
+    private onDomainPurged(jgid:string){
+        this.cache.clearCached_jgid(jgid);
+    }
     async resolveAny(regpath:string,timeout:number = 5000) : Promise<QueryResult>{
         if(!this.cache.isCacheExpired(regpath))
             return this.cache.getCached(regpath);
@@ -132,25 +138,21 @@ class RegistryResolver{
         return req.getResult();
 
     }
-
-    public getCache(){
-        return this.cache;
-    }
-
-
     public async close(){
         let state = this.lifeCycle.getState();
         assert(state == "ready");
 
 
         this.lifeCycle.setState("closing");
+        await this.handler.close();
         this.setRef(0);
-
         await this.closing_defer.promise;
         this.lifeCycle.setState("closed");
-     
+    
     }
-
+    public getLifeCycle(){
+        return this.lifeCycle;
+    }
     private setRef(offset:number){
         this.ref+=offset;
         if(this.lifeCycle.getState() == "closing" && this.ref == 0){

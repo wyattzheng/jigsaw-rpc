@@ -7,7 +7,9 @@ import SimplePacketRouter from "../../../src/network/router/packetrouter/SimpleP
 import InvokeHandler from "../../../src/network/handler/InvokeHandler";
 import InvokeRequest from "../../../src/network/request/InvokeRequest";
 import BuilderNetworkClient from "../../../src/network/client/BuilderNetworkClient";
-import RegistryClient from "../../../src/network/domain/client/RegistryClient";
+import RegistryResolver from "../../../src/network/domain/client/RegistryResolver";
+import RegistryUpdater from "../../../src/network/domain/client/RegistryUpdater";
+
 import PacketBuilderManager from "../../../src/network/protocol/builder/manager/PacketBuilderManager";
 
 function GetMockJigsaw(option:any,mocked_modules:any){
@@ -18,7 +20,8 @@ function GetMockJigsaw(option:any,mocked_modules:any){
         InvokeHandler:InvokeHandler,
         InvokeRequest:InvokeRequest,
         NetworkClient:BuilderNetworkClient,
-        RegistryClient:RegistryClient,
+        RegistryResolver:RegistryResolver,
+        RegistryUpdater:RegistryUpdater,
         BuilderManager:PacketBuilderManager
     };
     for(let i in mocked_modules){
