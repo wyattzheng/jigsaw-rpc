@@ -23,7 +23,7 @@ class MockRandomSocket implements ISocket{
         return this.lifeCycle;
     }
     async start(): Promise<void> {
-        this.timeout = setInterval(()=>{
+        this.timeout = setTimeout(()=>{
             if(this.emitting)
                 this.generateMockedData();
         },100);

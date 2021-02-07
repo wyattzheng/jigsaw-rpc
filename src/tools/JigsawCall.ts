@@ -56,5 +56,6 @@ export async function JigsawCall(url:string,method:string,data:any = {}){
 
     await resolver.close();
     await jigsaw.close();
+
     return result;
 }

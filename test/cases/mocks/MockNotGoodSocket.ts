@@ -30,7 +30,7 @@ class MockNotGoodSocket implements ISocket{
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			if(!this.emitting)
                 return;
-                
+
 			if(this.recv_lock++>=1)
 				this.eventEmitter.emit("message",data,new AddressInfo(rinfo.address,rinfo.port));
 	
@@ -72,8 +72,7 @@ class MockNotGoodSocket implements ISocket{
 		assert(this.getLifeCycle().getState() == "ready","socket must be ready state");
 
 
-        if(this.send_lock++>=1)
-    		this.sock.send(data,port,address);
+       	this.sock.send(data,port,address);
 
 	}
 	public async close() : Promise<void>{

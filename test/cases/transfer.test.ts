@@ -238,7 +238,7 @@ describe("Base Transfer Test",()=>{
         await Promise.all([waitForEvent(A,"ready"),waitForEvent(B,"ready")]);
 
         let success = 0;
-        for(let i=0; i<5; i++){
+        for(let i=0; i<10; i++){
             try{
                 let rand = Math.random();
                 let ret :any = await A.send("B:call",{ v: rand });
