@@ -18,7 +18,9 @@ class TestRequest extends BaseRequest<void>{
     }
 
 }
-describe("Request Test",()=>{
+describe("Request Test",function(){
+    this.timeout(10*1000);
+
     it("should timeout when never build a new request",(done)=>{
 
         let socket = new UDPSocket();

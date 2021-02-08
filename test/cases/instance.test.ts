@@ -2,7 +2,9 @@ import { RPC } from "../../src/index";
 import assert from "assert";
 import waitForEvent from "./utils/WaitForEvent";
 
-describe("Instance Test",()=>{
+describe("Instance Test",function(){
+    this.timeout(10*1000);
+
     let app : any={};
     before(()=>{
         app.registry = new RPC.registry.Server();

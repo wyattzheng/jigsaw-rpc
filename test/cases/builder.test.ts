@@ -5,6 +5,7 @@ import SlicePacket from "../../src/network/protocol/packet/SlicePacket";
 import TestPacket from "../../src/network/protocol/packet/TestPacket";
 
 describe("Builder Test",async function(){
+    this.timeout(10*1000);
     it("should throw error if a wrong sliceid packet send into builder",async function(){
         this.timeout(20*1000);
         let builder = new PacketBuilder(100,new PacketFactory());

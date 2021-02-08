@@ -9,7 +9,9 @@ import { JGError } from "../../src/spi/error";
 
 const sleep = util.promisify(setTimeout);
 
-describe("Base Transfer Test",()=>{
+describe("Base Transfer Test",function(){
+    this.timeout(10*1000);
+
     let app : any={};
     before(()=>{
         app.registry = new RPC.registry.Server();

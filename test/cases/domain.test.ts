@@ -3,7 +3,9 @@ import { RPC } from "../../src/index";
 import UDPSocket from "../../src/network/socket/UDPSocket";
 import { getRegistryResolver, getRegistryUpdater ,getClient } from "./utils/GetRegistryClient";
 
-describe("Domain Module Test",()=>{
+describe("Domain Module Test",function(){
+    this.timeout(10*1000);
+
     it("should succeed set domain and resolve",async function(){
         this.timeout(5000);
         let server = new RPC.registry.Server(3793);

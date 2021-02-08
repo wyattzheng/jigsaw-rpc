@@ -4,6 +4,8 @@ import { AddressInfo } from "../../src/spi/network";
 import waitForEvent from "./utils/WaitForEvent";
 
 describe("Jigsaw Hooks Test",function(){
+    this.timeout(30000);
+
     let app : any={};
     before(()=>{
         app.registry = new RPC.registry.Server();
