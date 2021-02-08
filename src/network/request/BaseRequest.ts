@@ -105,10 +105,15 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
     private async start_waiting(){
         let tick : number = 0;
+        let times : number = 0;
+        let next_wait : number = 50;
+        
         while(this.resender_loop){
-            if(tick++ % 50 == 0){
+            if(tick++ >= next_wait){
                 await this.dosend();
-            
+                
+                tick = 0; times++;
+                next_wait = 40 + Math.floor(30*Math.random())
             }
             await sleep(1);
         }

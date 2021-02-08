@@ -26,7 +26,7 @@ class RegistryResolver implements IRegistryResolver{
     private closing_defer = new Defer<void>();
     private handler : DomainClientHandler;
 
-    constructor(server_address:RegistryServerInfo, router:IRouter ,cache = new DomainCacheStorage()){
+    constructor(server_address:RegistryServerInfo, router:IRouter ,cache : DomainCacheStorage){
 
         this.cache = cache;
         this.server_address = server_address;

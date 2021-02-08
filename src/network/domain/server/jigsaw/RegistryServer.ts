@@ -71,6 +71,7 @@ class RegistryServer extends TypedEmitter<RegistryServerEvent>{
 
         await this.handler.close();
         await this.router.close();
+        await this.client.close();
         await this.socket.close();
 
     }

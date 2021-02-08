@@ -16,13 +16,18 @@ import IRoute from "../network/router/route/IRoute";
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import IHandler from "../network/handler/IHandler";
-import {UseContext,PreContext,PostContext} from "./context/Context";
-import {UseWare,PreWare,PostWare} from "./JigsawWare";
-import {JigsawOption,JigsawModuleOption} from "./JigsawOption";
+
+import { UseContext, PreContext, PostContext } from "./context/Context";
+import { UseWare, PreWare, PostWare } from "./JigsawWare";
+import { JigsawOption, JigsawModuleOption } from "./JigsawOption";
 
 import { AsyncManager } from "../utils/AsyncManager"
-import { IRegistryResolver } from "network/domain/client/IRegistryResolver";
-import { IRegistryUpdater } from "network/domain/client/IRegistryUpdater";
+import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
+import { IRegistryUpdater } from "../network/domain/client/IRegistryUpdater";
+import { parseJigsawURL } from "./JigsawURL";
+
+import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
+import INetworkClient from "network/client/INetworkClient";
 
 
 interface JigsawEvent{
@@ -45,6 +50,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     
     private registry : RegistryServerInfo;
 
+    private client? : INetworkClient;
     private router? : IRouter;
     
     private request_seq : number = 0;
@@ -60,6 +66,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private option : JigsawOption;
     private modules : JigsawModuleOption;
+    private domain_cache =  new DomainCacheStorage()
 
     constructor(option : JigsawOption,modules : JigsawModuleOption){
         super();
@@ -88,6 +95,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.lifeCycle.setState("starting");
 
         await this.initSocket();
+        await this.initClient();
         await this.initRouter();
         await this.initHandler();
 
@@ -101,7 +109,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     }
     private async initResolver(){
-        this.resolver = new this.modules.RegistryResolver(this.registry,this.router);
+        this.resolver = new this.modules.RegistryResolver(this.registry,this.router,this.domain_cache);
         await this.resolver.getLifeCycle().when("ready");
     }
     private async initUpdater(){
@@ -115,12 +123,16 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private async initHandler(){
         this.invoke_handler = new this.modules.InvokeHandler(this.router,this.handleInvoke.bind(this));
     }
-    private async initRouter(){
+    private async initClient(){
         let factory = new PacketFactory();
         let builder_manager = new this.modules.BuilderManager(factory);
         let client=new this.modules.NetworkClient(this.socket,factory,builder_manager);
-        client.getEventEmitter().on("error",(err:Error)=>{ this.emit("error",err); });
-        this.router = new this.modules.PacketRouter(client);
+        this.client = client;
+        await this.client.getLifeCycle().when("ready");
+    }
+    private async initRouter(){
+        this.client?.getEventEmitter().on("error",(err:Error)=>{ this.emit("error",err); });
+        this.router = new this.modules.PacketRouter(this.client);
         await this.router.getLifeCycle().when("ready");
     }
     private async initSocket(){
@@ -171,13 +183,27 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
         return this.resolver as IRegistryResolver;
     }
-
+    async usend(url:string,method:string,data:any = {}){
+        const url_obj = parseJigsawURL(url);
+        const reg_server_info = new RegistryServerInfo(url_obj.protocol,url_obj.hostname,url_obj.port);
+        const resolver = new this.modules.RegistryResolver(reg_server_info,this.getRouter(),this.domain_cache);
+        
+        const route = new this.modules.DefaultRoute(url_obj.jgname,resolver);
+        const result = await this.callWithContext(new Path(url_obj.jgname,method),route,data);
+        await resolver.close();
+        
+        return result;
+    }
     async send(path_str:string,data:any = {}) : Promise<any>{
+        const path = Path.fromString(path_str);
+        const route = new this.modules.DefaultRoute(path.regpath,this.getResolver());
+
+        return await this.callWithContext(path,route,data);
+    }
+    private async callWithContext(path:Path,route:IRoute,data:any = {}){
         assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
-
-        let path = Path.fromString(path_str);
-        let route = new this.modules.DefaultRoute(path.regpath,this.getResolver());
-
+        
+        let path_str = path.stringify();
         let pre_raw_ctx : PreContext = {
             rawdata : data,
             rawpathstr : path_str,
@@ -208,7 +234,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
             throw post_ctx.result;
 
         return post_ctx.result;
-
     }
     public async call(path:Path,route:IRoute,data:any) : Promise<any>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
@@ -315,12 +340,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         // waiting for closing all requests
 
         await this.request_async_manager.waitAllDone();
-
+        
         await this.invoke_handler?.close();
-
         await this.updater?.close();
         await this.resolver?.close();
         await this.router?.close();
+        await this.client?.close();
         await this.socket?.close();
 
         this.lifeCycle.setState("closed");

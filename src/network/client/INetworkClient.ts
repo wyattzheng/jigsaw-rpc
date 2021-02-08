@@ -18,6 +18,8 @@ interface INetworkClient {
 	getAddressInfo() : AddressInfo;
 	sendPacket(packet : IPacket,dst_port:number,dst_address:string) : void;
 	getSocket() :ISocket;
+
+	close():Promise<void>;
 }
 
 export default INetworkClient;

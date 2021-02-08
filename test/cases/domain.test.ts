@@ -1,7 +1,7 @@
 import assert from "assert";
 import { RPC } from "../../src/index";
 import UDPSocket from "../../src/network/socket/UDPSocket";
-import { getRegistryResolver, getRegistryUpdater} from "./utils/GetRegistryClient";
+import { getRegistryResolver, getRegistryUpdater ,getClient } from "./utils/GetRegistryClient";
 
 describe("Domain Module Test",()=>{
     it("should succeed set domain and resolve",async function(){
@@ -15,18 +15,19 @@ describe("Domain Module Test",()=>{
 
         await new Promise((resolve)=>socket.getLifeCycle().on("ready",resolve));
 
-        let updater = getRegistryUpdater(socket,"test_client",1234);
+        let client = getClient(socket);
+        let updater = getRegistryUpdater(client,"test_client",1234);
         await updater.getLifeCycle().when("ready");
         
-        let resolver = getRegistryResolver(socket);
+        let resolver = getRegistryResolver(client);
         await resolver.getLifeCycle().when("ready");
         let addr = await resolver.resolve("test_client",5000);
 
+        await client.close();
         await server.close();
         await updater.close();
         await resolver.close();
         await socket.close();
-        
 
         assert(addr.address.port == 1234,"resolved port is error");        
     });

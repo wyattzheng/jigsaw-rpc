@@ -21,6 +21,8 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getState() : "starting" | "ready" | "closed" | "closing" | "dead";
     
     send(path_str:string,data?:any) : Promise<any>;
+    usend(url:String,method:string,data?:any):Promise<any>;
+
     call(path:Path,route:IRoute,data: any):Promise<any>;
 
     use(handler:UseWare,hash?:string) : void;

@@ -38,10 +38,12 @@ describe("Request Test",()=>{
         
         req.getLifeCycle().on("dead",async ()=>{
             if(++ref == 2){
+                await client.close();
                 await socket.close();
                 done();
             }
         });
+
 
     });
 })
