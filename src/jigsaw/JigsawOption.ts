@@ -18,7 +18,8 @@ interface BaseOption {
     name?: string,
     entry?: string,
     registry?: string,
-    port? : number
+    port? : number,
+    disable_updater? : boolean
 }
 
 interface JigsawModuleOption {

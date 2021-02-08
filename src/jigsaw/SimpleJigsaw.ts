@@ -50,8 +50,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private request_seq : number = 0;
     private invoke_handler? : IHandler;
 
-    private module_ref = 0;
-
     private request_async_manager = new AsyncManager();
 
     private socket? : ISocket;
@@ -60,7 +58,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     private pre_workflow = new WorkFlow<PreContext>();
     private post_workflow = new WorkFlow<PostContext>();
 
-    private option : any;
+    private option : JigsawOption;
     private modules : JigsawModuleOption;
 
     constructor(option : JigsawOption,modules : JigsawModuleOption){
@@ -81,26 +79,30 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
         this.jgname = jgname;
 
- 
-        this.lifeCycle.setState("starting");
-
-        this.lifeCycle.when("ready").then(()=>this.emit("ready"));
+        this.lifeCycle.on("ready",()=>this.emit("ready"));
         this.lifeCycle.on("closed",()=>this.emit("closed"));
 
         this.initSubModules();
     }
     private async initSubModules(){
+        this.lifeCycle.setState("starting");
+
         await this.initSocket();
         await this.initRouter();
         await this.initHandler();
-        await this.initUpdater();
+
+        if(!this.option.disable_updater)
+            await this.initUpdater();
+
         await this.initResolver();
+
+        this.socket?.setEmitting(true);
+        this.lifeCycle.setState("ready");
 
     }
     private async initResolver(){
         this.resolver = new this.modules.RegistryResolver(this.registry,this.router);
         await this.resolver.getLifeCycle().when("ready");
-        this.setModuleRef(+1);
     }
     private async initUpdater(){
         let socket_port = (this.socket as ISocket).getAddress().port;
@@ -109,7 +111,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.updater = new this.modules.RegistryUpdater(this.jgid,this.jgname,entry,this.registry,this.router);
         this.updater.on("error",(err)=>this.emit("error",err));
         await this.updater.getLifeCycle().when("ready");
-        this.setModuleRef(+1);
     }
     private async initHandler(){
         this.invoke_handler = new this.modules.InvokeHandler(this.router,this.handleInvoke.bind(this));
@@ -121,7 +122,6 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         client.getEventEmitter().on("error",(err:Error)=>{ this.emit("error",err); });
         this.router = new this.modules.PacketRouter(client);
         await this.router.getLifeCycle().when("ready");
-        this.setModuleRef(+1);
     }
     private async initSocket(){
         let socket = new this.modules.Socket(this.listen_port,"0.0.0.0");
@@ -132,17 +132,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.socket = socket;
         await this.socket.getLifeCycle().when("ready");
     }
-    private setModuleRef(offset : number){
-        this.module_ref += offset;
-
-        if(this.lifeCycle.getState() == "starting"){
-            assert(offset >= 0);
-            if(this.module_ref == 3){
-                this.socket?.setEmitting(true);
-                this.lifeCycle.setState("ready");
-            }
-        }
-    }
+    
     private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | Object>{
 
         let parsed : any = data;

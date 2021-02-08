@@ -24,6 +24,7 @@ class UDPSocket implements ISocket{
 		this.address = address;
 
 		this.sock = Dgram.createSocket("udp4");
+		this.sock.unref();
 	
 		this.sock.on("message",(data : Buffer,rinfo:Dgram.RemoteInfo)=>{ 
 			if(!this.emitting)

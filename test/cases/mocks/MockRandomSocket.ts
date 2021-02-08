@@ -49,8 +49,7 @@ class MockRandomSocket implements ISocket{
         let buf = pk.getSlicedData();
 
         for(let i=0;i<Math.floor(buf.length*0.5);i++){
-            if(Math.random()<0.5)
-                buf[i] = Math.floor(Math.random() * 255);
+                buf[i] = 255;
         }
         this.eventEmitter.emit("message",buf);
     }

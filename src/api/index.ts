@@ -2,7 +2,7 @@ import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
 
 import { GetJigsaw, pre, use, post } from "./GetJigsaw";
 
-import { JigsawCall } from "../tools/JigsawCall";
+import { JigsawCall , default_jigsaw } from "../tools/JigsawCall";
 
 
 const RegistryApi = {
@@ -16,6 +16,7 @@ const RPCApi = {
     pre : pre,
     use : use,
     post : post,
+    jigsaw : default_jigsaw
 }
 
 export default RPCApi;

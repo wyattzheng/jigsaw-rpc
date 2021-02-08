@@ -10,6 +10,9 @@ import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
 import URL from "url";
 
 const domain_cache = new DomainCacheStorage();
+const jigsaw = GetJigsaw({disable_updater:true});
+jigsaw.on("error",()=>{ });
+
 
 interface JigsawURLObject{
     protocol:string,
@@ -40,10 +43,8 @@ function parseJigsawURL(url:string) : JigsawURLObject{
  */
 export async function JigsawCall(url:string,method:string,data:any = {}){
 
-    const jigsaw = GetJigsaw();
-    jigsaw.on("error",()=>{ });
-
-    await new Promise<void>((resolve)=>(jigsaw as IJigsaw).once("ready",resolve));
+    if(jigsaw.getState() != "ready")
+        throw new Error(`jigsaw isn't ready, please wait for a second`);
 
     const url_obj = parseJigsawURL(url);
 
@@ -55,7 +56,8 @@ export async function JigsawCall(url:string,method:string,data:any = {}){
             data);
 
     await resolver.close();
-    await jigsaw.close();
 
     return result;
 }
+
+export { jigsaw as default_jigsaw };
