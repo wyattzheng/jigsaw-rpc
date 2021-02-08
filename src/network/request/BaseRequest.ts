@@ -106,7 +106,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
     private async start_waiting(){
         let tick : number = 0;
         let times : number = 0;
-        let next_wait : number = 50;
+        let next_wait : number = 0;
         
         while(this.resender_loop){
             if(tick++ >= next_wait){
