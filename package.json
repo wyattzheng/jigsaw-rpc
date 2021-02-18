@@ -2,14 +2,17 @@
   "name": "jigsaw-rpc",
   "version": "0.0.9-dev2",
   "description": "jigsaw-rpc is a RPC framework under Node.js",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "test": "mocha",
-    "build": "tsc",
-    "prepare": "npm run build",
+    "build": "node ./scripts/build",
+    "prepare": "npm run compile",
     "test-cov": "nyc --reporter=lcov npm test",
-    "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" "
+    "dev": "nodemon --watch ./src/ --watch ./examples/ -e ts --exec \"ts-node ./examples/test-app.ts\" ",
+    "compile": "tsc",
+    "start": "node ./bin/cli",
+    "deploy": "node ./scripts/deploy"
   },
   "repository": {
     "type": "git",
@@ -40,18 +43,25 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.14.25",
     "cz-conventional-changelog": "^3.3.0",
-    "mocha": "^8.2.0",
+    "mocha": "^8.3.0",
     "nyc": "^15.1.0",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.3"
+    "typescript": "^4.1.5",
+    "debug": "^4.2.0"
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
-    }
+    },
+    "org": "wyattzhy",
+    "expose_port": [
+      "3793"
+    ]
   },
   "dependencies": {
     "debug": "^4.2.0",
-    "tiny-typed-emitter": "^2.0.3"
+    "tiny-typed-emitter": "^2.0.3",
+    "config-style-cli": "^0.0.2",
+    "meow": "^9.0.0"
   }
 }
