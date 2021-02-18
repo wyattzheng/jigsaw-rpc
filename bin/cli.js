@@ -1,8 +1,8 @@
 
 const CLI = require("config-style-cli");
-const { ServiceApp, ServiceAppDefaultConfig } = require("../lib/index");
+const { RegistryServerApp , DefaultRegistryServerAppConfig } = require("../lib");
 
 CLI([
-    ServiceApp,
-    ServiceAppDefaultConfig
+    RegistryServerApp,
+    DefaultRegistryServerAppConfig
 ]);
