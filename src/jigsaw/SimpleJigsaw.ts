@@ -1,34 +1,20 @@
-import IJigsaw from "./IJigsaw";
-import PacketFactory from "../network/protocol/factory/PacketFactory";
-import AddressInfo from "../network/domain/AddressInfo";
-import RegistryServerInfo from "../network/domain/RegistryServerInfo";
-import Path from "../network/request/Path";
-
-import DataValidator from "./DataValidator";
 import { TypedEmitter } from "tiny-typed-emitter";
 
-import assert from "assert";
+import IJigsaw from "./IJigsaw";
+
 import LifeCycle from "../utils/LifeCycle";
-import WorkFlow from "./context/WorkFlow";
 import RandomGen from "../utils/RandomGen";
-
+import Path from "../network/request/Path";
 import IRoute from "../network/router/route/IRoute";
-import IRouter from "../network/router/IRouter";
-import ISocket from "../network/socket/ISocket";
-import IHandler from "../network/handler/IHandler";
+import ISocket from "network/socket/ISocket";
 
-import { UseContext, PreContext, PostContext } from "./context/Context";
-import { UseWare, PreWare, PostWare } from "./JigsawWare";
+
 import { JigsawOption, JigsawModuleOption } from "./JigsawOption";
-
-import { AsyncManager } from "../utils/AsyncManager"
-import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
-import { IRegistryUpdater } from "../network/domain/client/IRegistryUpdater";
-import { parseJigsawURL } from "./JigsawURL";
-
-import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
-import INetworkClient from "network/client/INetworkClient";
-
+import { SimpleInvoker } from "./SimpleInvoker";
+import { SimpleProvider } from "./SimpleProvider";
+import { PostWare, PreWare, UseWare } from "./JigsawWare";
+import { UseContext } from "./context/Context";
+import { NetComponent, NetFactory } from "./NetFactory";
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -39,133 +25,79 @@ interface JigsawEvent{
 class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
 
     private lifeCycle = new LifeCycle();
+    private modules : JigsawModuleOption;
 
     private jgid : string;
     private jgname : string;
-    private updater? : IRegistryUpdater;
-    private resolver? : IRegistryResolver
-
-    private entry : AddressInfo ; 
-    private listen_port? : number;
-    
-    private registry : RegistryServerInfo;
-
-    private client? : INetworkClient;
-    private router? : IRouter;
-    
-    private request_seq : number = 0;
-    private invoke_handler? : IHandler;
-
-    private request_async_manager = new AsyncManager();
-
-    private socket? : ISocket;
-
-    private recv_workflow = new WorkFlow<UseContext>();
-    private pre_workflow = new WorkFlow<PreContext>();
-    private post_workflow = new WorkFlow<PostContext>();
 
     private option : JigsawOption;
-    private modules : JigsawModuleOption;
-    private domain_cache =  new DomainCacheStorage()
+
+    private invoker:SimpleInvoker;
+    private provider:SimpleProvider;
+    private public_net?:NetComponent;
 
     constructor(option : JigsawOption,modules : JigsawModuleOption){
         super();
         this.jgid = RandomGen.GetRandomHash(8);
+        this.jgname = option.name || "";
+
         this.option = option;
         this.modules = modules;
 
-        let jgname = option.name || "";
+        this.invoker = new SimpleInvoker(this.jgid,this.option,this.modules);
+        this.provider = new SimpleProvider(this.jgid,this.option,this.modules);
 
+        this.invoker.on("error",(err)=>this.emit("error",err));
+        this.provider.on("error",(err)=>this.emit("error",err));
 
-        let entry_str : string = option.entry || "127.0.0.1";
-        this.entry = AddressInfo.parse(entry_str);
-        this.registry = RegistryServerInfo.parse(option.registry || "jigsaw://127.0.0.1:3793/");
-        
-        let listen_port = option.port;
-        this.listen_port = listen_port;
-
-        this.jgname = jgname;
-
-        this.lifeCycle.on("ready",()=>this.emit("ready"));
-        this.lifeCycle.on("closed",()=>this.emit("closed"));
-
-        this.initSubModules();
-    }
-    private async initSubModules(){
-        this.lifeCycle.setState("starting");
-
-        await this.initSocket();
-        await this.initClient();
-        await this.initRouter();
-        await this.initHandler();
-
-        if(!this.option.disable_updater)
-            await this.initUpdater();
-
-        await this.initResolver();
-
-        this.socket?.setEmitting(true);
-        this.lifeCycle.setState("ready");
-
-    }
-    private async initResolver(){
-        this.resolver = new this.modules.RegistryResolver(this.registry,this.router,this.domain_cache);
-        await this.resolver.getLifeCycle().when("ready");
-    }
-    private async initUpdater(){
-        let socket_port = (this.socket as ISocket).getAddress().port;
-        let entry = new AddressInfo(this.entry.address,this.entry.port <= 0 ? socket_port : this.entry.port);
-        
-        this.updater = new this.modules.RegistryUpdater(this.jgid,this.jgname,entry,this.registry,this.router);
-        this.updater.on("error",(err)=>this.emit("error",err));
-        await this.updater.getLifeCycle().when("ready");
-    }
-    private async initHandler(){
-        this.invoke_handler = new this.modules.InvokeHandler(this.router,this.handleInvoke.bind(this));
-    }
-    private async initClient(){
-        let factory = new PacketFactory();
-        let builder_manager = new this.modules.BuilderManager(factory);
-        let client=new this.modules.NetworkClient(this.socket,factory,builder_manager);
-        this.client = client;
-        await this.client.getLifeCycle().when("ready");
-    }
-    private async initRouter(){
-        this.client?.getEventEmitter().on("error",(err:Error)=>{ this.emit("error",err); });
-        this.router = new this.modules.PacketRouter(this.client);
-        await this.router.getLifeCycle().when("ready");
-    }
-    private async initSocket(){
-        let socket = new this.modules.Socket(this.listen_port,"0.0.0.0");
-        socket.start();
-        socket.getEventEmitter().on("error",(err)=>{
-            this.emit("error",err);
-        });
-        this.socket = socket;
-        await this.socket.getLifeCycle().when("ready");
+        this.lifeCycle.on("ready",()=>this.emit("ready"))
+        this.init();
     }
     
-    private async handleInvoke(path:Path,data : Buffer,isJSON:boolean,sender:string,reply_info:AddressInfo) : Promise<Buffer | Object>{
+    private async init(){
+        this.lifeCycle.setState("starting");
 
-        let parsed : any = data;
-        if(isJSON)
-            parsed = JSON.parse(data.toString());
-        
-        let context : UseContext = {
-            result:{},
 
-            method:path.method,
-            isJSON,
-            data: parsed,
-            rawdata:data,
-            reply_info,
-            sender,
-            jigsaw:this,
-        };
+        let factory = new NetFactory(this.modules,(err)=>this.emit("error",err));
+        let socket = await factory.getNewSocket(this.option.port);
+        let client = await factory.getNewClient(socket);
+        let router = await factory.getNewRouter(client);
         
-        let ctx = await this.recv_workflow.call(context);
+        this.public_net = {socket,client,router};
+
+        this.invoker.start(this.public_net);
+        this.provider.start(this.public_net);
+
+
+        await Promise.all([
+            this.invoker.getLifeCyle().when("ready"),
+            this.provider.getLifeCyle().when("ready")
+        ]);
+
+
+        this.lifeCycle.setState("ready");
         
-        return ctx.result;
+    }
+    async call(path:Path,route:IRoute,data:any) : Promise<any>{
+        return this.invoker.call(path,route,data);
+    }
+    use(handler : UseWare,hash?:string) : void{
+        return this.provider.use(handler,hash);
+    }
+    pre(handler : PreWare,hash?:string) : void{
+        return this.invoker.pre(handler,hash);
+    }
+    post(handler : PostWare,hash?:string) : void{
+        return this.invoker.post(handler,hash);
+    }
+    port(port_name : string , handler:(data:any,ctx:UseContext)=>any) : void{
+        return this.provider.port(port_name,handler);
+    }
+    send(path_str:string,data:any = {}) : Promise<any>{
+        return (this.invoker as SimpleInvoker).send(path_str,data);
+    }
+    usend(url:string,method:string,data:any = {}){
+        return (this.invoker as SimpleInvoker).usend(url,method,data);
     }
     getOption(){
         return this.option;
@@ -179,150 +111,14 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     getState(){
         return this.lifeCycle.getState();
     }
-    public getResolver(){
-        assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
-        return this.resolver as IRegistryResolver;
-    }
-    async usend(url:string,method:string,data:any = {}){
-        const url_obj = parseJigsawURL(url);
-        const reg_server_info = new RegistryServerInfo(url_obj.protocol,url_obj.hostname,url_obj.port);
-        const resolver = new this.modules.RegistryResolver(reg_server_info,this.getRouter(),this.domain_cache);
-        
-        const route = new this.modules.DefaultRoute(url_obj.jgname,resolver);
-        const result = await this.callWithContext(new Path(url_obj.jgname,method),route,data);
-        await resolver.close();
-        
-        return result;
-    }
-    async send(path_str:string,data:any = {}) : Promise<any>{
-        const path = Path.fromString(path_str);
-        const route = new this.modules.DefaultRoute(path.regpath,this.getResolver());
-
-        return await this.callWithContext(path,route,data);
-    }
-    private async callWithContext(path:Path,route:IRoute,data:any = {}){
-        assert(this.lifeCycle.getState() == "ready","jigsaw state must be ready");
-        
-        let path_str = path.stringify();
-        let pre_raw_ctx : PreContext = {
-            rawdata : data,
-            rawpathstr : path_str,
-            rawroute : route,
-            data:data,
-            pathstr:path_str,
-            route:route,
-        };
-
-        let pre_ctx = await this.pre_workflow.call(pre_raw_ctx);
-
-        let result : any; 
-        try{
-            result = await this.call(Path.fromString(pre_ctx.pathstr),pre_ctx.route,pre_ctx.data);
-        }catch(err){
-            result = err;
-        }
-
-        let post_raw_ctx : PostContext = {
-            pathstr : path_str,
-            data : data,
-            result : result,
-        }
-        
-        let post_ctx = await this.post_workflow.call(post_raw_ctx);
-
-        if(post_ctx.result instanceof Error)
-            throw post_ctx.result;
-
-        return post_ctx.result;
-    }
-    public async call(path:Path,route:IRoute,data:any) : Promise<any>{
-        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
-
-        let isJSON = false;
-        let buf = Buffer.allocUnsafe(0);
-        if(data instanceof Buffer){
-            isJSON = false;
-            buf = data;
-
-        }
-        else{
-            let validator = new DataValidator(data);
-            validator.validate();
-
-            isJSON = true;
-            buf = Buffer.from(JSON.stringify(data));            
-        }        
-        
-
-        let req_seq = this.request_seq++;
-        this.request_async_manager.setRef(+1);
-        try{
-
-
-            let request = new this.modules.InvokeRequest(this.jgname,path,buf,isJSON,route,this.router as IRouter,req_seq);
-
-            request.getLifeCycle().on("closed",()=>{
-                this.request_async_manager.setRef(-1);
-            })
-
-            await request.getLifeCycle().when("ready");
-            await request.run();
-
-            if(request.getResultType() == 1){
-                return JSON.parse(request.getResult().toString());
-            }else{
-                return request.getResult();
-            }    
-        }catch(err){
-            throw err
-        }finally{
-
-        }
-    }
-    
-    use(handler : UseWare,hash?:string) : void{
-        assert(typeof(handler) == "function","handler must be a function");
-
-        this.recv_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
-    }
-    pre(handler : PreWare,hash?:string) : void{
-        assert(typeof(handler) == "function","handler must be a function");
-
-        this.pre_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
-
-    }
-    post(handler : PostWare,hash?:string) : void{
-        assert(typeof(handler) == "function","handler must be a function");
-
-        this.post_workflow.pushWork(handler,hash || RandomGen.GetRandomHash(10));
-    }
-    
-    port(port_name : string , handler:(data:any,ctx:UseContext)=>any) : void{
-        this.use(async (ctx,next)=>{
-            if(ctx.method == port_name){
-                let result = await handler(ctx.data,ctx);
-                if(result == undefined)
-                    ctx.result = null;
-                else
-                    ctx.result = result;
-
-            }
-
-            await next();
-        });
-    }
     getSocket(){
-        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
-
-        return this.socket as ISocket;
-    }
-    setSocket(socket : ISocket){
-        this.socket = socket;
+        return (this.provider as SimpleProvider).getSocket();
     }
     getRouter(){
-        assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
-
-        return this.router as IRouter;
+        return (this.provider as SimpleProvider).getRouter();
+    }
+    getResolver(){
+        return this.invoker.getResolver();
     }
     async close(){
         if(this.lifeCycle.getState() == "starting"){
@@ -336,17 +132,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         
         this.lifeCycle.setState("closing");
         
+        await this.invoker.close();
+        await this.provider.close();
 
-        // waiting for closing all requests
-
-        await this.request_async_manager.waitAllDone();
-        
-        await this.invoke_handler?.close();
-        await this.updater?.close();
-        await this.resolver?.close();
-        await this.router?.close();
-        await this.client?.close();
-        await this.socket?.close();
+        await this.public_net?.router.close();
+        await this.public_net?.client.close();
+        await this.public_net?.socket.close();
 
         this.lifeCycle.setState("closed");
 

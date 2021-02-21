@@ -4,7 +4,7 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
 import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
 
-import RegistryStorage from "../domain/server/jigsaw/RegistryStorage";
+import RegistryStorage from "../domain/server/jigsaw/NameRegistryStorage";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
@@ -81,17 +81,17 @@ class DomainHandler implements IHandler{
             
             this.recent_clients.set(pk.reply_info.stringify(),pk.reply_info);
 
-            if(pk.can_update)
+            if(pk.can_update){
                 this.storage.setNode(pk.jgid,pk.jgname,pk.addrinfo);
+            }
             
 
         }else if(p.getName() == "DomainPurgePacket"){
 
             let pk = p as DomainPurgePacket;
-
+            
             this.storage.removeNode(pk.jgid,pk.jgname);
-            
-            
+
             let r_pk = new PongPacket();
             r_pk.request_id=pk.request_id;
             await this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    

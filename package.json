@@ -1,6 +1,6 @@
 {
   "name": "jigsaw-rpc",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "jigsaw-rpc is a RPC framework under Node.js",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

@@ -18,7 +18,6 @@ namespace BaseContext{
         readonly isJSON:boolean;
         readonly reply_info:AddressInfo;
         readonly sender:string;
-        readonly jigsaw:IJigsaw;
     
         result:any
     }

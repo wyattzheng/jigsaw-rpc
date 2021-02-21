@@ -9,8 +9,6 @@ interface StorageEvent{
     DomainPurgeEvent:(jgid:string)=>void;
 }
 
-
-
 type RegNode = {jgid:string,jgname:string,address:AddressInfo,updateTime:number};
 type QueryResult = Array<RegNode>;
 type FlattedNodes = Array<{key:string,parent:string,name:string,type:number,nodedata:RegNode | undefined}>;
@@ -44,8 +42,9 @@ class RegistryStorage implements IRegistryStorage{
 
     setNode(jgid:string,jgname:string,addr:AddressInfo){
 
-        if(this.nameTree.hasEndNode(jgname)){
-            let node = this.nameTree.getEndNode(jgname);
+        let nodeid=`${jgname}.${jgid}`
+        if(this.nameTree.hasEndNode(nodeid)){
+            let node = this.nameTree.getEndNode(nodeid);
             let data = node.getData();
             data.jgid = jgid;
             data.address = addr;
@@ -54,20 +53,21 @@ class RegistryStorage implements IRegistryStorage{
             let node = new DataNode<RegNode>(DataNode.NodeType.ENDPOINT);
             let curr_time = new Date().getTime();
             node.setData({jgid,jgname,address:addr,updateTime:curr_time});
-            this.nameTree.addNode(jgname,node);
+            this.nameTree.addNode(nodeid,node);
         }
 
     }
     removeNode(jgid:string,jgname:string){
+        let nodeid = `${jgname}.${jgid}`;
       
-        if(!this.nameTree.hasEndNode(jgname))
+        if(!this.nameTree.hasEndNode(nodeid))
             throw new Error("this node doesn't exist");
 
-        let node = this.nameTree.getEndNode(jgname);
+        let node = this.nameTree.getEndNode(nodeid);
         if(node.getData().jgid != jgid)
             throw new Error("this node's jgid isn't correct");
 
-        this.nameTree.removeEndNode(jgname);
+        this.nameTree.removeEndNode(nodeid);
         this.eventEmitter.emit("DomainPurgeEvent", jgid);
     }
     queryNode(jgname:string) : QueryResult{

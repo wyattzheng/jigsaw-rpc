@@ -36,7 +36,7 @@ class LifeCycle{
 //        assert(this.isNextState(lifecycle),new NotNextStateError());
 
         return new Promise((resolve,reject)=>this.eventEmitter.once("state_changed",(to,from)=>{
-            if(to == "closed"){
+            if(to == "closed" && this.error){
                 reject(this.error)
             }else{
                 resolve();

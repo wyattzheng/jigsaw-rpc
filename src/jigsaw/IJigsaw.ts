@@ -21,7 +21,7 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
     getState() : "starting" | "ready" | "closed" | "closing" | "dead";
     
     send(path_str:string,data?:any) : Promise<any>;
-    usend(url:String,method:string,data?:any):Promise<any>;
+    usend(url:string,method:string,data?:any):Promise<any>;
 
     call(path:Path,route:IRoute,data: any):Promise<any>;
 
@@ -31,10 +31,9 @@ interface IJigsaw extends TypedEmitter<JigsawEvent>{
 
     getAddress() : AddressInfo;
     
-    getResolver() : IRegistryResolver;
+    getResolver(): IRegistryResolver;
     getRouter() : IRouter;
     getSocket() : ISocket;
-    setSocket(socket : ISocket) : void;
 
     port(port_name:string,handler:(data:any,ctx:UseContext)=>any) : void;
 
