@@ -199,7 +199,7 @@ export class SimpleInvoker extends TypedEmitter<InvokerEvent>{
         const route = new this.modules.DefaultRoute(path.regpath,this.resolver);
 
         try{
-            let result = await this.sendWithContext(path,route,this.router as IRouter,data);
+            let result = await this.sendWithContext(path,route,router,data);
             return result;
         }catch(err){
             throw err;
