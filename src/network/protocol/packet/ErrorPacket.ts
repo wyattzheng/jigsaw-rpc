@@ -15,7 +15,9 @@ class ErrorPacket extends BasePacket{
     encode(){
         super.encode.call(this);
         
-        this.writeString(this.error.stringify());
+        let err_str_buf = Buffer.from(this.error.stringify());
+        this.enlarge(1400 + err_str_buf.length);
+        this.writeLargeBuffer(err_str_buf);
         
         this.writeString(this.src_jgname);
         this.writeString(this.dst_path);
@@ -23,7 +25,8 @@ class ErrorPacket extends BasePacket{
     decode(){
         super.decode.call(this);
 
-        this.error = JGError.parse(this.readString());
+        let err_str_buf = this.readLargeBuffer().toString();
+        this.error = JGError.parse(err_str_buf);
         
         this.src_jgname = this.readString();
         this.dst_path = this.readString();
