@@ -26,7 +26,7 @@ class BatchPacket extends BasePacket{
 
         this.writeUInt16(this.bufs.length);
         for(let buf of this.bufs)
-            this.writeBuffer(buf);
+            this.writeLargeBuffer(buf);
     
 	}
 	decode(){
@@ -35,7 +35,7 @@ class BatchPacket extends BasePacket{
         this.bufs = [];
         let bufslen = this.readUInt16();
         for(let i=0;i<bufslen;i++)
-            this.bufs[i] = this.readBuffer();
+            this.bufs[i] = this.readLargeBuffer();
 
 	}
 }

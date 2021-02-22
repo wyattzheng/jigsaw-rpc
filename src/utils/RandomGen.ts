@@ -6,5 +6,4 @@ class RandomGen{
     }
 }
 
-
 export default RandomGen;
