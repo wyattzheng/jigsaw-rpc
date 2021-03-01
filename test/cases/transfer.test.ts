@@ -1,4 +1,4 @@
-import { RPC } from "../../src/index";
+import { RPC, RPCSpi } from "../../src/index";
 import assert from "assert";
 import util from "util";
 import waitForEvent  from "./utils/WaitForEvent";
@@ -360,6 +360,32 @@ describe("Base Transfer Test",function(){
             await jg.close();
             await invoker.close();
         }
+    });
+
+    it("can transfer 512KB error by jigsaw",async ()=>{
+        let jg = RPC.GetJigsaw({name:"jigsaw"});
+        let invoker = RPC.GetJigsaw();
+        await Promise.all([waitForEvent(jg,"ready"),waitForEvent(invoker,"ready")]);
+
+        let str = Buffer.allocUnsafe(512*1024).toString("base64");
+        let error = new RPCSpi.error.JGError(1234,str);
+        jg.port("call",()=>{
+            throw error;
+        })
+
+        let hasError = true;
+        try{
+            await invoker.send("jigsaw:call");
+            hasError = false
+        }catch(err){
+            let jgerr = err as RPCSpi.error.JGError;
+            assert.strictEqual(jgerr.desc,str);
+            assert.strictEqual(jgerr.code,1234);
+        }
+        assert(hasError,"must return an error");
+
+        await jg.close();
+        await invoker.close();
     })
 
     after(async ()=>{
