@@ -6,6 +6,7 @@ import GetMockJigsaw  from "./utils/GetMockJigsaw";
 import MockRandomSocket from "./mocks/MockRandomSocket";
 import MockNotGoodSocket from "./mocks/MockNotGoodSocket";
 import { JGError } from "../../src/spi/error";
+import { count } from "console";
 
 const sleep = util.promisify(setTimeout);
 
@@ -257,6 +258,109 @@ describe("Base Transfer Test",function(){
         await B.close();
         
     });
+
+    it("should be different addresses for invoking twice",async ()=>{
+        let invoker = RPC.GetJigsaw();
+        let provider = RPC.GetJigsaw({name:"provider"});
+        await Promise.all([waitForEvent(invoker,"ready"),waitForEvent(provider,"ready")]);
+
+        let addresses : string[] = [];
+        await new Promise<void>((resolve)=>{
+            provider.port("call",(data,ctx)=>{
+                addresses.push(ctx.reply_info.stringify());
+                if(addresses.length >= 5)
+                    resolve();
+            });
+            for(let i=0;i<5;i++){
+                invoker.send("provider:call");
+            }
+        });
+
+        assert.strictEqual(new Set(addresses).size , 5 );
+        await invoker.close();
+        await provider.close();
+    });
+
+    it("should work well when use .usend() API to invoke jigsaw in different domain",async ()=>{
+        let invoker = RPC.GetJigsaw();
+        let registry_1 = new RPC.registry.Server(42001);
+        let registry_2 = new RPC.registry.Server(42002);
+
+        let provider_1 = RPC.GetJigsaw({name:"provider_1",registry:"jigsaw://127.0.0.1:42001/"});
+        provider_1.port("call",(obj)=>{
+            return {
+                id:"1",
+                obj
+            };
+        });
+
+        let provider_2 = RPC.GetJigsaw({name:"provider_2",registry:"jigsaw://127.0.0.1:42002/"});
+        provider_2.port("call",(obj)=>{
+            return {
+                id:"2",
+                obj
+            };
+        });
+
+        await Promise.all([
+            waitForEvent(invoker,"ready"),
+            waitForEvent(provider_1,"ready"),
+            waitForEvent(provider_2,"ready")        
+        ]);
+
+        let res1 = await invoker.usend("jigsaw://127.0.0.1:42001/provider_1","call","1");
+        
+        assert.strictEqual(res1.id,"1");
+        assert.strictEqual(res1.obj,"1");
+
+        let res2 = await invoker.usend("jigsaw://127.0.0.1:42002/provider_2","call","2");
+        
+        assert.strictEqual(res2.id,"2");
+        assert.strictEqual(res2.obj,"2");
+
+        await invoker.close();
+        await registry_1.close();
+        await registry_2.close();
+        await provider_1.close();
+        await provider_2.close();
+        
+    });
+
+    it("should behave load-balanced if jigsaws start with same name",async ()=>{
+        let jgs = [];
+        let jgsready = [];
+        let times:any = {};
+
+        const COUNT = 4;
+        const TESTCOUNT = 100;
+
+        for(let i=0;i<COUNT;i++){
+            let jg = RPC.GetJigsaw({name:"jigsaw"});
+            times[i] = 0;
+            jg.port("call",()=>{
+                times[i]++;
+            })
+            jgs.push(jg);
+            jgsready.push(waitForEvent(jg,"ready"));
+        }
+        await Promise.all(jgsready);
+
+        let invoker = RPC.GetJigsaw();
+        await waitForEvent(invoker,"ready");
+
+        for(let i=0;i<TESTCOUNT;i++)
+            await invoker.send("jigsaw:call");
+        
+        
+        for(let i=0;i<COUNT;i++){
+            assert(times[i]> TESTCOUNT/COUNT*0.25 && times[i]< TESTCOUNT/COUNT*1.75);
+        }
+
+        for(let jg of jgs){
+            await jg.close();
+            await invoker.close();
+        }
+    })
 
     after(async ()=>{
         await app.registry.close();
