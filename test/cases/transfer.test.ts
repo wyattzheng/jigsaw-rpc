@@ -6,7 +6,6 @@ import GetMockJigsaw  from "./utils/GetMockJigsaw";
 import MockRandomSocket from "./mocks/MockRandomSocket";
 import MockNotGoodSocket from "./mocks/MockNotGoodSocket";
 import { JGError } from "../../src/spi/error";
-import { count } from "console";
 
 const sleep = util.promisify(setTimeout);
 

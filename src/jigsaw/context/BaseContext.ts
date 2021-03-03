@@ -1,6 +1,6 @@
 import IRoute from "../../network/router/route/IRoute";
 import AddressInfo from "../../network/domain/AddressInfo";
-import IJigsaw from "../IJigsaw";
+import { IJigsaw } from "../IJigsaw";
 namespace BaseContext{
     export interface PreBaseContext {
         readonly rawdata : any;

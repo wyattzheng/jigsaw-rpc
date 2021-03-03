@@ -18,11 +18,13 @@ import Path from "../network/request/Path";
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import INetworkClient from "../network/client/INetworkClient";
+import AddressInfo from "../network/domain/AddressInfo";
+import NetRoute from "../network/router/route/NetRoute";
 
 import assert from "assert";
 
 import { TypedEmitter } from "tiny-typed-emitter";
-import { IRegistryResolver } from "spi/network";
+import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
 import { NetComponent, NetFactory } from "./NetFactory"
 
 interface InvokerEvent{
@@ -233,13 +235,16 @@ export class SimpleInvoker extends TypedEmitter<InvokerEvent>{
         }
         
     }
-    async call(path:Path,route:IRoute,data:any) : Promise<any>{
+    async call(address:AddressInfo,path_str:string,data?: any) : Promise<any>{
         assert(this.lifeCycle.getState() == "ready", "jigsaw state must be ready");
+        const path = Path.fromString(path_str);
 
         const socket = await this.factory.getNewSocket();
         const client = await this.factory.getNewClient(socket);
         const router = await this.factory.getNewRouter(client);
         
+        const route = new NetRoute(address.port,address.address);
+
         try{
             await this.buildBufferAndSend(path,route,router,data);
         }catch(err){

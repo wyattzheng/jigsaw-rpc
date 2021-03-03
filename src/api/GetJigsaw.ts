@@ -1,4 +1,4 @@
-import IJigsaw from "../jigsaw/IJigsaw";
+import { IJigsaw } from "../jigsaw/IJigsaw";
 import SimpleJigsaw from "../jigsaw/SimpleJigsaw";
 
 import RegistryRoute from "../network/router/route/RegistryRoute";

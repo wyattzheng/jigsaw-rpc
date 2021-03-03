@@ -1,13 +1,9 @@
 import { TypedEmitter } from "tiny-typed-emitter";
 
-import IJigsaw from "./IJigsaw";
+import { IJigsaw,JigsawState } from "./IJigsaw";
 
 import LifeCycle from "../utils/LifeCycle";
 import RandomGen from "../utils/RandomGen";
-import Path from "../network/request/Path";
-import IRoute from "../network/router/route/IRoute";
-import ISocket from "network/socket/ISocket";
-
 
 import { JigsawOption, JigsawModuleOption } from "./JigsawOption";
 import { SimpleInvoker } from "./SimpleInvoker";
@@ -15,6 +11,8 @@ import { SimpleProvider } from "./SimpleProvider";
 import { PostWare, PreWare, UseWare } from "./JigsawWare";
 import { UseContext } from "./context/Context";
 import { NetComponent, NetFactory } from "./NetFactory";
+import AddressInfo from "../network/domain/AddressInfo";
+
 
 interface JigsawEvent{
     error:(err : Error)=>void;
@@ -78,8 +76,8 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         this.lifeCycle.setState("ready");
         
     }
-    async call(path:Path,route:IRoute,data:any) : Promise<any>{
-        return this.invoker.call(path,route,data);
+    call(address:AddressInfo,path_str:string,data?: any) : Promise<any>{
+        return this.invoker.call(address,path_str,data);
     }
     use(handler : UseWare,hash?:string) : void{
         return this.provider.use(handler,hash);
@@ -109,7 +107,7 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
         return this.getSocket().getAddress();
     }
     getState(){
-        return this.lifeCycle.getState();
+        return this.lifeCycle.getState() as JigsawState;
     }
     getSocket(){
         return (this.provider as SimpleProvider).getSocket();
