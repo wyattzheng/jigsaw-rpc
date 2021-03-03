@@ -1,3 +1,4 @@
+.nyc_output
 dev/
 node_modules/
-*.tgz
+/*.tgz
