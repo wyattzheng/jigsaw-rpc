@@ -1,6 +1,7 @@
-import assert from "assert";
 import { RPC } from "../../src/index";
-import { AddressInfo } from "../../src/spi/network";
+
+import assert from "assert";
+import AddressInfo from "../../src/network/domain/AddressInfo";
 import waitForEvent from "./utils/WaitForEvent";
 
 describe("Jigsaw Hooks Test",function(){

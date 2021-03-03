@@ -12,36 +12,14 @@ import RegistryUpdater from "../network/domain/client/RegistryUpdater";
 import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
 
 import { JigsawOption } from "../jigsaw/JigsawOption";
-import { PostWare, PreWare, UseWare } from "../jigsaw/JigsawWare";
 
-type DefaultWare = {
-    use:Array<UseWare>,
-    pre:Array<PreWare>,
-    post:Array<PostWare>
-};
-
-
-const LibContext : {
-    default_ware:DefaultWare
-} = {
-    default_ware:{
-        use:[],
-        pre:[],
-        post:[]
-    }
-};
-
-
-export function use(work:UseWare) : void{
-    LibContext.default_ware.use.push(work);
-}
-export function pre(work:PreWare) : void{
-    LibContext.default_ware.pre.push(work);
-}
-export function post(work:PostWare) : void{
-    LibContext.default_ware.post.push(work);
-}
-
+/**
+ * 
+ * @param option.name jigsaw name
+ * @param option.entry a address that will be registered on Jigsaw Registry
+ * @param option.port a network port that jigsaw listen to, if you don't provide, it will be generated randomly
+ * @param option.registry a url like 'jigsaw://127.0.0.1:3793/' describe the network address of Jigsaw Registry the jigsaw will register to.
+ */
 export function GetJigsaw(option? : JigsawOption) : IJigsaw{
     
     let jigsaw = new SimpleJigsaw(option || {},{
@@ -55,16 +33,6 @@ export function GetJigsaw(option? : JigsawOption) : IJigsaw{
         RegistryUpdater: RegistryUpdater,
         BuilderManager:PacketBuilderManager
     });
-
-    for(let use_ware of LibContext.default_ware.use){
-        jigsaw.use(use_ware);
-    }
-    for(let pre_ware of LibContext.default_ware.pre){
-        jigsaw.pre(pre_ware);
-    }
-    for(let post_ware of LibContext.default_ware.post){
-        jigsaw.post(post_ware);
-    }
-
+    
     return jigsaw;
 };
