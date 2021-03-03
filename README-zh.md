@@ -127,17 +127,17 @@ invoker.on("ready",async ()=>{
 
 ```
 
-## 高性能
+## 较好的性能
 
 
 Jigsaw-RPC 完全使用Node.js的原生套接字API来实现。
 
-> 一个单独的Jigsaw实例，每秒可以在一台x86架构、i5-8250、千兆网卡的局域网上，同时进行1000次以上的请求调用，数据传输速度可以达到 20MB/s，并且延迟较低。 
+> 一个单独的Jigsaw实例，每秒可以在一台x86架构、i5-8250、千兆网卡的局域网上，同时进行500次以上的请求调用，数据传输速度可以达到 10MB/s，并且延迟较低。 
 
 
 ## 简单的 API文档
 
-### 1.1  RPC.GetJigsaw({ name , entry , registry }) : Jigsaw
+### 1  RPC.GetJigsaw({ name , entry , registry }) : Jigsaw
 
 > **jigsaw name** 是Jigsaw实例的名字，会和Jigsaw实例的网络地址一起同步到注册中心.
 
@@ -167,36 +167,14 @@ let jg = RPC.GetJigsaw("iamjigsaw","127.0.0.1","jigsaw://127.0.0.1:3793/")
 let jg = RPC.GetJigsaw()
 ```
 
-### 1.2 RPC.pre(hook)
-
-设置一个默认的 pre 钩子， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .pre(hook) 来注册该钩子。
-
-### 1.3 RPC.post(hook)
-
-设置一个默认的 post 钩子， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .post(hook) 来注册该钩子。
-
-### 1.4 RPC.use(middle)
-
 设置一个默认的中间件， 当 RPC.GetJigsaw() 时，得到的新实例会自动调用 .use(middleware) 来注册该中间件。
 
-### 2.1 RPC.registry.Server.prototype.constructor( bind_port ,bind_address? )
+### 2 RPC.registry.Server.prototype.constructor( bind_port ,bind_address? )
 
 创建一个 Jigsaw 域名注册中心 服务器，在一群Jigsaw实例中，至少要存在一个域名注册中心服务器以供它们注册并共享自己的网络地址。
 
 ```
 new RPC.registry.Server(3793)
-```
-
-### 2.2 RPC.registry.Server.prototype.getStorage() : IRegistryStorage
-
-获取 Jigsaw 域名注册中心 服务器的内部域名存储实例
-
-该 API 的简单用法:
-```
-let server = new RPC.registry.Server();
-console.log(server.getStorage().getFlattedNodes());
-
-//可以获取到当前服务器内记录的所有节点
 ```
 
 ### 3. Jigsaw
@@ -266,8 +244,7 @@ jgB.send("A:call",{}).then(console.log);
     data: any, // the data from sender
     sender: string, // sender's jigsaw name
     isJSON: boolean, // if the 'data' is JSON-object or Buffer
-    rawdata: Buffer, // the raw buffer of data
-    jigsaw: Jigsaw // the jigsaw instance
+    rawdata: Buffer // the raw buffer of data
 }
 ```
 
@@ -388,15 +365,11 @@ jg.on("ready",async ()=>{
 
 这个方法会返回 jigsaw 内部套接字 所绑定的地址和端口。
 
-### 3.7 Jigsaw.prototype.getRegistryClient() : IRegistryClient
-
-这个方法会返回一个 jigsaw实例 内部的registry client（域名客户端），请阅读详细的API文档。
-
-### 3.8 Jigsaw.prototype.getName() : string
+### 3.7 Jigsaw.prototype.getName() : string
 
 返回 jigsaw 的名字。
 
-### 3.9 Jigsaw.prototype.getOption() : any
+### 3.8 Jigsaw.prototype.getOption() : any
 
 返回传递给 jigsaw 构造器的选项对象。
 
@@ -417,16 +390,16 @@ npm run test-cov
 
 ## 证书
 
-这个项目使用 GPL-2.0 的证书。
+这个项目使用 MIT 的证书。
 
-## 贡献💗
+## 贡献
 
-欢迎来自你的贡献，参照如下步骤提交Pull Request：
+欢迎来自你的贡献💗，参照如下步骤提交Pull Request：
 
 ```
 1. Fork 这个仓库
 2. 修改代码，或者写一个 mocha测试用例
-3. 使用 'cz-convention-changelog' 这个规范提交 commit
+3. 使用 'cz-conventional-changelog' 这个规范提交 commit
 4. 开启一个新的 Pull Request
 ```
 

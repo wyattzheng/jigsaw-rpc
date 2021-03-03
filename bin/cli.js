@@ -1,8 +1,8 @@
 
 const CLI = require("config-style-cli");
-const { RegistryServerApp , DefaultRegistryServerAppConfig } = require("../lib");
+const { RPC } = require("../lib");
 
 CLI([
-    RegistryServerApp,
-    DefaultRegistryServerAppConfig
+    RPC.service.RegistryServerApp ,
+    RPC.service.DefaultRegistryServerAppConfig
 ]);

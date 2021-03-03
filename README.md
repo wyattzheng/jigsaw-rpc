@@ -29,7 +29,7 @@ in a npm project folder, run:
 ```
 npm install jigsaw-rpc --save
 ```
-## Easy-to-start Sample
+## Easy-to-start Example
 
 serv.js
 ```
@@ -68,7 +68,7 @@ You will get this output
 }
 ```
 
-## Advanced Sample
+## Advanced Example
 
 ```
 const { RPC } = require("jigsaw-rpc");
@@ -127,16 +127,16 @@ invoker.on("ready",async ()=>{
 
 ```
 
-## High Performance
+## Good Performance
 
 Jigsaw implemented through Node.js Socket API completely.
 
-> A single Jigsaw instance can almost transfer 1000 requests/sec, 20MB/s data with low latency in LAN on a x86, Intel i5-8250, GBE Network Card computer.
-> 
+> A single Jigsaw instance can almost transfer 500 requests/sec, 10MB/s data with low latency in LAN on a x86, Intel i5-8250, GBE Network Card computer.
+
 
 ## Simple API Document
 
-### 1.1  RPC.GetJigsaw({ name , entry , registry }) : Jigsaw
+### 1  RPC.GetJigsaw({ name , entry , registry }) : IJigsaw
 
 > **jigsaw name** is a path about how to access this jigsaw, network address and jigsaw name will both sync to registry.
 
@@ -165,20 +165,7 @@ All the params has default value, if you just want this jigsaw work on Local Net
 let jg = RPC.GetJigsaw()
 ```
 
-
-### 1.2 RPC.pre(hook)
-
-set a default pre hook, then when RPC.GetJigsaw(), the new instance will call .pre(hook) automatically
-
-### 1.3 RPC.post(hook)
-
-set a default post hook, then when RPC.GetJigsaw(), the new instance will call .post(hook) automatically
-
-### 1.4 RPC.use(middleware)
-
-set a default middle-ware, then when RPC.GetJigsaw(), the new instance will call .pre(middleware) automatically
-
-### 2.1 RPC.registry.Server.prototype.constructor( bind_port , bind_address? )
+### 2 RPC.registry.Server.prototype.constructor( bind_port , bind_address? )
 
 Create a Jigsaw Registry Server, in a domain of a group of jigsaws , create one Server at least.
 
@@ -186,17 +173,6 @@ Create a Jigsaw Registry Server, in a domain of a group of jigsaws , create one 
 new RPC.registry.Server(3793)
 ```
 
-### 2.2 RPC.registry.Server.prototype.getStorage() : IRegistryStorage
-
-Get registry storage instance inside a registry server.
-
-Simple API Usage:
-```
-let server = new RPC.registry.Server();
-console.log(server.getStorage().getFlattedNodes());
-
-//this will get all nodes in RegistryServer
-```
 
 ### 3. Jigsaw
 
@@ -265,8 +241,7 @@ a context contains these base properties:
     sender: string, // sender's jigsaw name
     isJSON: boolean, // if the 'data' is JSON-object or Buffer
     rawdata: Buffer, // the raw buffer of data
-    reply_info : AddressInfo, // sender's address and port
-    jigsaw: Jigsaw // the jigsaw instance
+    reply_info : AddressInfo // sender's address and port
 }
 ```
 
@@ -389,15 +364,11 @@ a post context contains these properties:
 
 this method will return a address info contains IP-Address and Port that jigsaw's socket binded to.
 
-### 3.7 Jigsaw.prototype.getRegistryClient() : IRegistryClient
-
-this method will return a registry client inside of the jigsaw instance, read the detail API document.
-
-### 3.8 Jigsaw.prototype.getName() : string
+### 3.7 Jigsaw.prototype.getName() : string
 
 return the jigsaw name.
 
-### 3.9 Jigsaw.prototype.getOption() : any
+### 3.8 Jigsaw.prototype.getOption() : any
 
 return the option passed to jigsaw constructor.
 
@@ -419,11 +390,11 @@ to check the coverage of test cases
 
 ## LICENSE
 
-This project is open-source under GPL-2.0 license.
+This project is open-source under MIT license.
 
-## Contribution💗
+## Contribution
 
-Your contribution is welcome, follow this steps
+Your contribution is welcome💗, follow this steps
 
 ```
 1. Fork this repository
