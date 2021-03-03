@@ -52,8 +52,12 @@ app.js
 const { RPC } = require("jigsaw-rpc");
 
 let jg = RPC.GetJigsaw();
-jg.send("calculator:add",{ a:3, b:7 }).then((res)=>{
-    console.log(res);
+jg.on("ready", ()=>{
+    
+    jg.send("calculator:add",{ a:3, b:7 }).then((res)=>{
+        console.log(res);
+    })
+
 })
 ```
 
