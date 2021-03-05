@@ -32,7 +32,7 @@ npm install jigsaw-rpc --save
 ## Easy-to-start Example
 
 serv.js
-```
+```js
 const { RPC } = require("jigsaw-rpc");
 new RPC.registry.Server();
 
@@ -48,7 +48,7 @@ jg.port("add",({a,b})=>{
 ```
 
 app.js
-```
+```js
 const { RPC } = require("jigsaw-rpc");
 
 let jg = RPC.GetJigsaw();
@@ -64,7 +64,7 @@ jg.on("ready", ()=>{
 then run this two scripts:
 
 You will get this output
-```
+```js
 {
     msg: "Hello World!",
     result: 10,
@@ -74,7 +74,7 @@ You will get this output
 
 ## Advanced Example
 
-```
+```js
 const { RPC } = require("jigsaw-rpc");
 new RPC.registry.Server();
 
@@ -154,18 +154,18 @@ jigsaw will listen on the port number like '1234' you provided, if you don't wan
 **registry** is a **URL** of the Network Address of the Jigsaw Domain Registry. The format is like "jigsaw://127.0.0.1:3793/"
 
 You can create a registry like this:
-```
+```js
 new RPC.registry.Server(3793)
 ```
 
 So GetJigsaw() 's calling format is like:
 
-```
+```js
 let jg = RPC.GetJigsaw("iamjigsaw","127.0.0.1","jigsaw://127.0.0.1:3793/")
 ```
 
 All the params has default value, if you just want this jigsaw work on Local Network: 
-```
+```js
 let jg = RPC.GetJigsaw()
 ```
 
@@ -173,7 +173,7 @@ let jg = RPC.GetJigsaw()
 
 Create a Jigsaw Registry Server, in a domain of a group of jigsaws , create one Server at least.
 
-```
+```js
 new RPC.registry.Server(3793)
 ```
 
@@ -187,7 +187,7 @@ call this method to invoke a remote jigsaw's method.
 
 the **path** must be a correct **Jigsaw Path** format:
 
-```
+```js
 JigsawName:port_name
 ```
 
@@ -203,7 +203,7 @@ Actually, **port_name** is the method name, and the handler is the function you 
 **handler** can be a Async Function if you want to.
 
 
-```
+```js
 ...
 
 const wait = require("util").promisify(setTimeout);
@@ -233,7 +233,7 @@ this method create a middle-ware of a jigsaw. to handle all requests one by one.
 
 a context contains these base properties:
 
-```
+```js
 {
     result: object, 
     /* if all middle-ware passed, the 'result' will send back to the invoker,
@@ -250,7 +250,7 @@ a context contains these base properties:
 ```
 
 the usage of this method is like:
-```
+```js
 
 let jg = RPC.GetJigsaw({ name:"serv" })
 
@@ -272,7 +272,7 @@ actually, it is the pre hook of calling a remote method.
 
 the usage of this method is like:
 
-```
+```js
 
 let jg = RPC.GetJigsaw({ name:"serv" })
 
@@ -288,7 +288,7 @@ jg.pre(async (ctx,next)=>{
 
 the context object contains : 
 
-```
+```js
     raw:{ // raw object contains origin info.
         data : Buffer,
         pathstr : string,
@@ -301,7 +301,7 @@ the context object contains :
 ```
 
 if you want to code a custom route, implements this interface : 
-```
+```js
 interface IRoute{
     preload(): Promise<void>;
     getAddressInfo() : Promise<AddressInfo>;
@@ -310,7 +310,7 @@ interface IRoute{
 
 here is an example:
 
-```
+```js
 const { RPC } = require("../src/index");
 new RPC.registry.Server();
 
@@ -354,7 +354,7 @@ this method create an interceptor after sending an invoking request.
 actually, it is the post hook of calling a remote method.
 
 a post context contains these properties:
-```
+```js
 {
     pathstr : string, // target path string of invoking
     data : any, // the request data , Buffer or a JS Object
@@ -381,13 +381,13 @@ return the option passed to jigsaw constructor.
 
 This project use mocha test framework, run:
 
-```
+```shell
 npm test
 ```
 at the project folder to do tests
 
 you can also run:
-```
+```shell
 npm run test-cov
 ```
 to check the coverage of test cases
