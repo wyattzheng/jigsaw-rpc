@@ -344,7 +344,7 @@ interface IRoute{
 here is an example:
 
 ```js
-const { RPC } = require("../src/index");
+const { RPC } = require("jigsaw-rpc");
 new RPC.registry.Server();
 
 let jg = RPC.GetJigsaw({ name : "user" });
@@ -409,6 +409,9 @@ return the jigsaw name.
 
 return the option passed to jigsaw constructor.
 
+### 3.9 Jigsaw.prototype.close() : Promise(void)
+
+close the jigsaw instance and the socket insided.
 
 ## Test
 
