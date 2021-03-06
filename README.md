@@ -17,7 +17,7 @@
 
 ## Introduction
 
-jigsaw-rpc is an RPC framework written in TypeScript, it implements RPC used completely Node.js Socket API to ensure the performance of calling a remote method.
+jigsaw-rpc is an RPC framework written in TypeScript, it implements RPC used completely Node.js UDP Datagram API to ensure the performance of calling a remote method.
 
 The API of jigsaw-rpc is designed to easy to use.
 
