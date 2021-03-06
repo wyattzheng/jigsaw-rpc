@@ -131,6 +131,39 @@ invoker.on("ready",async ()=>{
 
 ```
 
+## Load Balanced
+
+It is easy to make jigsaws load balanced.
+
+following gunshot.js is an example:
+
+gunshot.js
+```js
+const { RPC } = require("jigsaw-rpc");
+//new RPC.registry.Server();
+
+for(let i=0;i<5;i++){
+
+    let jg = RPC.GetJigsaw({name:`poorguy`}); // every one have same jigsaw name
+
+    let number = `#${i}`;
+    jg.port("shoot",()=>{
+        return `i am ${number} guy, i've been shot`;
+    });
+}
+
+
+const invoker = RPC.GetJigsaw();
+invoker.on("ready",async ()=>{
+    for(let i=0;i<100;i++){
+        console.log(await invoker.send(`poorguy:shoot`));
+    }    
+});
+
+```
+
+try run this script, you can find that they will be shot averagely.
+
 ## Good Performance
 
 Jigsaw implemented through Node.js Socket API completely.
