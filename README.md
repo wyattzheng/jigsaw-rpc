@@ -144,7 +144,7 @@ const { RPC } = require("jigsaw-rpc");
 
 for(let i=0;i<5;i++){
 
-    let jg = RPC.GetJigsaw({name:`poorguy`}); // every one have same jigsaw name
+    let jg = RPC.GetJigsaw({name:`poorguy`}); // everyone has same jigsaw name
 
     let number = `#${i}`;
     jg.port("shoot",()=>{
