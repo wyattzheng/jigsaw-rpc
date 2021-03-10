@@ -378,7 +378,7 @@ describe("Base Transfer Test",function(){
             hasError = false
         }catch(err){
             let jgerr = err as RPC.error.JGError;
-            assert.strictEqual(jgerr.desc,str);
+            assert.strictEqual(jgerr.message,str);
             assert.strictEqual(jgerr.code,"1234");
         }
         assert(hasError,"must return an error");

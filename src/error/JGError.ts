@@ -2,13 +2,11 @@ import {serializeError,deserializeError} from "serialize-error";
 
 class JGError extends Error{
     public readonly code : string;
-    public desc : string;
     public isJGError = true;
     
-    constructor(code : string,desc:string){
-        super("");
+    constructor(code : string,message:string){
+        super(message);
         this.code = code;
-        this.desc = desc;
     }
     stringify(){
         return JSON.stringify(serializeError(this));
