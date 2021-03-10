@@ -7,7 +7,7 @@ class InvokeTimeoutError extends JGError{
     public data_size : number;
     public seq_id : number;
     constructor(time_dura:number,src_jigsaw:string,dst_path:string,data_size:number,seq_id:number){
-        super(3012,"Invoke is Timeout");
+        super("JG3012","Invoke is Timeout");
         this.name = "InvokeTimeoutError";
         this.time_dura = time_dura;
         this.src_jigsaw = src_jigsaw;
@@ -15,14 +15,6 @@ class InvokeTimeoutError extends JGError{
         this.data_size = data_size;
         this.seq_id = seq_id;
 
-        this.initMessage();
-    }
-    
-    getDetail(){
-
-        let size = Math.floor(this.data_size / 1024).toFixed(1);
-        let prefix =` ${this.src_jigsaw} -> ${this.dst_path} (#${this.seq_id}) [${size}KB] `;
-        return `${prefix}\n\nmax_time : ${this.time_dura}ms reached\nensure that remote host is ALIVE`;
     }
 }
 

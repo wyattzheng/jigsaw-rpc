@@ -1,47 +1,28 @@
+import {serializeError,deserializeError} from "serialize-error";
+
 class JGError extends Error{
-    public readonly code : number;
+    public readonly code : string;
     public desc : string;
-    public parsing_str? : string;
     public isJGError = true;
     
-    constructor(code : number,desc:string,parsing_str?:string){
+    constructor(code : string,desc:string){
         super("");
         this.code = code;
         this.desc = desc;
-        this.parsing_str = parsing_str;
-        this.initMessage();
-    }
-    initMessage(){
-        this.message = `\n\n[JGError] {${this.code}} : ${this.desc}\n\n${this.getDetail()}\n`
-    }
-    getShortMessage(){
-        return `\n\n[JGError] {${this.code}} : ${this.desc}\n`;
     }
     stringify(){
-        let obj={
-            code:this.code,
-            desc:this.desc,
-            name:this.name,
-            message:this.message,
-            parsing_str:this.parsing_str
-        };
-
-        return JSON.stringify(obj);
+        return JSON.stringify(serializeError(this));
     }
-    static parse(str:string){
-        let parsed = JSON.parse(str);
-        let ret = new JGError(parsed.code,parsed.desc,parsed.parsing_str);
-        ret.name = parsed.name;
-        ret.message = parsed.message;
-
+    static parse(str:string) : JGError{
+        let parsed_error_obj = JSON.parse(str);
+        let ret:any = new JGError(parsed_error_obj.code,parsed_error_obj.desc);
+        for(let key in parsed_error_obj){
+            ret[key] = parsed_error_obj[key];
+        }
         return ret;
     }
-    static fromError(err : Error){
-        return new JGError(-1,err.message);
-    }
-
-    getDetail() : string{
-        return "";
+    static fromError(err : any){
+        return new JGError("JG3000",err.message);
     }
 }
 

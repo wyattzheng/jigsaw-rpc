@@ -3,7 +3,6 @@ import Defer from "../../utils/Defer";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import util from "util";
 import RequestTimeoutError from "../../error/request/RequestTimeoutError";
-import RequestRemoteError from "../../error/request/RequestRemoteError";
 import IRouter from "../router/IRouter";
 import LifeCycle from "../../utils/LifeCycle";
 import IRequest from "./IRequest";
@@ -59,7 +58,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
     protected handleErrorPacket(p : IPacket){
         let pk = p as ErrorPacket;
-        throw new RequestRemoteError(pk.error);
+        throw pk.error;
     }
 
     private async onErrorPacket(p : IPacket){
