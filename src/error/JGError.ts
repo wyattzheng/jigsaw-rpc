@@ -19,8 +19,8 @@ class JGError extends Error{
         }
         return ret;
     }
-    static fromError(err : any){
-        return new JGError("JG3000",err.message);
+    static fromError(err : Error){
+        return JGError.parse(JSON.stringify(serializeError(err)));
     }
 }
 
