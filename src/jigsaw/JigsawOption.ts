@@ -1,6 +1,6 @@
 import IRequest from "../network/request/IRequest";
 import INetworkClient from "../network/client/INetworkClient";
-import IBuilderManager from "../network/protocol/builder/manager/IBuilderManager";
+import IBuilderManager from "../network/protocol/builder/IBuilderManager";
 import SlicePacket from "../network/protocol/packet/SlicePacket";
 import IPacket from "../network/protocol/IPacket";
 import IRoute from "../network/router/route/IRoute";
@@ -8,8 +8,8 @@ import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import IHandler from "../network/handler/IHandler";
 
-import { IRegistryUpdater } from "../network/domain/client/IRegistryUpdater";
-import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
+import { IRegistryUpdater } from "../domain/client/IRegistryUpdater";
+import { IRegistryResolver } from "../domain/client/IRegistryResolver";
 
 interface Option {
     [key:string]:any;

@@ -1,4 +1,4 @@
-import AddressInfo from "../../domain/AddressInfo";
+import AddressInfo from "../../../domain/AddressInfo";
 import BasePacket from "../BasePacket";
 class DomainUpdatePacket extends BasePacket{
 	public static packet_id : number = 6;

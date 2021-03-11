@@ -4,17 +4,17 @@ import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
 import DomainUpdatePacket from "../protocol/packet/DomainUpdatePacket";
 
-import RegistryStorage from "../domain/server/jigsaw/NameRegistryStorage";
+import RegistryStorage from "../../domain/server/NameRegistryStorage";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 import DomainPurgePacket from "../protocol/packet/DomainPurgePacket";
 import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket";
 import LimitedMap from "../../utils/LimitedMap";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import { TypedEmitter } from "tiny-typed-emitter";
 import PongPacket from "../protocol/packet/PongPacket";
-import IRegistryStorage from "../domain/server/IRegistryStorage";
+import IRegistryStorage from "../../domain/server/IRegistryStorage";
 
 
 interface HandlerEvent{

@@ -1,6 +1,6 @@
 import IBuilderManager from "./IBuilderManager";
-import IBuilder from "../IBuilder";
-import LimitedMap from "../../../../utils/LimitedMap"
+import IBuilder from "./IBuilder";
+import LimitedMap from "../../../utils/LimitedMap"
 
 
 abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{

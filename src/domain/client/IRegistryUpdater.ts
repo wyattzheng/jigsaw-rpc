@@ -1,5 +1,5 @@
 import { TypedEmitter } from "tiny-typed-emitter";
-import LifeCycle from "../../../utils/LifeCycle";
+import LifeCycle from "../../utils/LifeCycle";
 
 export interface UpdaterEvent{
     error:(err : Error)=>void;

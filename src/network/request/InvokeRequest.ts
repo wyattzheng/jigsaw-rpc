@@ -5,7 +5,7 @@ import InvokePacket from "../protocol/packet/InvokePacket";
 import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import PacketSlicer from "../request/PacketSlicer";
-import InvokeTimeoutError from "../../error/request/InvokeTimeoutError";
+import InvokeTimeoutError from "../../error/InvokeTimeoutError";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import IRoute from "../router/route/IRoute";

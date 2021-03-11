@@ -1,7 +1,7 @@
 import ISocket from "./ISocket";
 import Dgram from "dgram";
 import assert from "assert";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import LifeCycle from "../../utils/LifeCycle";
 import { TypedEmitter } from "tiny-typed-emitter";
 

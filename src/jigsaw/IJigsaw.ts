@@ -1,4 +1,4 @@
-import AddressInfo from "../network/domain/AddressInfo";
+import AddressInfo from "../domain/AddressInfo";
 
 import { TypedEmitter } from "tiny-typed-emitter";
 import { JigsawOption } from "./JigsawOption";

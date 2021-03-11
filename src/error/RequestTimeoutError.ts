@@ -1,4 +1,4 @@
-import JGError from "../JGError";
+import JGError from "./JGError";
 
 class RequestTimeoutError extends JGError{
     public time_dura : number;

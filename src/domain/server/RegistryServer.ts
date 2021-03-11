@@ -1,12 +1,12 @@
-import BuilderNetworkClient from "../../../client/BuilderNetworkClient";
-import INetworkClient from "../../../client/INetworkClient";
-import UDPSocket from "../../../socket/UDPSocket";
-import PacketBuilderManager from "../../../protocol/builder/manager/PacketBuilderManager";
-import PacketFactory from "../../../protocol/factory/PacketFactory";
-import DomainHandler from "../../../handler/DomainHandler";
+import BuilderNetworkClient from "../../network/client/BuilderNetworkClient";
+import INetworkClient from "../../network/client/INetworkClient";
+import UDPSocket from "../../network/socket/UDPSocket";
+import PacketBuilderManager from "../../network/protocol/builder/PacketBuilderManager";
+import PacketFactory from "../../network/protocol/factory/PacketFactory";
+import DomainHandler from "../../network/handler/DomainHandler";
 import { TypedEmitter } from "tiny-typed-emitter";
-import SimplePacketRouter from "../../../router/packetrouter/SimplePacketRouter";
-import IRouter from "../../../router/IRouter";
+import SimplePacketRouter from "../../network/router/packetrouter/SimplePacketRouter";
+import IRouter from "../../network/router/IRouter";
 import assert from "assert";
 
 interface RegistryServerEvent{

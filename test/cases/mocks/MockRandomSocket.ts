@@ -1,6 +1,6 @@
 import { TypedEmitter } from "tiny-typed-emitter";
 import ISocket from "../../../src/network/socket/ISocket";
-import AddressInfo  from "../../../src/network/domain/AddressInfo";
+import AddressInfo  from "../../../src/domain/AddressInfo";
 import LifeCycle from "../../../src/utils/LifeCycle";
 import InvokePacket from "../../../src/network/protocol/packet/InvokePacket";
 

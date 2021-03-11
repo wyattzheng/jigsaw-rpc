@@ -1,10 +1,10 @@
-import LifeCycle from "../../../utils/LifeCycle";
-import PurgeDomainRequest from "../../request/PurgeDomainRequest";
-import Defer from "../../../utils/Defer";
+import LifeCycle from "../../utils/LifeCycle";
+import PurgeDomainRequest from "../../network/request/PurgeDomainRequest";
+import Defer from "../../utils/Defer";
 import AddressInfo from "../AddressInfo";
-import IRouter from "../../router/IRouter";
-import DomainUpdatePacket from "../../../network/protocol/packet/DomainUpdatePacket";
-import NetRoute from "../../../network/router/route/NetRoute";
+import IRouter from "../../network/router/IRouter";
+import DomainUpdatePacket from "../../network/protocol/packet/DomainUpdatePacket";
+import NetRoute from "../../network/router/route/NetRoute";
 import { TypedEmitter } from "tiny-typed-emitter";
 import { IRegistryUpdater, UpdaterEvent } from "./IRegistryUpdater";
 

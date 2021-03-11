@@ -7,9 +7,9 @@ import SimplePacketRouter from "../network/router/packetrouter/SimplePacketRoute
 import InvokeHandler from "../network/handler/InvokeHandler";
 import InvokeRequest from "../network/request/InvokeRequest";
 import BuilderNetworkClient from "../network/client/BuilderNetworkClient";
-import RegistryResolver from "../network/domain/client/RegistryResolver";
-import RegistryUpdater from "../network/domain/client/RegistryUpdater";
-import PacketBuilderManager from "../network/protocol/builder/manager/PacketBuilderManager";
+import RegistryResolver from "../domain/client/RegistryResolver";
+import RegistryUpdater from "../domain/client/RegistryUpdater";
+import PacketBuilderManager from "../network/protocol/builder/PacketBuilderManager";
 
 import { JigsawOption } from "../jigsaw/JigsawOption";
 

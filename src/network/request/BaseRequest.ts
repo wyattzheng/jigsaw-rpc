@@ -2,7 +2,7 @@ import IPacket from "../protocol/IPacket";
 import Defer from "../../utils/Defer";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import util from "util";
-import RequestTimeoutError from "../../error/request/RequestTimeoutError";
+import RequestTimeoutError from "../../error/RequestTimeoutError";
 import IRouter from "../router/IRouter";
 import LifeCycle from "../../utils/LifeCycle";
 import IRequest from "./IRequest";

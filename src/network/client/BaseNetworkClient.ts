@@ -2,7 +2,7 @@ import AbstractSocket from "../socket/ISocket";
 import IFactory from "../protocol/factory/IFactory";
 import IPacket from "../protocol/IPacket";
 import { TypedEmitter } from "tiny-typed-emitter";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import INetworkClient from "./INetworkClient";
 import RandomGen from "../../utils/RandomGen";
 import BatchPacket from "../../network/protocol/packet/BatchPacket";

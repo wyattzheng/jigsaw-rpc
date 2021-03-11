@@ -1,6 +1,6 @@
 import ISocket from "../socket/ISocket";
 import BaseNetworkClient from "./BaseNetworkClient";
-import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
+import IBuilderManager from "../protocol/builder/IBuilderManager";
 import IFactory from "../protocol/factory/IFactory";
 import IPacket from "../protocol/IPacket";
 import SlicePacket from "../protocol/packet/SlicePacket";

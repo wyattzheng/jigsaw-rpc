@@ -1,4 +1,4 @@
-import LimitedMap from "../../../utils/LimitedMap";
+import LimitedMap from "../../utils/LimitedMap";
 import AddressInfo from "../AddressInfo";
 import DomainCache from "./QueryCache";
 

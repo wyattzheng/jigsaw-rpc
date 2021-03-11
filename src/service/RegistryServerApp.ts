@@ -1,4 +1,4 @@
-import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
+import RegistryServer from "../domain/server/RegistryServer";
 
 export interface RegistryServerAppConfig{
     bind_port: number;

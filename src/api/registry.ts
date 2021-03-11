@@ -1,3 +1,3 @@
-import RegistryServer from "../network/domain/server/jigsaw/RegistryServer";
+import RegistryServer from "../domain/server/RegistryServer";
 
 export { RegistryServer as Server }

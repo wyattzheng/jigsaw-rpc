@@ -7,10 +7,10 @@ import SimplePacketRouter from "../../../src/network/router/packetrouter/SimpleP
 import InvokeHandler from "../../../src/network/handler/InvokeHandler";
 import InvokeRequest from "../../../src/network/request/InvokeRequest";
 import BuilderNetworkClient from "../../../src/network/client/BuilderNetworkClient";
-import RegistryResolver from "../../../src/network/domain/client/RegistryResolver";
-import RegistryUpdater from "../../../src/network/domain/client/RegistryUpdater";
+import RegistryResolver from "../../../src/domain/client/RegistryResolver";
+import RegistryUpdater from "../../../src/domain/client/RegistryUpdater";
 
-import PacketBuilderManager from "../../../src/network/protocol/builder/manager/PacketBuilderManager";
+import PacketBuilderManager from "../../../src/network/protocol/builder/PacketBuilderManager";
 
 function GetMockJigsaw(option:any,mocked_modules:any){
     let modules : any = {

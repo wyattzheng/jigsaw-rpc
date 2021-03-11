@@ -1,7 +1,7 @@
 import LifeCycle from "../utils/LifeCycle";
 import ISocket from "../network/socket/ISocket";
-import RegistryServerInfo from "../network/domain/RegistryServerInfo";
-import AddressInfo from "../network/domain/AddressInfo";
+import RegistryServerInfo from "../domain/RegistryServerInfo";
+import AddressInfo from "../domain/AddressInfo";
 import WorkFlow from "./context/WorkFlow";
 import PacketFactory from "../network/protocol/factory/PacketFactory";
 import INetworkClient from "../network/client/INetworkClient";
@@ -12,9 +12,9 @@ import IHandler from "../network/handler/IHandler";
 
 import { UseContext } from "./context/Context";
 import { UseWare } from "./JigsawWare";
-import { IRegistryUpdater } from "../network/domain/client/IRegistryUpdater";
+import { IRegistryUpdater } from "../domain/client/IRegistryUpdater";
 
-import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
+import { IRegistryResolver } from "../domain/client/IRegistryResolver";
 import { JigsawModuleOption, JigsawOption } from "./JigsawOption";
 import { TypedEmitter } from "tiny-typed-emitter";
 

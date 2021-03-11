@@ -1,5 +1,5 @@
 import BaseRequest from "./BaseRequest";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import Packet from "../protocol/Packet";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";

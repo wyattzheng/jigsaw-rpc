@@ -4,7 +4,7 @@ import ErrorPacket from "../protocol/packet/ErrorPacket";
 import InvokePacket from "../protocol/packet/InvokePacket";
 import InvokeReplyPacket from "../protocol/packet/InvokeReplyPacket";
 import Path from "../request/Path";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import PacketSlicer from "../request/PacketSlicer";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import LimitedMap from "../../utils/LimitedMap";

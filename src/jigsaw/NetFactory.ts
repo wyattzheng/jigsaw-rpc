@@ -1,8 +1,8 @@
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import INetworkClient from "../network/client/INetworkClient";
-import RegistryServerInfo from "../network/domain/RegistryServerInfo";
-import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
+import RegistryServerInfo from "../domain/RegistryServerInfo";
+import DomainCacheStorage from "../domain/client/QueryCacheStorage";
 import PacketFactory from "../network/protocol/factory/PacketFactory";
 import { JigsawModuleOption } from "./JigsawOption";
 

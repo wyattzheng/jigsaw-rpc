@@ -1,4 +1,4 @@
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import IPacket from "./IPacket";
 
 abstract class Packet implements IPacket{ // Design Mode : Builder Mode

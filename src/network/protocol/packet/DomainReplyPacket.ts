@@ -1,4 +1,4 @@
-import AddressInfo from "../../domain/AddressInfo";
+import AddressInfo from "../../../domain/AddressInfo";
 import BasePacket from "../BasePacket";
 
 type QueryResult = Array<{jgid:string,jgname:string,address:AddressInfo,updateTime:number}>;

@@ -1,5 +1,5 @@
 import { TypedEmitter } from "tiny-typed-emitter";
-import IBuilderManager from "../protocol/builder/manager/IBuilderManager";
+import IBuilderManager from "../protocol/builder/IBuilderManager";
 import IPacket from "../protocol/IPacket";
 import SliceAckPacket from "../protocol/packet/SliceAckPacket";
 import SlicePacket from "../protocol/packet/SlicePacket";

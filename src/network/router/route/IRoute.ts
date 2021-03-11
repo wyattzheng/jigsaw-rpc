@@ -1,4 +1,4 @@
-import AddressInfo from "../../domain/AddressInfo";
+import AddressInfo from "../../../domain/AddressInfo";
 
 interface IRoute{
     preload(): Promise<void>;

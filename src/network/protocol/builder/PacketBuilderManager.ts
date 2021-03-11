@@ -1,9 +1,9 @@
 import AbstractBuilderManager from "./AbstractBuilderManager";
-import IPacket from "../../IPacket";
-import IBuilder from "../IBuilder";
-import PacketBuilder from "../PacketBuilder";
-import SlicePacket from "../../packet/SlicePacket";
-import IFactory from "../../factory/IFactory";
+import IPacket from "../IPacket";
+import IBuilder from "./IBuilder";
+import PacketBuilder from "./PacketBuilder";
+import SlicePacket from "../packet/SlicePacket";
+import IFactory from "../factory/IFactory";
 
 class PacketBuilderManager extends AbstractBuilderManager<SlicePacket,IPacket>{
 	protected factory : IFactory<Buffer,IPacket>;

@@ -1,5 +1,5 @@
-import AddressInfo from "../../domain/AddressInfo";
-import { IRegistryResolver } from "../../domain/client/IRegistryResolver";
+import AddressInfo from "../../../domain/AddressInfo";
+import { IRegistryResolver } from "../../../domain/client/IRegistryResolver";
 import IRoute from "./IRoute";
 import { DnsResolve4 } from "../../../utils/DnsResolver";
 

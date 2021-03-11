@@ -11,20 +11,20 @@ import { PreWare, PostWare } from "./JigsawWare";
 import { AsyncManager } from "../utils/AsyncManager";
 import { parseJigsawURL } from "./JigsawURL";
 
-import RegistryServerInfo from "../network/domain/RegistryServerInfo";
+import RegistryServerInfo from "../domain/RegistryServerInfo";
 import RandomGen from "../utils/RandomGen";
-import DomainCacheStorage from "../network/domain/client/QueryCacheStorage";
+import DomainCacheStorage from "../domain/client/QueryCacheStorage";
 import Path from "../network/request/Path";
 import IRouter from "../network/router/IRouter";
 import ISocket from "../network/socket/ISocket";
 import INetworkClient from "../network/client/INetworkClient";
-import AddressInfo from "../network/domain/AddressInfo";
+import AddressInfo from "../domain/AddressInfo";
 import NetRoute from "../network/router/route/NetRoute";
 
 import assert from "assert";
 
 import { TypedEmitter } from "tiny-typed-emitter";
-import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
+import { IRegistryResolver } from "../domain/client/IRegistryResolver";
 import { NetComponent, NetFactory } from "./NetFactory"
 
 interface InvokerEvent{

@@ -1,5 +1,5 @@
 import AddressInfo from "../AddressInfo";
-import LifeCycle from "../../../utils/LifeCycle";
+import LifeCycle from "../../utils/LifeCycle";
 
 export type RegNode = {jgname:string,jgid:string,address:AddressInfo,updateTime:number};
 export type QueryResult = Array<RegNode>;

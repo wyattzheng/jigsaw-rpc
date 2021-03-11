@@ -1,12 +1,12 @@
-import LimitedMap from "../../../utils/LimitedMap";
-import IRouter from "../../../network/router/IRouter";
+import LimitedMap from "../../utils/LimitedMap";
+import IRouter from "../../network/router/IRouter";
 import DomainCacheStorage from "./QueryCacheStorage";
 import assert from 'assert';
-import LifeCycle from "../../../utils/LifeCycle";
+import LifeCycle from "../../utils/LifeCycle";
 import RegistryServerInfo from "../RegistryServerInfo";
-import QueryDomainRequest from "../../../network/request/QueryDomainRequest";
-import DomainClientHandler from "../../../network/handler/DomainClientHandler";
-import Defer from "../../../utils/Defer";
+import QueryDomainRequest from "../../network/request/QueryDomainRequest";
+import DomainClientHandler from "../../network/handler/DomainClientHandler";
+import Defer from "../../utils/Defer";
 import Util  from "util";
 import { IRegistryResolver,RegNode,QueryResult } from "./IRegistryResolver" 
 

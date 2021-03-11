@@ -1,7 +1,7 @@
 
 import LifeCycle from "../../utils/LifeCycle";
 import { TypedEmitter } from "tiny-typed-emitter";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 import IPacket from "../protocol/IPacket"
 import ISocket from "../socket/ISocket";
 

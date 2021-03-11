@@ -1,6 +1,6 @@
 import { TypedEmitter } from "tiny-typed-emitter";
 import LifeCycle from "../../utils/LifeCycle";
-import AddressInfo from "../domain/AddressInfo";
+import AddressInfo from "../../domain/AddressInfo";
 
 interface SocketEvent{
 	message: (body:Buffer,rinfo:AddressInfo) => void;

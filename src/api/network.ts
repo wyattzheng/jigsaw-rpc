@@ -1,9 +1,9 @@
 import IRoute from "../network/router/route/IRoute";
 import Path from "../network/request/Path";
-import AddressInfo from "../network/domain/AddressInfo";
+import AddressInfo from "../domain/AddressInfo";
 
-import RegistryServerInfo from "../network/domain/RegistryServerInfo";
-import { IRegistryResolver } from "../network/domain/client/IRegistryResolver";
+import RegistryServerInfo from "../domain/RegistryServerInfo";
+import { IRegistryResolver } from "../domain/client/IRegistryResolver";
 
 export {
     RegistryServerInfo,

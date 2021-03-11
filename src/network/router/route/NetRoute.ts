@@ -1,4 +1,4 @@
-import AddressInfo from "../../domain/AddressInfo";
+import AddressInfo from "../../../domain/AddressInfo";
 import IRoute from "./IRoute";
 import { DnsResolve4 } from "../../../utils/DnsResolver";
 

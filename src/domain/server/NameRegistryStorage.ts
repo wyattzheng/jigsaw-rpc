@@ -1,8 +1,8 @@
-import IRegistryStorage from "../IRegistryStorage";
-import AddressInfo from "../../AddressInfo";
+import IRegistryStorage from "./IRegistryStorage";
+import AddressInfo from "../AddressInfo";
 import { TypedEmitter } from "tiny-typed-emitter";
-import NameTree from "./nameTree/NameTree";
-import DataNode from "./nameTree/DataNode";
+import NameTree from "../../utils/nameTree/NameTree";
+import DataNode from "../../utils/nameTree/DataNode";
 
 
 interface StorageEvent{

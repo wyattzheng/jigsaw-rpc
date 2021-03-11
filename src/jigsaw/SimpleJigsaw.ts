@@ -11,7 +11,7 @@ import { SimpleProvider } from "./SimpleProvider";
 import { PostWare, PreWare, UseWare } from "./JigsawWare";
 import { UseContext } from "./context/Context";
 import { NetComponent, NetFactory } from "./NetFactory";
-import AddressInfo from "../network/domain/AddressInfo";
+import AddressInfo from "../domain/AddressInfo";
 
 
 interface JigsawEvent{
