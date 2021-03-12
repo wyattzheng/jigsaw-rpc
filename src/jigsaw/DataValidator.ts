@@ -1,4 +1,4 @@
-import assert from "assert"
+import FormatError from "../error/FormatError";
 
 class DataValidator{
     private data : object;
@@ -15,7 +15,7 @@ class DataValidator{
             let obj = object[i];
             let type = typeof(obj);
             if(["undefined","function"].indexOf(type) != -1){
-                throw new Error("data can not contain a unserializable property");
+                throw new FormatError("data can not contain a unserializable property");
             }else if(type == "object")
                 this.checkSerializable(obj);
         }

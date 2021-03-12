@@ -164,6 +164,31 @@ invoker.on("ready",async ()=>{
 
 try run this script, you can find that they will be shot averagely.
 
+## Error Handling
+
+Errors can be transferring freely and completely through the jigsaws.
+
+```js
+const { RPC } = require("jigsaw-rpc");
+//new RPC.registry.Server();
+
+const jg = RPC.GetJigsaw("jigsaw");
+
+jg.port("call_error",()=>{
+    throw new Error(`An error happened`);
+});
+
+const invoker = RPC.GetJigsaw();
+invoker.on("ready",async ()=>{
+    try{
+        await invoker.send("jigsaw:call_error");
+    }catch(err){
+        console.log(err);
+    }
+})
+
+```
+
 ## Good Performance
 
 Jigsaw implemented through Node.js Socket API completely.

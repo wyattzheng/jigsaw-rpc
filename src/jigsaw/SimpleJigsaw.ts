@@ -12,6 +12,7 @@ import { PostWare, PreWare, UseWare } from "./JigsawWare";
 import { UseContext } from "./context/Context";
 import { NetComponent, NetFactory } from "./NetFactory";
 import AddressInfo from "../domain/AddressInfo";
+import LifeCycleError from "../error/LifeCycleError";
 
 
 interface JigsawEvent{
@@ -120,12 +121,12 @@ class SimpleJigsaw extends TypedEmitter<JigsawEvent> implements IJigsaw{
     }
     async close(){
         if(this.lifeCycle.getState() == "starting"){
-            throw new Error("this instance is starting.");
+            throw new LifeCycleError("this instance is starting.",this.lifeCycle.getState());
         }
         if(this.lifeCycle.getState() == "closing" || this.lifeCycle.getState() == "closed")
             return;
         if(this.lifeCycle.getState() != "ready")
-            throw new Error("at this state, the jigsaw can not be closed");
+            throw new LifeCycleError("at this state, the jigsaw can not be closed",this.lifeCycle.getState());
 
         
         this.lifeCycle.setState("closing");

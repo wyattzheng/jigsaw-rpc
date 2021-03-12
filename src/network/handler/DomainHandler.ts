@@ -15,6 +15,7 @@ import AddressInfo from "../../domain/AddressInfo";
 import { TypedEmitter } from "tiny-typed-emitter";
 import PongPacket from "../protocol/packet/PongPacket";
 import IRegistryStorage from "../../domain/server/IRegistryStorage";
+import PacketParsingError from "../../error/PacketParsingError";
 
 
 interface HandlerEvent{
@@ -97,7 +98,7 @@ class DomainHandler implements IHandler{
             await this.router.sendPacket(r_pk,new NetRoute(pk.reply_info.port,pk.reply_info.address));    
 
         }else
-            throw new Error("recv an unknown packet");
+            throw new PacketParsingError("recv an unknown packet");
 
     }
     public async handlePacket(p:IPacket):Promise<void>{

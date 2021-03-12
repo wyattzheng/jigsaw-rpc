@@ -1,3 +1,6 @@
+import FormatError from "../../error/FormatError";
+import NameTreeError from "../../error/NameTreeError";
+
 enum NodeType{
     GROUP,
     ENDPOINT
@@ -24,7 +27,7 @@ class DataNode<T>{
     }
     getChild(key:string) : DataNode<T>{
         if(!this.child_map.has(key))
-            throw new Error(`${key} child doesn't exists`);
+            throw new NameTreeError(`${key} child doesn't exists`);
 
         return this.child_map.get(key) as DataNode<T>;
     }
@@ -33,13 +36,13 @@ class DataNode<T>{
     }
     addChild(key:string,node:DataNode<T>){
         if(this.child_map.has(key))
-            throw new Error(`${key} child exists`);
+            throw new NameTreeError(`${key} child exists`);
 
         this.child_map.set(key,node);
     }
     removeChild(key:string){
         if(!this.hasChild(key))
-            throw new Error(`${key} child doesn't exists`);
+            throw new NameTreeError(`${key} child doesn't exists`);
 
         this.child_map.delete(key);
     }
@@ -52,7 +55,7 @@ class DataNode<T>{
     }
     getData() : T{
         if(!this.data)
-            throw new Error(`node data not a correct value`);
+            throw new FormatError(`node data not a correct value`);
 
         return this.data;
     }

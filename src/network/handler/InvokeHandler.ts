@@ -13,8 +13,9 @@ import NetRoute from "../router/route/NetRoute";
 import LifeCycle from "../../utils/LifeCycle";
 import util from "util";
 import { TypedEmitter } from "tiny-typed-emitter";
-import JGError from "../../error/JGError";
 import RandomGen from "../../utils/RandomGen";
+import LifeCycleError from "../../error/LifeCycleError";
+import PacketBuildingError from "../../error/BuilderError";
 
 const debug = require("debug")("InvokeHandler");
 
@@ -108,7 +109,7 @@ class InvokeHandler implements IHandler{
         if(this.lifeCycle.getState() == "closed")
             return;
         if(this.lifeCycle.getState()  == "starting")
-            throw new Error("right now starting")
+            throw new LifeCycleError("right now starting",this.lifeCycle.getState());
         
         this.closeAllInvokers();
         
@@ -132,7 +133,7 @@ class InvokeHandler implements IHandler{
     
     getInvoker(name : string) : Invoker{
         if(!this.invokers.has(name))
-            throw new Error("this invoker can not find");
+            throw new PacketBuildingError("this invoker can not find");
         let invoker = this.invokers.get(name) as Invoker;
         return invoker;
     }
@@ -187,15 +188,10 @@ class InvokeHandler implements IHandler{
             r_pk.request_id = pk.request_id;
             return r_pk;
         }catch(err){
-            let jerr : JGError;
-            if((err as JGError).isJGError)
-                jerr = err;
-            else
-                jerr = JGError.fromError(err);
                 
             let err_pk = new ErrorPacket();
             err_pk.request_id = pk.request_id;
-            err_pk.error = jerr;
+            err_pk.error = err;
             
             return err_pk;
 
@@ -244,7 +240,7 @@ class InvokeHandler implements IHandler{
     }    
     public async handlePacket(p:IPacket){
         if(this.lifeCycle.getState() != "ready")
-            throw new Error("isn't ready");
+            throw new LifeCycleError("isn't ready",this.lifeCycle.getState());
 
         if(this.hasInvoker(p.getRequestId())){
             let invoker = this.getInvoker(p.getRequestId());

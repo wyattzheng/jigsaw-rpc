@@ -1,3 +1,4 @@
+import CommonError from "../error/CommonError";
 import Defer from "./Defer";
 
 export class AsyncManager{
@@ -9,7 +10,7 @@ export class AsyncManager{
     }
     setRef(offset:number){
         if(this.waiting && offset > 0)
-            throw new Error(`waiting for all asyncs done, but new refs added into AsyncManager`);
+            throw new CommonError(`waiting for all asyncs done, but new refs added into AsyncManager`);
 
         this.async_ref_count += offset;
         if(this.waiting && this.async_ref_count == 0)

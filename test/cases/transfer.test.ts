@@ -5,7 +5,6 @@ import waitForEvent  from "./utils/WaitForEvent";
 import GetMockJigsaw  from "./utils/GetMockJigsaw";
 import MockRandomSocket from "./mocks/MockRandomSocket";
 import MockNotGoodSocket from "./mocks/MockNotGoodSocket";
-import { JGError } from "../../src/api/error";
 
 const sleep = util.promisify(setTimeout);
 
@@ -183,7 +182,7 @@ describe("Base Transfer Test",function(){
         })
 
 
-        let error : JGError | undefined;
+        let error : Error | undefined;
 
         try{
             let res : any = await B.send("A:call",{test:"abc123"});
@@ -192,7 +191,7 @@ describe("Base Transfer Test",function(){
         }
         
         
-        assert(error instanceof JGError,"error must be JGError");
+        assert(error instanceof Error,"error must be instance of Error");
         
         await A.close();
         await B.close();
@@ -367,7 +366,7 @@ describe("Base Transfer Test",function(){
         await Promise.all([waitForEvent(jg,"ready"),waitForEvent(invoker,"ready")]);
 
         let str = Buffer.allocUnsafe(512*1024).toString("base64");
-        let error = new RPC.error.JGError("1234",str);
+        let error = new Error(str);
         jg.port("call",()=>{
             throw error;
         })
@@ -377,9 +376,7 @@ describe("Base Transfer Test",function(){
             await invoker.send("jigsaw:call");
             hasError = false
         }catch(err){
-            let jgerr = err as RPC.error.JGError;
-            assert.strictEqual(jgerr.message,str);
-            assert.strictEqual(jgerr.code,"1234");
+            assert.strictEqual(err.message,str);
         }
         assert(hasError,"must return an error");
 

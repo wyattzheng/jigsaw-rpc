@@ -1,3 +1,4 @@
+import CommonError from "../../../error/CommonError";
 import BasePacket from "../BasePacket";
 
 class TestPacket extends BasePacket{
@@ -15,7 +16,7 @@ class TestPacket extends BasePacket{
 		if(this.built)return;
 
 		if(this.testdata.length>100)
-			throw new Error("this array too large")
+			throw new CommonError("this array too large")
 
 		super.encode.call(this);
 		for(let data of this.testdata)

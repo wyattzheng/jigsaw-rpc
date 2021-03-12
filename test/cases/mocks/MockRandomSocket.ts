@@ -54,8 +54,8 @@ class MockRandomSocket implements ISocket{
         this.eventEmitter.emit("message",buf);
     }
     send(data: Buffer, port: number, address: string): void {
-        //throw new Error("Method not implemented.");
 
+        
     }
     getAddress(): AddressInfo {
         return new AddressInfo("mocked",-1);

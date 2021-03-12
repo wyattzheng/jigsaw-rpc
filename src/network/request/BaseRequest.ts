@@ -6,6 +6,8 @@ import RequestTimeoutError from "../../error/RequestTimeoutError";
 import IRouter from "../router/IRouter";
 import LifeCycle from "../../utils/LifeCycle";
 import IRequest from "./IRequest";
+import CommonError from "../../error/CommonError";
+import LifeCycleError from "../../error/LifeCycleError";
 
 const sleep = util.promisify(setTimeout);
 
@@ -75,7 +77,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
     protected setResult(result : T){
 
         if(this.lifeCycle.getState()!="closing")
-            throw new Error("this result isn't pending,can not set result");
+            throw new LifeCycleError("this result isn't pending,can not set result",this.lifeCycle.getState());
 
         if(this.hasResult)
             return;
@@ -87,13 +89,13 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
     public getResult() : T{
         if(!this.hasResult)
-            throw new Error("this result isn't done");
+            throw new CommonError("this result isn't done");
 
         return this.result as T;
     }
     private async before_waiting(){
         if(this.lifeCycle.getState()!="ready")
-            throw new Error("at this state,can not before_run")
+            throw new LifeCycleError("at this state,can not before_run",this.lifeCycle.getState());
         
         this.pending_defer = new Defer();
         this.lifeCycle.setState("closing");
@@ -120,7 +122,7 @@ abstract class BaseRequest<T> implements IRequest<T>{
     }
     private async after_waiting(refid:number,error_refid:number,err:Error | undefined){
         if(this.lifeCycle.getState()!="closing")
-            throw new Error("at this state,can not after_end");
+            throw new LifeCycleError("at this state,can not after_end",this.lifeCycle.getState());
 
         this.resender_loop = false;
         await this.resender_defer?.promise;
@@ -148,10 +150,10 @@ abstract class BaseRequest<T> implements IRequest<T>{
 
 
         if(this.lifeCycle.getState() == "closing")
-            throw new Error("right now this request is pending")
+            throw new LifeCycleError("right now this request is pending",this.lifeCycle.getState());
         
 		if(this.lifeCycle.getState() != "ready")
-            throw new Error("this request can not run because of it hasn't been built.");
+            throw new LifeCycleError("this request can not run because of it hasn't been built.",this.lifeCycle.getState());
         
 
         let refid = this.router.plug(this.getRequestId(),this.handlePacket.bind(this));

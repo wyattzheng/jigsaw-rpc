@@ -1,4 +1,5 @@
 import AddressInfo from "../../domain/AddressInfo";
+import PacketParsingError from "../../error/PacketParsingError";
 import IPacket from "./IPacket";
 
 abstract class Packet implements IPacket{ // Design Mode : Builder Mode
@@ -36,10 +37,7 @@ abstract class Packet implements IPacket{ // Design Mode : Builder Mode
 		return (this.constructor as any).packet_id;
 	}
 
-	public getSlicedData(check : boolean = true) : Buffer{
-//		if(this.offset > Packet.buffer_size && check)
-//			throw new Error("this buffer is too large to get")
-		
+	public getSlicedData(check : boolean = true) : Buffer{		
 
 		if(this.buffer.length!=this.offset)
 			this.buffer = this.buffer.slice(0,this.offset);
@@ -51,7 +49,7 @@ abstract class Packet implements IPacket{ // Design Mode : Builder Mode
 	}
 	public encode() : void{
 		if(this.built){
-			throw new Error("this packet has already built");
+			throw new PacketParsingError("this packet has already built");
 		}
 		this.offset = 0;
 		this.built = true;
@@ -59,7 +57,7 @@ abstract class Packet implements IPacket{ // Design Mode : Builder Mode
 	}
 	public decode() : void{
 		if(this.built){
-			throw new Error("this packet has already built");
+			throw new PacketParsingError("this packet has already built");
 		}
 
 		this.offset = 0;

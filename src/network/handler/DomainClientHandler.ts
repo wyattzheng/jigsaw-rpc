@@ -7,6 +7,7 @@ import PingPacket from "../protocol/packet/PingPacket";
 import PongPacket from "../protocol/packet/PongPacket";
 import DomainPurgeNotifyPacket from "../protocol/packet/DomainPurgeNotifyPacket";
 import { TypedEmitter } from "tiny-typed-emitter";
+import PacketParsingError from "../../error/PacketParsingError";
 
 interface HandlerEvent{
     error:(err:Error)=>void;
@@ -44,7 +45,7 @@ class DomainClientHandler implements IHandler{
 
 
         }else
-            throw new Error("recv an unknown packet");
+            throw new PacketParsingError("recv an unknown packet");
 
     }
     public async handlePacket(p:IPacket):Promise<void>{

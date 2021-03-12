@@ -5,6 +5,7 @@ import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
 import PingPacket from "../protocol/packet/PingPacket";
 import PongPacket from "../protocol/packet/PongPacket";
+import PacketParsingError from "../../error/PacketParsingError";
 
 class PingRequest extends BaseRequest<void>{
     private dst : AddressInfo ;
@@ -32,7 +33,7 @@ class PingRequest extends BaseRequest<void>{
             this.setResult();
             
         }else
-            throw new Error("recv an unknown packet");
+            throw new PacketParsingError("recv an unknown packet");
     }
 }
 

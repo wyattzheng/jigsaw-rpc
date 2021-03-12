@@ -1,3 +1,5 @@
+import BuilderError from "../error/BuilderError";
+
 class HandlerRef<T>{
     public refid: number;
     public data : T;
@@ -20,7 +22,7 @@ class HandlerMap<Z>{
         let handlers = this.getHandlers(sign);
         let data = handlers.find((x)=>(x.refid==refid));
         if(!data)
-            throw new Error("not a valid refid")
+            throw new BuilderError("not a valid refid")
         let ret = (data as HandlerRef<Z>).data;
         return ret;
     }
@@ -29,7 +31,7 @@ class HandlerMap<Z>{
     }
     getHandlers(sign : string){
         if(!this.map.has(sign))
-            throw new Error("this sign hasn't been unplugged");
+            throw new BuilderError("this sign hasn't been unplugged");
         let handlers = this.map.get(sign) as Array<HandlerRef<Z>>;
         return handlers;
     }
@@ -57,7 +59,7 @@ class HandlerMap<Z>{
                 index = k;
         });
         if(index < 0)
-            throw new Error("unplug failed");
+            throw new BuilderError("unplug failed");
 
         handlers.splice(index,1);
         this.map.set(sign,handlers);

@@ -20,6 +20,7 @@ import { TypedEmitter } from "tiny-typed-emitter";
 
 import assert from "assert";
 import { NetComponent, NetFactory } from "./NetFactory";
+import LifeCycleError from "../error/LifeCycleError";
 
 export interface ProviderEvent{
     error(err : Error) : void;
@@ -71,7 +72,7 @@ export class SimpleProvider extends TypedEmitter<ProviderEvent>{
     }
     async start(public_net:NetComponent){
         if(this.lifeCycle.getState()!="closed")
-            throw new Error(`current state must be closed`);
+            throw new LifeCycleError(`current state must be closed`,this.lifeCycle.getState());
 
         this.lifeCycle.setState("starting");
 

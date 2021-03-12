@@ -9,6 +9,7 @@ import InvokeTimeoutError from "../../error/InvokeTimeoutError";
 import ErrorPacket from "../protocol/packet/ErrorPacket";
 import IRouter from "../router/IRouter";
 import IRoute from "../router/route/IRoute";
+import PacketParsingError from "../../error/PacketParsingError";
 
 
 class InvokeRequest extends BaseRequest<Buffer> {
@@ -73,7 +74,7 @@ class InvokeRequest extends BaseRequest<Buffer> {
     protected async send() : Promise<void>{
         if(this.packet_slicer.isAllDone()){
             if(this.packet_slicer.isFailed())
-                throw new Error("packet slicer failed");
+                throw new PacketParsingError("packet slicer failed");
             
             await this.router.sendPacket(this.packet_slicer.getEmptySlice(),this.route);
         }else{

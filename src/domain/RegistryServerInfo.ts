@@ -1,4 +1,5 @@
 import Url from "url";
+import FormatError from "../error/FormatError";
 
 class RegistryServerInfo{
     public address:string = "";
@@ -24,7 +25,7 @@ class RegistryServerInfo{
             hostname = parsed.hostname;
 
         if(parsed.protocol == null)
-            throw new Error("must specified a protocol");
+            throw new FormatError("must specified a protocol");
 
         return new RegistryServerInfo(parsed.protocol,hostname,portnum);
 

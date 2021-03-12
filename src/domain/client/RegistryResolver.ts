@@ -8,7 +8,9 @@ import QueryDomainRequest from "../../network/request/QueryDomainRequest";
 import DomainClientHandler from "../../network/handler/DomainClientHandler";
 import Defer from "../../utils/Defer";
 import Util  from "util";
-import { IRegistryResolver,RegNode,QueryResult } from "./IRegistryResolver" 
+import ResolveTimeoutError from "../../error/ResolveTimeoutError"
+import { IRegistryResolver,RegNode,QueryResult } from "./IRegistryResolver"
+import CommonError from "../../error/CommonError";
 
 const debug = require("debug")("DomainClient");
 const sleep = Util.promisify(setTimeout);
@@ -105,7 +107,7 @@ class RegistryResolver implements IRegistryResolver{
      
                 let res = await this.doResolveRequest(regpath);
                 if(res.length == 0)
-                    throw new Error("result is empty");
+                    throw new CommonError("result is empty");
                 return res;
                 
             }catch(err){   
@@ -120,8 +122,8 @@ class RegistryResolver implements IRegistryResolver{
             
             await sleep(loop_interval);
         }
-
-        throw new Error("resolve reach its max retry time");
+        
+        throw new ResolveTimeoutError(regpath,this.request_seq);
         
     }
     private async doResolveRequest(regpath:string) : Promise<QueryResult>{

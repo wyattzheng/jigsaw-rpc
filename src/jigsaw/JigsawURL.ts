@@ -1,4 +1,5 @@
 import URL from "url";
+import FormatError from "../error/FormatError";
 
 export interface JigsawURLObject{
     protocol:string,
@@ -12,7 +13,7 @@ export function parseJigsawURL(url:string) : JigsawURLObject{
 
     const jgname = (url_obj.pathname || "").replace("/","");
     if(!jgname.length || !url_obj.protocol)
-        throw new Error(`can't parse JigsawURL : ${url}`);
+        throw new FormatError(`can't parse JigsawURL : ${url}`);
     
     return { 
         protocol:url_obj.protocol,

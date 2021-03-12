@@ -1,6 +1,7 @@
 import IBuilderManager from "./IBuilderManager";
 import IBuilder from "./IBuilder";
 import LimitedMap from "../../../utils/LimitedMap"
+import PacketBuildingError from "../../../error/BuilderError";
 
 
 abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
@@ -10,7 +11,7 @@ abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
 
 	public createBuilder(key : string,partmax : number){
 		if(this.builders.has(key))
-				throw new Error("this builder has already exist");
+				throw new PacketBuildingError("this builder has already exist");
 		
 		this.builders.set(key,this.getNewBuilder(partmax));
 	}
@@ -21,7 +22,7 @@ abstract class AbstractBuilderManager<T,P> implements IBuilderManager<T,P>{
 	protected getBuilder(key : string) : IBuilder<T,P>{
 		
 		if(!this.builders.has(key))
-			throw new Error("this builder doesn't exist")
+			throw new PacketBuildingError("this builder doesn't exist")
 		
 		return this.builders.get(key);
 	}

@@ -1,5 +1,6 @@
 import assert from "assert";
 import { TypedEmitter } from "tiny-typed-emitter";
+import BuilderError from "../error/BuilderError";
 
 class Value<T>{
 	public createTime : number = new Date().getTime();
@@ -61,7 +62,7 @@ class LimitedMap<T,Z> extends TypedEmitter<LimitedMapEvent<Z>>{
 	doGcCollect(){
 		for(let key of this.keys){
 			if(!this.map.has(key))
-				throw new Error("this map behave unexpected condition");
+				throw new BuilderError("this map behave unexpected condition");
 
 			let v = this.map.get(key) as Value<Z>;
 			if(v.isExpired()){
@@ -75,13 +76,13 @@ class LimitedMap<T,Z> extends TypedEmitter<LimitedMapEvent<Z>>{
 	get(key : T) : Z{
 		let v = this.map.get(key);
 		if(v == undefined)
-			throw new Error(`get value failed of '${key}'`)
+			throw new BuilderError(`get value failed of '${key}'`)
 		return v.val;
 	}
 	delete(key : T){
 		let index=this.keys.indexOf(key);
 		if(index == -1)
-			throw new Error("this key doesn't exist");
+			throw new BuilderError("this key doesn't exist");
 
 		this.keys.splice(index,1);
 		let deleted = (this.map.get(key) as Value<Z>).val;

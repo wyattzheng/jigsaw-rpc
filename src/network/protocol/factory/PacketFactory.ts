@@ -1,6 +1,7 @@
 import IPacket from "../IPacket";
 import BasePacket from "../BasePacket";
 import IFactory from "./IFactory";
+import PacketParsingError from "../../../error/PacketParsingError";
 
 type PacketCls = new (...args:any[]) => IPacket;
 
@@ -33,7 +34,7 @@ class PacketFactory implements IFactory<Buffer,IPacket>{
 	public getProductCls(packetid : number) : PacketCls{
 		let cls = this.classes.get(packetid);
 		if(cls == undefined)
-			throw new Error(`this packetid ${packetid} not point to a packet`);
+			throw new PacketParsingError(`this packetid ${packetid} not point to a packet`);
 
 		return cls;
 	}

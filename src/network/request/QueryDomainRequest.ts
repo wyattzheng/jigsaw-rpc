@@ -5,6 +5,7 @@ import DomainQueryPacket from "../protocol/packet/DomainQueryPacket";
 import DomainReplyPacket from "../protocol/packet/DomainReplyPacket";
 import IRouter from "../router/IRouter";
 import NetRoute from "../router/route/NetRoute";
+import PacketParsingError from "../../error/PacketParsingError";
 
 type QueryResult = Array<{jgid:string,jgname:string,address:AddressInfo,updateTime:number}>;
 
@@ -35,7 +36,7 @@ class QueryDomainRequest extends BaseRequest<QueryResult>{
             let pk = p as DomainReplyPacket;
             this.setResult(pk.address_set);
         }else
-            throw new Error("recv an unknown packet");
+            throw new PacketParsingError("recv an unknown packet");
     }
 }
 

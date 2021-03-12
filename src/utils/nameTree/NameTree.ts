@@ -1,3 +1,4 @@
+import NameTreeError from "../../error/NameTreeError";
 import DataNode from "./DataNode";
 import NodePath from "./NodePath";
 
@@ -11,13 +12,11 @@ class NameTree<T>{
     }
     addNode(path:string,node:DataNode<T>){
         if(node.getType() != DataNode.NodeType.ENDPOINT)
-            throw new Error("this node type must be endpoint");
+            throw new NameTreeError("this node type must be endpoint");
 
         let nodepath = NodePath.parse(path);
         let names = nodepath.getNodeNames();
 
-/*        if(node.getName() != nodepath.getLastName())
-            throw new Error("this node name isn't correct")*/
         node.setName(nodepath.getLastName());
 
         let curr_node = this.root;
@@ -42,7 +41,7 @@ class NameTree<T>{
             }else{
                 let nd = curr_node.getChild(nodename);
                 if(nd.getType() == DataNode.NodeType.ENDPOINT)
-                    throw new Error("this node can't be added because of the tree toplogy.");
+                    throw new NameTreeError("this node can't be added because of the tree toplogy.");
             }
 
             curr_node = curr_node.getChild(nodename);
@@ -52,13 +51,13 @@ class NameTree<T>{
     }
     removeEndNode(path:string){
         if(!this.hasEndNode(path))
-            throw new Error("this end node doesn't exists");
+            throw new NameTreeError("this end node doesn't exists");
 
         this.removeNode(path);
     }
     removeNode(path:string){
         if(!this.hasNode(path))
-            throw new Error("this node doesn't exists");
+            throw new NameTreeError("this node doesn't exists");
         
         let nodepath = NodePath.parse(path);
         let shouldRemove = true;
@@ -81,7 +80,7 @@ class NameTree<T>{
                 return;
         }
 
-        throw new Error("remove node failed");
+        throw new NameTreeError("remove node failed");
         
     }
     hasNode(path:string){
@@ -108,7 +107,7 @@ class NameTree<T>{
         let name = NodePath.parse(path).getLastName();
         let pnode = this.getParentNode(path);
         if(!pnode.hasChild(name))
-            throw new Error("can't get this node");
+            throw new NameTreeError("can't get this node");
 
         let node = pnode.getChild(name);
 
@@ -117,13 +116,13 @@ class NameTree<T>{
     getEndNode(path:string){
         let node = this.getNode(path);
         if(node.getType() != DataNode.NodeType.ENDPOINT)
-            throw new Error("this node is not a endpoint node");
+            throw new NameTreeError("this node is not a endpoint node");
         return node;
     }
     getChildren(path:string){
         let node = this.getNode(path);
         if(node.getType() != DataNode.NodeType.GROUP)
-            throw new Error("this node is not a group node");
+            throw new NameTreeError("this node is not a group node");
         
         return node.getChildren();
     }
@@ -137,7 +136,7 @@ class NameTree<T>{
             let isLastLevel = names.length == level + 1;
 
             if(!curr_node.hasChild(nodename))
-                throw new Error("can't get parent node, this path isn't correct");
+                throw new NameTreeError("can't get parent node, this path isn't correct");
 
             if(isLastLevel){
                 return curr_node;
@@ -146,7 +145,7 @@ class NameTree<T>{
             level++;
         }
 
-        throw new Error("can't get parent node");
+        throw new NameTreeError("can't get parent node");
     }
     map(handler : (n : DataNode<T>,prefix:string,p? : DataNode<T>)=>void){
 

@@ -3,6 +3,7 @@ import AddressInfo from "../AddressInfo";
 import { TypedEmitter } from "tiny-typed-emitter";
 import NameTree from "../../utils/nameTree/NameTree";
 import DataNode from "../../utils/nameTree/DataNode";
+import NameTreeError from "../../error/NameTreeError";
 
 
 interface StorageEvent{
@@ -61,11 +62,11 @@ class RegistryStorage implements IRegistryStorage{
         let nodeid = `${jgname}.${jgid}`;
       
         if(!this.nameTree.hasEndNode(nodeid))
-            throw new Error("this node doesn't exist");
+            throw new NameTreeError("this node doesn't exist");
 
         let node = this.nameTree.getEndNode(nodeid);
         if(node.getData().jgid != jgid)
-            throw new Error("this node's jgid isn't correct");
+            throw new NameTreeError("this node's jgid isn't correct");
 
         this.nameTree.removeEndNode(nodeid);
         this.eventEmitter.emit("DomainPurgeEvent", jgid);
@@ -86,7 +87,7 @@ class RegistryStorage implements IRegistryStorage{
             dataset.push(node.getData());
 
         }else
-            throw new Error("this node type isn't correct");
+            throw new NameTreeError("this node type isn't correct");
 
         return dataset;
     }
